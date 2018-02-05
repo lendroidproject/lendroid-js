@@ -55,10 +55,11 @@ A library to wrapper the lendroid Server and Lendroid Contract API's
        ```
        curl -v -XGET  http://localhost:9001/offers
        ```
-  2. Sends the picked pair of (0x order, loan offer) to Lendroid’s Smart Contracts via Web3.js to open a position. (Calls [PositionManager.openPosition](https://github.com/gedanziger/lendroid-protcol-private/blob/AddDockerSupport/src/PositionManager.sol))
-    * Calls `PositionManager.openPosition(orderValues[], orderAddresses[], orderV, orderRS[], offerValues[], offerAddresses[]).sender(marginTrader)`
+  2. Sends the picked pair of (0x order, loan offer) to Lendroid’s Smart Contracts via Web3.js to open a position.
+     * Code: [PositionManager.openPosition](https://github.com/gedanziger/lendroid-protcol-private/blob/AddDockerSupport/src/PositionManager.sol))
+     * Calls `PositionManager.openPosition(orderValues[], orderAddresses[], orderV, orderRS[], offerValues[], offerAddresses[]).sender(marginTrader)`
 
-      ```
+     ```
       lendroidJS.PositionManager.openPosition(orderValues[],
                                               orderAddresses[],
                                               offerValues[],
@@ -66,5 +67,5 @@ A library to wrapper the lendroid Server and Lendroid Contract API's
                                               orderRS[],
                                               offerValues[],
                                               offerAddresses[])
-      ```
+     ```
 
