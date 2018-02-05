@@ -59,7 +59,7 @@ A library to wrapper the lendroid Server and Lendroid Contract API's
      * Code: [PositionManager.openPosition](https://github.com/gedanziger/lendroid-protcol-private/blob/AddDockerSupport/src/PositionManager.sol))
      * Calls `PositionManager.openPosition(orderValues[], orderAddresses[], orderV, orderRS[], offerValues[], offerAddresses[]).sender(marginTrader)`
 
-     ```
+      ```
       lendroidJS.PositionManager.openPosition(orderValues[],
                                               orderAddresses[],
                                               offerValues[],
@@ -67,5 +67,5 @@ A library to wrapper the lendroid Server and Lendroid Contract API's
                                               orderRS[],
                                               offerValues[],
                                               offerAddresses[])
-     ```
+      ```
 
