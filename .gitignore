@@ -1,3 +1,11 @@
+# IntelliJ files
+.idea
+idea/
+
+# Compiled files
+dist/
+
+
 # Logs
 logs
 *.log

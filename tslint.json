@@ -1,0 +1,99 @@
+{
+  "extends": "tslint:recommended",
+  "rules": {
+    "arrow-parens": [
+      true,
+      "ban-single-arg-parens"
+    ],
+    "await-promise": true,
+    "comment-format": [
+      true
+    ],
+    "completed-docs": [
+      true,
+      {
+        "classes": {
+          "visibilities": [
+            "exported"
+          ]
+        },
+        "functions": {
+          "visibilities": [
+            "exported"
+          ]
+        },
+        "methods": {
+          "privacies": [
+            "public",
+            "protected"
+          ]
+        },
+        "properties": {
+          "privacies": [
+            "public",
+            "protected"
+          ]
+        }
+      }
+    ],
+    "match-default-export-name": true,
+    "max-line-length": [
+      true,
+      165
+    ],
+    "member-ordering": [
+      true,
+      {
+        "order": [
+          "static-field",
+          "instance-field",
+          "constructor",
+          "public-instance-method",
+          "protected-instance-method",
+          "private-instance-method"
+        ]
+      }
+    ],
+    "no-any": true,
+    "no-boolean-literal-compare": true,
+    "no-console": false,
+    "no-duplicate-variable": true,
+    "no-for-in-array": true,
+    "no-inferrable-types": true,
+    "no-invalid-template-strings": true,
+    "no-require-imports": true,
+    "no-string-literal": true,
+    "no-unnecessary-type-assertion": true,
+    "no-unnecessary-qualifier": true,
+    "no-unused-variable": true,
+    "no-unused-expression": true,
+    "number-literal-format": true,
+    "object-literal-sort-keys": false,
+    "only-arrow-functions": true,
+    "ordered-imports": false,
+    "prefer-conditional-expression": true,
+    "prefer-object-spread": true,
+    "prefer-template": true,
+    "semicolon": [
+      true,
+      "never"
+    ],
+    "trailing-comma": false,
+    "quotemark": [
+      true,
+      "single",
+      "avoid-escape"
+    ],
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-module",
+      "check-separator",
+      "check-type",
+      "check-typecast",
+      "check-preblock"
+    ]
+  }
+}
