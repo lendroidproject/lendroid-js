@@ -9,7 +9,8 @@ A library to wrapper the lendroid Server and Lendroid Contract API's
      * [Wallet.commit](https://github.com/gedanziger/lendroid-protcol-private/blob/AddDockerSupport/src/Wallet.sol#L68)
      * `lendroidJS.Wallet.commit(‘OMG’, 1000).sender(lender)`
   3. On Lendroid UI, Lender creates a loan offer for the loan terms
-     ``` { 
+      ``` 
+        { 
            "makerAddress": "0x9e566255",
            "market" : "OMG/ETH",
            "quantity" : 1000,
