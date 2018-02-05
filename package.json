@@ -1,21 +1,25 @@
 {
-  "name": "lendroid.js",
+  "name": "lendroid-js",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "clean": "rm -rf ./dist && rm -rf node_modules ",
     "clean-install": "rm -rf node_modules && npm install",
     "lint": "tslint './src/**/*.ts' -p . -c tslint.json",
+    "test": "mocha --check-leaks --harmony dist/test/**/*.js",
     "watch": "rm -rf ./dist && npm run lint && tsc --watch"
   },
-  "author": "",
+  "author": "lendroid",
   "license": "ISC",
   "dependencies": {
     "web3": "^1.0.0-beta.29"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.2",
+    "@types/mocha": "^2.2.48",
     "@types/node": "^9.4.0",
+    "chai": "^4.1.2",
+    "mocha": "^5.0.0",
     "tslint": "^5.9.1",
     "typescript": "^2.7.1",
     "web3-typescript-typings": "^0.9.8"
