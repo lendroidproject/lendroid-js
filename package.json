@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -rf ./dist && rm -rf node_modules ",
+    "clean-install": "rm -rf node_modules && npm install",
+    "lint": "tslint './src/**/*.ts' -p . -c tslint.json",
+    "watch": "rm -rf ./dist && npm run lint && tsc --watch"
   },
   "author": "",
   "license": "ISC",
@@ -12,7 +15,8 @@
     "web3": "^1.0.0-beta.29"
   },
   "devDependencies": {
-    "prettier": "^1.10.2",
+    "@types/node": "^9.4.0",
+    "tslint": "^5.9.1",
     "typescript": "^2.7.1",
     "web3-typescript-typings": "^0.9.8"
   }

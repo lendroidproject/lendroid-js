@@ -1,6 +1,14 @@
 # lendroid-js
 A library to wrapper the lendroid Server and Lendroid Contract API's
 
+To run:
+
+`npm install`
+
+`npm install -g tslint`
+
+`npm run watch` (starts TypeScript watcher, compiles on changes)
+
 ## On the Lendroid UI
   1. On Lendroid UI, Lender deposits 1000 OMG.
      * Contract Code [Wallet.deposit](https://github.com/gedanziger/lendroid-protcol-private/blob/AddDockerSupport/src/Wallet.sol#L102)
