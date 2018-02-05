@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "include": [
+      "./node_modules/web3-typescript-typings/index.d.ts"
+    ],
     "module": "commonjs",
     "target": "es5",
     "lib": [
