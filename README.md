@@ -24,6 +24,7 @@ A library to wrapper the lendroid Server and Lendroid Contract API's
          }
       ```
   4. Sends a HTTP POST request with a Loan Offer object to `/offers` endpoint of Lendroid API server API service whenever Lender creates the loan offer.
+     *  [POST /offers](https://github.com/norestlabs/lendroid-portal-server/blob/master/main.py#L27)
      *  On the API server, this Loan Offer object is saved.
      *  Method Signature: `lendroidJS.createOffer(loanTerms).sender(lender)`
      *  HTTP Signature:
@@ -48,6 +49,7 @@ A library to wrapper the lendroid Server and Lendroid Contract API's
          ```
 ## On the Relayer UI
   1. Retrieves loan offers via HTTP GET from the API service
+     * [GET /offers](https://github.com/norestlabs/lendroid-portal-server/blob/master/main.py#L23)
      * Method Signature: `lendroidJS.getOffers()`
      * HTTP Signature:
        ```
