@@ -1,9 +1,16 @@
 export namespace Logger {
     /**
-     * To log DEBUG/INFO logs to console
+     * To log DEBUG logs to console
      */
     export const log = (context: Context, message: string): void => {
         console.log(`context=${context}, ${message}`)
+    }
+
+    /**
+     * To log INFO logs to console (for viewing in browser)
+     */
+    export const info = (context: Context, message: string) => {
+        console.info(`context=${context}, ${message}`)
     }
 
     /**
@@ -18,5 +25,6 @@ export namespace Logger {
  * Context/functionality under which a message/error is being logged
  */
 export enum Context {
-    DEPOSIT_FUNDS = 'DepositFunds'
+    DEPOSIT_FUNDS = 'DepositFunds',
+    WEBPACK = 'Webpack'
 }
