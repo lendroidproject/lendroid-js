@@ -3,15 +3,20 @@
   "version": "0.1.0",
   "description": "",
   "scripts": {
+    "build": "tsc",
     "clean": "rm -rf ./dist && rm -rf node_modules ",
-    "clean-install": "rm -rf node_modules && npm install",
+    "clean-install": "npm run clean && npm install",
     "lint": "tslint './src/**/*.ts' -p . -c tslint.json",
-    "test": "mocha --check-leaks --harmony dist/test/**/*.js",
-    "watch": "rm -rf ./dist && npm run lint && tsc --watch"
+    "start": "webpack-dev-server --inline --hot",
+    "test": "clear; mocha --harmony dist/test/**/*.js",
+    "unit-test": "clear; mocha --harmony dist/test/unit/**/*.js",
+    "watch": "rm -rf ./dist && npm run lint && tsc --watch",
+    "webpack": "webpack --config webpack.config.js"
   },
   "author": "lendroid",
   "license": "ISC",
   "dependencies": {
+    "isomorphic-fetch": "^2.2.1",
     "web3": "^1.0.0-beta.29"
   },
   "devDependencies": {
@@ -19,9 +24,14 @@
     "@types/mocha": "^2.2.48",
     "@types/node": "^9.4.0",
     "chai": "^4.1.2",
+    "ganache-cli": "^6.0.3",
     "mocha": "^5.0.0",
+    "ts-loader": "^3.4.0",
+    "tsc-watch": "^1.0.16",
     "tslint": "^5.9.1",
     "typescript": "^2.7.1",
-    "web3-typescript-typings": "^0.9.8"
+    "web3-typescript-typings": "^0.9.8",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.11.1"
   }
 }

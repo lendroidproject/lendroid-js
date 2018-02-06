@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "include": [
-      "./node_modules/web3-typescript-typings/index.d.ts"
-    ],
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": true,
+    "strictNullChecks": true,
     "module": "commonjs",
     "target": "es5",
     "lib": [
@@ -15,7 +17,6 @@
     "noImplicitReturns": true,
     "outDir": "./dist",
     "pretty": true,
-    "rootDir": "./src",
-    "strict": true
+    "rootDir": "./src"
   }
 }

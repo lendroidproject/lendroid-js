@@ -7,7 +7,11 @@ To run:
 
 `npm install -g tslint`
 
-`npm run watch` (starts TypeScript watcher, compiles on changes)
+`npm start` (serves files via Webpack, compiles on file changes)
+
+To build:
+
+`npm run build`
 
 ## On the Lendroid UI
   1. On Lendroid UI, Lender deposits 1000 OMG.
