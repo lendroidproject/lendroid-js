@@ -5,11 +5,8 @@
     "forceConsistentCasingInFileNames": true,
     "removeComments": true,
     "strictNullChecks": true,
-    "include": [
-      "./node_modules/web3-typescript-typings/index.d.ts"
-    ],
     "module": "commonjs",
-    "target": "es2017",
+    "target": "es5",
     "lib": [
       "es2017",
       "dom"

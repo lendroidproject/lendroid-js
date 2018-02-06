@@ -1,18 +1,15 @@
-class Logger {
-
-
-
+export namespace Logger {
     /**
      * To log DEBUG/INFO logs to console
      */
-    public log(context: Context, message: string): void {
+    export const log = (context: Context, message: string): void => {
         console.log(`context=${context}, ${message}`)
     }
 
     /**
      * To log WARNING/ERROR logs to console
      */
-    public error(context: Context, message: string): void {
+    export const error = (context: Context, message: string): void => {
         console.error(`context=${context}, ${message}`)
     }
 }
@@ -23,7 +20,3 @@ class Logger {
 export enum Context {
     DEPOSIT_FUNDS = 'DepositFunds'
 }
-
-// TODO: Look into why TS is complaining here
-// @ts-ignore
-export const logger = new Logger()

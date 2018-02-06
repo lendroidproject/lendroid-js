@@ -1,7 +1,7 @@
 /**
  * Assumes valid inputs
  */
-class Wallet {
+export class Wallet {
 
     public deposit(): string {
         return 'deposit()'

@@ -1,5 +1,5 @@
 import * as chai from 'chai'
-import { getWalletAbi, getWalletBytecode } from '../constants/deployed-constants'
+import { getWalletAbi, getWalletBytecode } from '../../constants/deployed-constants'
 
 const expect = chai.expect
 

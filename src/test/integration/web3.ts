@@ -1,7 +1,7 @@
 import * as chai from 'chai'
 import * as ganache from 'ganache-cli'
 import Web3 = require("web3")
-import { walletABI, walletByteCode } from './constants'
+import { walletABI, walletByteCode } from '../util/constants'
 
 const expect = chai.expect
 

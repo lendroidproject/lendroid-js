@@ -21,7 +21,7 @@ export const getWalletBytecode = (): Promise<string> => {
 // Address of Wallet.sol deployed on Ethereum network
 export const walletAddress = '0x2b8ab647898be40307fa7419e5508fe68f70f381'
 
-
+// tslint:disable
 // TODO: Figure out how to use fetch to read this from a file instead
 const walletABI = [
     {
