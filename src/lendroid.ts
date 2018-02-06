@@ -1,6 +1,0 @@
-/**
- * TODO
- */
-export class Lendroid {
-
-}
