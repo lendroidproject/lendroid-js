@@ -21,7 +21,7 @@ To build:
      * Contract Code [Wallet.commit](https://github.com/gedanziger/lendroid-protcol-private/blob/AddDockerSupport/src/Wallet.sol#L68)
      * `lendroidJS.Wallet.commit(‘OMG’, 1000).sender(lender)`
   3. On Lendroid UI, Lender creates a loan offer for the loan terms
-      ``` 
+      ```json 
          {  
             "lenderAddress": "0x012345"
             "market": "OMG/ETH",
@@ -42,7 +42,7 @@ To build:
      *  On the API server, this Loan Offer object is saved.
      *  Method Signature: `lendroidJS.createOffer(loanTerms)`
      *  HTTP Signature:
-        ```
+        ```curl
         curl -v -XPOST  http://localhost:9001/offers \
         -H 'application/json' \
         -d @- << EOF
