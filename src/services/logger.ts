@@ -26,5 +26,7 @@ export namespace Logger {
  */
 export enum Context {
     DEPOSIT_FUNDS = 'DepositFunds',
-    WEBPACK = 'Webpack'
+    WEBPACK = 'Webpack',
+    WEB3 = 'Web3',
+    COMMIT_FUNDS = 'CommitFunds'
 }
