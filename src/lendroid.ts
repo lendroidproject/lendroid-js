@@ -13,7 +13,7 @@ export const startApp = () => {
     // @ts-ignore
     const web3 = new Web3Service(window.web3.currentProvider)
     const lendroid = new Lendroid()
-    lendroid.depositFunds(12)
+    lendroid.commitFunds(12)
 }
 
 /**
@@ -101,6 +101,12 @@ export class Lendroid {
             return Promise.reject(error)
         })
     }
+
+    public async openPosition(orderValues: string [], orderAddresses: string [], offerValues: string [], orderV: string,
+                              orderRS: string [], offerAddresses: string[]): Promise<void> {
+        return Promise.resolve()
+    }
+
 
     public async getBalance() {
         const account = (await this.web3Service.Web3.eth.getAccounts())[0]
