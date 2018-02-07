@@ -23,7 +23,7 @@ To build:
   3. On Lendroid UI, Lender creates a loan offer for the loan terms
       ```json 
          {  
-            "lenderAddress": "0x012345"
+            "lenderAddress": "0x012345",
             "market": "OMG/ETH",
             "loanQuantity": 100,
             "loanToken": "OMG",
@@ -47,7 +47,7 @@ To build:
         -H 'application/json' \
         -d @- << EOF
          {  
-            "lenderAddress": "0x012345"
+            "lenderAddress": "0x012345",
             "market": "OMG/ETH",
             "loanQuantity": 100,
             "loanToken": "OMG",
