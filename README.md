@@ -22,41 +22,43 @@ To build:
      * `lendroidJS.Wallet.commit(‘OMG’, 1000).sender(lender)`
   3. On Lendroid UI, Lender creates a loan offer for the loan terms
       ``` 
-        { 
-           "makerAddress": "0x9e566255",
-           "market" : "OMG/ETH",
-           "quantity" : 1000,
-           "loanToken" : "OMG",
-           "cost" : "100 szabo per base(OMG)"
-           "wrangler": "0xWrangler"
-           "ecSignature": {
-             "v": 27,
-             "r": "0x61a3ed31b43c",
-             "s": "0x40349190569"
-           }
-         }
+         {  
+            "lenderAddress": "0x012345"
+            "market": "OMG/ETH",
+            "loanQuantity": 100,
+            "loanToken": "OMG",
+            "costAmount": 100,
+            "costToken": "ETH",
+            "wrangler": "0xWrangler",
+            "ecSignature": {
+              "v": 27,
+              "r": "0x61a3ed31",
+              "s": "0x40349190"
+            }
+          }
       ```
   4. Sends a HTTP POST request with a Loan Offer object to `/offers` endpoint of Lendroid API server API service whenever Lender creates the loan offer.
      *  Server code: [POST /offers](https://github.com/norestlabs/lendroid-portal-server/blob/master/main.py#L27)
      *  On the API server, this Loan Offer object is saved.
-     *  Method Signature: `lendroidJS.createOffer(loanTerms).sender(lender)`
+     *  Method Signature: `lendroidJS.createOffer(loanTerms)`
      *  HTTP Signature:
         ```
         curl -v -XPOST  http://localhost:9001/offers \
         -H 'application/json' \
         -d @- << EOF
-         {
-           "wrangler": "0xWrangler",
-           "loanToken": "OMG",
-           "ecSignature": {
-             "s": "0x40349190569",
-             "r": "0x61a3ed31b43c",
-             "v": 2
-            },
-            "cost": "100 szabo per base(OMG)",
-            "makerAddress": "0x9e566255",
+         {  
+            "lenderAddress": "0x012345"
             "market": "OMG/ETH",
-            "quantity": 1000
+            "loanQuantity": 100,
+            "loanToken": "OMG",
+            "costAmount": 100,
+            "costToken": "ETH",
+            "wrangler": "0xWrangler",
+            "ecSignature": {
+              "v": 27,
+              "r": "0x61a3ed31",
+              "s": "0x40349190"
+            }
           }
          EOF
          ```
