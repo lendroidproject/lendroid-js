@@ -94,26 +94,13 @@ export class Lendroid {
      * Wallet Smart Contract
      */
     public async depositFunds(amount: number, token: string = TokenName.OMG): Promise<void> {
-        Logger.log(Context.DEPOSIT_FUNDS, `
-    message = Depositing
-    ${amount}
-    for
-    ${token}
-`)
+        Logger.log(Context.DEPOSIT_FUNDS, `message = Depositing ${amount} for ${token}`)
 
         if (amount <= 0) {
-            Logger.error(Context.DEPOSIT_FUNDS, `
-    message = Invalid
-    amount
-,
-    amount = ${amount}`)
+            Logger.error(Context.DEPOSIT_FUNDS, `message = Invalid amount, amount = ${amount}`)
             return Promise.reject('Invalid amount')
         } else if (!TokenName[token]) {
-            Logger.error(Context.DEPOSIT_FUNDS, `
-    message = Invalid
-    token
-,
-    token = ${token}`)
+            Logger.error(Context.DEPOSIT_FUNDS, `message = Invalid token, token = ${token}`)
             return Promise.reject('Invalid token')
         }
 
@@ -133,26 +120,13 @@ export class Lendroid {
      * TODO: Test amount > deposited funds
      */
     public async commitFunds(amount: number, token: string = TokenName.OMG): Promise<void> {
-        Logger.log(Context.COMMIT_FUNDS, `
-    message = Committing
-    ${amount}
-    for
-    ${token}
-`)
+        Logger.log(Context.COMMIT_FUNDS, `message = Committing ${amount} for ${token}`)
 
         if (amount <= 0) {
-            Logger.error(Context.COMMIT_FUNDS, `
-    message = Invalid
-    amount
-,
-    amount = ${amount}`)
+            Logger.error(Context.COMMIT_FUNDS, `message = Invalid amount, amount = ${amount}`)
             return Promise.reject('Invalid amount')
         } else if (!TokenName[token]) {
-            Logger.error(Context.COMMIT_FUNDS, `
-    message = Invalid
-    token
-,
-    token = ${token}`)
+            Logger.error(Context.COMMIT_FUNDS, `message = Invalid token, token = ${token}`)
             return Promise.reject('Invalid token')
         }
 
@@ -180,12 +154,7 @@ export class Lendroid {
             Logger.info(loggerContext, 'message=Transaction succeeded')
             return Promise.resolve()
         }).catch(error => {
-            Logger.error(loggerContext, `
-    message = An
-    error
-    occurred
-,
-    error = ${JSON.stringify(error)}`)
+            Logger.error(loggerContext, `message = An error occurred, error = ${JSON.stringify(error)}`)
             return Promise.reject(error)
         })
     }
@@ -196,15 +165,7 @@ export class Lendroid {
     private balanceResponseHandler(promise: Promise<number>, loggerContext: Context): Promise<number> {
         return promise
             .catch(error => {
-                Logger.error(loggerContext, `
-    message = An
-    error
-    occurred
-    while
-    fetching
-    balance
-,
-    error = ${JSON.stringify(error)}`)
+                Logger.error(loggerContext, `message = An error occurred while fetching balance, error = ${JSON.stringify(error)}`)
                 return Promise.reject(error)
             })
     }
