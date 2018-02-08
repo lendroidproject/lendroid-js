@@ -32,5 +32,8 @@ export enum Context {
     GET_WITHDRAWABLE_BALANCE = 'GetWithdrawableBalance',
     GET_POSITION_BALANCE = 'GetPositionBalance',
     GET_CASH_BALANCE = 'GetCashBalance',
-    GET_LOCKED_BALANCE = 'GetLockedBalance'
+    GET_LOCKED_BALANCE = 'GetLockedBalance',
+    CREATE_LOAN_OFFER = 'CreateLoanOffer',
+    GET_LOAN_OFFERS = 'GetLoanOffers',
+    SIGN_LOAN_OFFER = 'SignLoanOffer'
 }
