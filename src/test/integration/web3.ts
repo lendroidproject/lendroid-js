@@ -77,12 +77,12 @@ describe('testing web3 functionality', () => {
                 expect((await web3.eth.getAccounts())[0]).to.eq(testAccount)
 
                 // .send can modify contract state unlike .call
-                return contract.methods.deposit().send({
-                    from: testAccount,
-                    gas: 4712388,
-                    gasPrice: '12388',
-                    value: 500
-                })
+                // return contract.methods.deposit().send({
+                //     from: testAccount,
+                //     gas: 4712388,
+                //     gasPrice: '12388',
+                //     value: 500
+                // })
             }).then(() => {
                 // .call cannot modify contract state, can only call constant functions
                 contract.methods.getBalance('0xcc2704ce33089d0f051eb0aff1750bb99fdfab46').call({ from: testAccount })

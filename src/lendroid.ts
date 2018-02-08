@@ -2,7 +2,7 @@ import { Token } from './constants/tokens'
 import { Context, Logger } from './services/logger'
 import { Web3Service } from './services/web3-service'
 import { Contract } from 'web3/types'
-import { getWalletAbi, walletAddress, wethAddress } from './constants/deployed-constants'
+import { wethAddress } from './constants/deployed-constants'
 import * as t from 'web3/types'
 import { ITransactionResponse } from './types/transaction-response'
 
@@ -10,10 +10,8 @@ import { ITransactionResponse } from './types/transaction-response'
  * Initializes the Web3 provider
  */
 export const startApp = () => {
-    // @ts-ignore
-    const web3 = new Web3Service(window.web3.currentProvider)
     const lendroid = new Lendroid()
-    lendroid.commitFunds(12)
+    lendroid.getWithdrawableBalance().then(console.log)
 }
 
 /**
@@ -22,13 +20,25 @@ export const startApp = () => {
 export class Lendroid {
 
     private API_ENDPOINT: string
+    // @ts-ignore
+    private userAccount: string
     private web3Service = new Web3Service((window as any).web3.currentProvider)
 
     constructor(apiEndpoint = '', provider?: t.Provider | string) {
-        this.API_ENDPOINT = apiEndpoint
         if (provider) {
             this.web3Service = new Web3Service(provider)
         }
+
+        this.API_ENDPOINT = apiEndpoint
+        this.initialize()
+    }
+
+    /**
+     * Initializes the following:
+     * 1. userAccount with the user's address
+     */
+    private async initialize() {
+        this.userAccount = await this.web3Service.userAccount()
     }
 
     /**
@@ -42,30 +52,15 @@ export class Lendroid {
             Logger.error(Context.DEPOSIT_FUNDS, `message=Invalid amount, amount=${amount}`)
             return Promise.reject('Invalid amount')
         }
+        const contract: Contract = await this.web3Service.getWalletContract()
 
-        // TODO: Abstract out to service
-        const account = (await this.web3Service.Web3.eth.getAccounts())[0]
-
-        // TODO: Abstract contract retrieval to service
-        const contract: Contract = new this.web3Service.Web3.eth.Contract(await getWalletAbi(), walletAddress)
-        return contract.methods.deposit().send({
-            from: account,
-            gas: 4712388,
-            gasPrice: '12388',
-            value: 500
-            // TODO: Create single handler for these transactions
-        }).then((response: ITransactionResponse) => {
-            if (!response || !response.transactionHash) {
-                Logger.error(Context.DEPOSIT_FUNDS, 'message=Unknown error occurred during transaction')
-                return Promise.reject('An error occurred')
-            }
-
-            Logger.info(Context.DEPOSIT_FUNDS, 'message=Transaction succeeded')
-            return Promise.resolve()
-        }).catch(error => {
-            Logger.error(Context.DEPOSIT_FUNDS, `message=An error occurred, error=${JSON.stringify(error)}`)
-            return Promise.reject(error)
-        })
+        return this.transactionResponseHandler(
+            contract.methods.deposit().send({
+                from: this.userAccount,
+                gas: 4712388,
+                gasPrice: '12388',
+                value: 500
+            }), Context.DEPOSIT_FUNDS)
     }
 
     /**
@@ -80,40 +75,85 @@ export class Lendroid {
             return Promise.reject('Invalid amount')
         }
 
-        const account = (await this.web3Service.Web3.eth.getAccounts())[0]
+        const contract: Contract = await this.web3Service.getWalletContract()
 
-        const contract: Contract = new this.web3Service.Web3.eth.Contract(await getWalletAbi(), walletAddress)
-        return contract.methods.commitFunds(wethAddress, amount).send({
-            from: account,
-            gas: 4712388,
-            gasPrice: '12388',
-            value: 500
-        }).then((response: ITransactionResponse) => {
+        return this.transactionResponseHandler(
+            contract.methods.commitFunds(wethAddress, amount).send({
+                from: this.userAccount,
+                gas: 4712388,
+                gasPrice: '12388',
+                value: 50
+            }), Context.COMMIT_FUNDS)
+    }
+
+    /**
+     * Helper method to handle a transaction response
+     */
+    private transactionResponseHandler(promise: Promise<ITransactionResponse>, loggerContext: Context): Promise<void> {
+        return promise.then(response => {
             if (!response || !response.transactionHash) {
-                Logger.error(Context.COMMIT_FUNDS, 'message=Unknown error occurred during transaction')
+                Logger.error(loggerContext, 'message=Unknown error occurred during transaction')
                 return Promise.reject('An error occurred')
             }
 
-            Logger.info(Context.COMMIT_FUNDS, 'message=Transaction succeeded')
+            Logger.info(loggerContext, 'message=Transaction succeeded')
             return Promise.resolve()
         }).catch(error => {
-            Logger.error(Context.COMMIT_FUNDS, `message=An error occurred, error=${JSON.stringify(error)}`)
+            Logger.error(loggerContext, `message=An error occurred, error=${JSON.stringify(error)}`)
             return Promise.reject(error)
         })
     }
 
+    /**
+     * Helper method to handle a balance query response
+     */
+    private balanceResponseHandler(promise: Promise<number>, loggerContext: Context): Promise<number> {
+        return promise
+            .catch(error => {
+                Logger.error(loggerContext, `message=An error occurred while fetching balance, error=${JSON.stringify(error)}`)
+                return Promise.reject(error)
+            })
+    }
+
+    // TODO: Stub
+    // orderAddresses index order: lender, trader, lenderToken, traderToken, wranglerAddress
+    // orderValues index order: lenderTokenAmount, traderTokenAmount, lenderFee, traderFee, expirationTimeStampInSec, salt
     public async openPosition(orderValues: string [], orderAddresses: string [], offerValues: string [], orderV: string,
                               orderRS: string [], offerAddresses: string[]): Promise<void> {
         return Promise.resolve()
     }
 
 
-    public async getBalance() {
-        const account = (await this.web3Service.Web3.eth.getAccounts())[0]
-        const contract: Contract = new this.web3Service.Web3.eth.Contract(await getWalletAbi(), walletAddress)
+    /**
+     * Retrieves the user's total balance committed for trading or lending
+     */
+    public async getCashBalance(token: Token = Token.OMG): Promise<number> {
+        const contract: Contract = await this.web3Service.getWalletContract()
+        return this.balanceResponseHandler(contract.methods.getCashBalance(token).call({ from: this.userAccount }), Context.GET_CASH_BALANCE)
+    }
 
-        contract.methods.getBalance('0xcc2704ce33089d0f051eb0aff1750bb99fdfab46').call({ from: account })
-            .then(result => console.log('\nHERE', result))
+    /**
+     * Retrieves a trader's locked balance on a position or a lender's locked balance in a loan
+     */
+    public async getLockedBalance(token: Token = Token.OMG): Promise<number> {
+        const contract: Contract = await this.web3Service.getWalletContract()
+        return this.balanceResponseHandler(contract.methods.getLockedBalance(token).call({ from: this.userAccount }), Context.GET_LOCKED_BALANCE)
+    }
+
+    /**
+     * Retrieves a trader's position balance
+     */
+    public async getPositionBalance(token: Token = Token.OMG): Promise<number> {
+        const contract: Contract = await this.web3Service.getWalletContract()
+        return this.balanceResponseHandler(contract.methods.getPositionBalance(token).call({ from: this.userAccount }), Context.GET_POSITION_BALANCE)
+    }
+
+    /**
+     * Retrieves the user's total withdrawable balance that has not been committed for lending/trading or is not locked in a loan/trade
+     */
+    public async getWithdrawableBalance(token: Token = Token.OMG) {
+        const contract: Contract = await this.web3Service.getWalletContract()
+        return this.balanceResponseHandler(contract.methods.getBalance(token).call({ from: this.userAccount }), Context.GET_WITHDRAWABLE_BALANCE)
     }
 }
 

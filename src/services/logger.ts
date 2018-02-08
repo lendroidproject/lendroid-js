@@ -28,5 +28,9 @@ export enum Context {
     DEPOSIT_FUNDS = 'DepositFunds',
     WEBPACK = 'Webpack',
     WEB3 = 'Web3',
-    COMMIT_FUNDS = 'CommitFunds'
+    COMMIT_FUNDS = 'CommitFunds',
+    GET_WITHDRAWABLE_BALANCE = 'GetWithdrawableBalance',
+    GET_POSITION_BALANCE = 'GetPositionBalance',
+    GET_CASH_BALANCE = 'GetCashBalance',
+    GET_LOCKED_BALANCE = 'GetLockedBalance'
 }
