@@ -9,12 +9,11 @@ import 'isomorphic-fetch'
 import { ILoanOffer, ILoanOfferWithSignature } from './types/loan-offer'
 
 /**
- * Initializes the Web3 provider
+ * Initializes the Web3 provider (for manual testing via Webpack)
  */
 export const startApp = () => {
     const lendroid = new Lendroid()
-    // lendroid.depositFunds(55)
-    lendroid.createLoanOffer(TokenName.ETH, 500, 0.12, TokenName.ETH)
+    lendroid.depositFunds(55)
 }
 
 /**
@@ -22,7 +21,7 @@ export const startApp = () => {
  */
 export class Lendroid {
 
-    private API_ENDPOINT = 'https://requestb.in/106fqgl1'
+    private API_ENDPOINT = 'http://backend-server.lendroid.com/offers'
     // @ts-ignore
     private web3Service = new Web3Service((window as any).web3.currentProvider)
 
