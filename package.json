@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "description": "",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf ./dist; tsc",
     "clean": "rm -rf ./dist && rm -rf node_modules ",
     "clean-install": "npm run clean && npm install",
     "lint": "tslint './src/**/*.ts' -p . -c tslint.json",
     "start": "webpack-dev-server --inline --hot",
-    "test": "clear; mocha --harmony dist/test/**/*.js",
-    "unit-test": "clear; mocha --harmony dist/test/unit/**/*.js",
-    "watch": "rm -rf ./dist && npm run lint && tsc --watch",
-    "webpack": "webpack --config webpack.config.js"
+    "integration": "clear; mocha --harmony ./dist/test/integration/**/*.js",
+    "unit": "clear; mocha --harmony .dist/test/unit/**/*.js",
+    "test": "clear; mocha --harmony ./dist/test/**/lendroid.js",
+    "watch": "rm -rf ./dist && tsc --watch",
+    "webpack": "rm -rf dist; webpack --config webpack.config.js"
   },
   "author": "lendroid",
   "license": "ISC",

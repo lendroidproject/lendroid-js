@@ -1,17 +1,27 @@
 # lendroid-js
 A library to wrapper the lendroid Server and Lendroid Contract API's
 
-To run:
+Pre-reqs:
 
 `npm install`
 
 `npm install -g tslint`
 
+To serve app on localhost:8080:
+
 `npm start` (serves files via Webpack, compiles on file changes)
+
+To watch and compile TypeScript to Javascript:
+
+`npm run watch`
 
 To build:
 
 `npm run build`
+
+To test:
+
+`npm run test`
 
 ## On the Lendroid UI
   1. On Lendroid UI, Lender deposits 1000 OMG.

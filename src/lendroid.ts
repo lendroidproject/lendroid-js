@@ -13,7 +13,7 @@ import { ILoanOffer, ILoanOfferWithSignature } from './types/loan-offer'
  */
 export const startApp = () => {
     const lendroid = new Lendroid()
-    lendroid.depositFunds(55)
+    lendroid.getWithdrawableBalance().then(console.log)
 }
 
 /**
@@ -22,12 +22,15 @@ export const startApp = () => {
 export class Lendroid {
 
     private API_ENDPOINT = 'http://backend-server.lendroid.com/offers'
-    // @ts-ignore
-    private web3Service = new Web3Service((window as any).web3.currentProvider)
+    private web3Service: Web3Service
 
     constructor(apiEndpoint?, provider?: t.Provider | string) {
         if (provider) {
+            // User-provided provider
             this.web3Service = new Web3Service(provider)
+        } else {
+            // Attempting to load Metamask
+            this.web3Service = new Web3Service((window as any).web3.currentProvider)
         }
 
         if (apiEndpoint) {
@@ -144,18 +147,44 @@ export class Lendroid {
      * Helper method to handle a transaction response
      */
     private transactionResponseHandler(promise: Promise<ITransactionResponse>, loggerContext: Context): Promise<void> {
-        return promise.then(response => {
+        return promise.then(async response => {
             if (!response || !response.transactionHash) {
                 Logger.error(loggerContext, 'message=Unknown error occurred during transaction')
                 return Promise.reject('An error occurred')
             }
 
-            Logger.info(loggerContext, 'message=Transaction succeeded')
+            Logger.info(loggerContext, `message=Transaction processed, transactionHash=${response.transactionHash}`)
+            await this.printTransactionSuccess(response.transactionHash, loggerContext)
             return Promise.resolve()
         }).catch(error => {
             Logger.error(loggerContext, `message = An error occurred, error = ${JSON.stringify(error)}`)
             return Promise.reject(error)
         })
+    }
+
+    /**
+     * Checks the network for 20 seconds at half second intervals for a successful receipt of a transaction
+     * (The average transaction time on Mainnet is ~20 seconds)
+     * Stops checking on first successful transaction receipt
+     */
+    private async printTransactionSuccess(transactionHash: string, loggerContext: Context): Promise<void> {
+        let numTries = 0
+        const timeoutMilliseconds = 500
+        const transactionTimeMilliseconds = 20000
+        const maxTries = transactionTimeMilliseconds / timeoutMilliseconds
+
+        const timer = setInterval(async () => {
+            this.web3Service.Web3.eth.getTransactionReceipt(transactionHash)
+                .then(receipt => {
+                    if (receipt.status === 1) {
+                        Logger.info(loggerContext, `message=Transaction successful, transactionHash=${transactionHash}`)
+                        clearInterval(timer)
+                    } else if (++numTries === maxTries) {
+                        Logger.error(loggerContext, `message=Transaction success could not be detected, transactionHash=${transactionHash}`)
+                        clearInterval(timer)
+                    }
+                })
+        }, timeoutMilliseconds)
     }
 
     /**
@@ -209,6 +238,8 @@ export class Lendroid {
         const contract: Contract = await this.web3Service.walletContract()
         return this.balanceResponseHandler(contract.methods.getBalance(token).call({ from: await this.web3Service.userAccount() }), Context.GET_WITHDRAWABLE_BALANCE)
     }
-}
 
-export const lendroid = new Lendroid()
+    get Web3() {
+        return this.web3Service.Web3
+    }
+}

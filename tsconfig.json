@@ -15,7 +15,7 @@
     "declaration": true,
     "experimentalDecorators": true,
     "noImplicitReturns": true,
-    "strictPropertyInitialization": true,
+    "strictPropertyInitialization": false,
     "outDir": "./dist",
     "pretty": true,
     "rootDir": "./src"
