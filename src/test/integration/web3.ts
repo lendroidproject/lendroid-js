@@ -1,7 +1,6 @@
 import * as chai from 'chai'
 import * as ganache from 'ganache-cli'
 import Web3 = require("web3")
-import { walletABI, walletByteCode } from '../util/constants'
 
 const expect = chai.expect
 
@@ -44,49 +43,49 @@ describe('testing web3 functionality', () => {
         expect(parseInt(await web3.eth.getBalance(testAccount))).to.eq(transferValue)
     })
 
-    it('should successfully interact with a deployed contract', async () => {
-        // @ts-ignore
-        const web3 = new Web3(ganache.provider({
-            locked: false,
-            unlocked_accounts: [0],
-            total_accounts: 1
-        }))
-        const testAccount: string = (await web3.eth.getAccounts())[0]
-        await web3.eth.personal.unlockAccount(testAccount, password)
-
-        let contract = new web3.eth.Contract(walletABI)
-
-        return contract.deploy({ data: walletByteCode })
-            .send({
-                from: testAccount,
-                gas: 4712388,
-                gasPrice: '12388'
-            })
-            .on('error', console.log)
-            .on('receipt', receipt => expect(receipt.contractAddress).not.be.null)
-            .then(deployedContract => contract = deployedContract)
-            .then(async contract => {
-                contract.setProvider(ganache.provider({
-                    locked: false,
-                    unlocked_accounts: [0],
-                    total_accounts: 1
-                }))
-
-                await web3.eth.personal.unlockAccount(testAccount, password)
-                // Making sure that accounts have not been overwritten
-                expect((await web3.eth.getAccounts())[0]).to.eq(testAccount)
-
-                // .send can modify contract state unlike .call
-                // return contract.methods.deposit().send({
-                //     from: testAccount,
-                //     gas: 4712388,
-                //     gasPrice: '12388',
-                //     value: 500
-                // })
-            }).then(() => {
-                // .call cannot modify contract state, can only call constant functions
-                contract.methods.getBalance('0xcc2704ce33089d0f051eb0aff1750bb99fdfab46').call({ from: testAccount })
-                    .then(result => console.log('\nHERE', result))
-            })
-    })
+    // it('should successfully interact with a deployed contract', async () => {
+    //     // @ts-ignore
+    //     const web3 = new Web3(ganache.provider({
+    //         locked: false,
+    //         unlocked_accounts: [0],
+    //         total_accounts: 1
+    //     }))
+    //     const testAccount: string = (await web3.eth.getAccounts())[0]
+    //     await web3.eth.personal.unlockAccount(testAccount, password)
+    //
+    //     let contract = new web3.eth.Contract(walletABI)
+    //
+    //     return contract.deploy({ data: walletByteCode })
+    //         .send({
+    //             from: testAccount,
+    //             gas: 4712388,
+    //             gasPrice: '12388'
+    //         })
+    //         .on('error', console.log)
+    //         .on('receipt', receipt => expect(receipt.contractAddress).not.be.null)
+    //         .then(deployedContract => contract = deployedContract)
+    //         .then(async contract => {
+    //             contract.setProvider(ganache.provider({
+    //                 locked: false,
+    //                 unlocked_accounts: [0],
+    //                 total_accounts: 1
+    //             }))
+    //
+    //             await web3.eth.personal.unlockAccount(testAccount, password)
+    //             // Making sure that accounts have not been overwritten
+    //             expect((await web3.eth.getAccounts())[0]).to.eq(testAccount)
+    //
+    //             // .send can modify contract state unlike .call
+    //             // return contract.methods.deposit().send({
+    //             //     from: testAccount,
+    //             //     gas: 4712388,
+    //             //     gasPrice: '12388',
+    //             //     value: 500
+    //             // })
+    //         }).then(() => {
+    //             // .call cannot modify contract state, can only call constant functions
+    //             contract.methods.getBalance('0xcc2704ce33089d0f051eb0aff1750bb99fdfab46').call({ from: testAccount })
+    //                 .then(result => console.log('\nHERE', result))
+    //         })
+    // })
 })

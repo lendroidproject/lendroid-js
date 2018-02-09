@@ -5,12 +5,13 @@ import { Contract } from 'web3/types'
 import { getWalletAbi, walletAddress } from '../constants/deployed-constants'
 import { ILoanOffer } from '../types/loan-offer'
 
+/**
+ * Provides functionality that requires access to Web3. Also exposes the Web3 object for running built-in functions
+ */
 export class Web3Service {
 
     private _web3
-    // @ts-ignore
     private _walletContract: Contract
-    // @ts-ignore
     private _userAccount: string
 
     constructor(provider: t.Provider | string) {
