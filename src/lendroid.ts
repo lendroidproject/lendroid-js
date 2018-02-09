@@ -7,6 +7,8 @@ import * as t from 'web3/types'
 import { ITransactionResponse } from './types/transaction-response'
 import 'isomorphic-fetch'
 import { ILoanOffer, ILoanOfferWithSignature } from './types/loan-offer'
+import * as moment from 'moment'
+import { extractR, extractS, extractV } from './services/utils'
 
 /**
  * Initializes the Web3 provider (for manual testing via Webpack)
@@ -86,9 +88,13 @@ export class Lendroid {
     /**
      * Fetches available loan offers from server
      */
-    public getLoanOffers(): Promise<ILoanOffer> {
+    public getLoanOffers(): Promise<ILoanOfferWithSignature []> {
         return fetch(this.API_ENDPOINT)
             .then(response => response.json())
+            .catch(error => {
+                Logger.error(Context.GET_LOAN_OFFERS, `message=An error occurred, error=${error}`)
+                return []
+            })
     }
 
     /**
@@ -154,7 +160,7 @@ export class Lendroid {
             }
 
             Logger.info(loggerContext, `message=Transaction processed, transactionHash=${response.transactionHash}`)
-            await this.printTransactionSuccess(response.transactionHash, loggerContext)
+            this.printTransactionSuccess(response.transactionHash, loggerContext)
             return Promise.resolve()
         }).catch(error => {
             Logger.error(loggerContext, `message = An error occurred, error = ${JSON.stringify(error)}`)
@@ -199,11 +205,41 @@ export class Lendroid {
     }
 
     // TODO: Stub
-    // orderAddresses index order: lender, trader, lenderToken, traderToken, wranglerAddress
-    // orderValues index order: lenderTokenAmount, traderTokenAmount, lenderFee, traderFee, expirationTimeStampInSec, salt
-    public async openPosition(orderValues: string [], orderAddresses: string [], offerValues: string [], orderV: string,
-                              orderRS: string [], offerAddresses: string[]): Promise<void> {
-        return Promise.resolve()
+    // orderAddresses index order: 0:lender, 1:trader, 2:lenderToken, 3:traderToken, 4:wranglerAddress
+    // orderValues index order: 0:lenderTokenAmount, 1:traderTokenAmount, 2:lenderFee, 3:traderFee, 4:expirationTimeStampInSec, 5:salt
+    public async openMarginTradingPosition(offer: ILoanOfferWithSignature, orderFillAmount: number, traderToken: string = TokenName.ETH, wranglerAddress: string = ''): Promise<void> {
+        const orderAddresses: string [] = []
+        const orderValues: number [] = []
+        const secondsInDay = 86400
+        const expiryDate = moment.utc().add(1, 'day').format('DD-MMM-YYYY')
+        const v = extractV(offer.ecSignature)
+        const r = extractR(offer.ecSignature)
+        const s = extractS(offer.ecSignature)
+
+        orderAddresses[0] = offer.lenderAddress
+        orderAddresses[1] = await this.web3Service.userAccount()
+        orderAddresses[2] = TokenAddress[offer.loanToken]
+        orderAddresses[3] = traderToken
+        orderAddresses[4] = wranglerAddress
+
+        orderValues[0] = offer.loanQuantity
+        orderValues[1] = offer.costAmount
+        orderValues[2] = 0.01
+        // TODO: Where does the trader fee come from?
+        orderValues[3] = 0
+        orderValues[4] = secondsInDay
+        // TODO: Generate secure salt
+        orderValues[5] = 2134087123412
+
+        const contract: Contract = await this.web3Service.positionManagerContract()
+        return this.transactionResponseHandler
+        (contract.methods.openPosition(orderValues, orderValues, v, r, s, expiryDate, offer.tokenPair, offer.ecSignature, orderFillAmount)
+            .send({
+                from: await this.web3Service.userAccount(),
+                gas: 4712388,
+                gasPrice: '12388',
+                value: 50
+            }), Context.WEB3)
     }
 
 

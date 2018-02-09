@@ -2,7 +2,7 @@ import * as t from 'web3/types'
 import Web3 = require("web3")
 import { Context, Logger } from './logger'
 import { Contract } from 'web3/types'
-import { getWalletAbi, walletAddress } from '../constants/deployed-constants'
+import { getPositionManagerABI, getWalletAbi, walletAddress } from '../constants/deployed-constants'
 import { ILoanOffer } from '../types/loan-offer'
 
 /**
@@ -58,6 +58,18 @@ export class Web3Service {
             }
         }
         return this._walletContract
+    }
+
+    /**
+     * Returns a PositionManager Contract object
+     */
+    public async positionManagerContract(): Promise<Contract> {
+        try {
+            return new this._web3.eth.Contract(await getPositionManagerABI(), walletAddress)
+        } catch (error) {
+            Logger.error(Context.WEB3, `message=Error creating wallet object, error=${error}`)
+            throw Error(error)
+        }
     }
 
     /**
