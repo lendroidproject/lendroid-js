@@ -53,7 +53,7 @@ To test:
      *  Method Signature: `lendroidJS.createOffer(loanTerms)`
      *  HTTP Signature:
         ```curl
-        curl -v -XPOST  http://localhost:9001/offers \
+        curl -v -XPOST  http://localhost:8080/offers \
         -H 'application/json' \
         -d @- << EOF
          {  
@@ -78,7 +78,7 @@ To test:
      * Method Signature: `lendroidJS.getOffers()`
      * HTTP Signature:
        ```
-       curl -v -XGET  http://localhost:9001/offers
+       curl -v -XGET  http://localhost:8090/offers
        ```
   2. Sends the picked pair of (0x order, loan offer) to Lendroid’s Smart Contracts via Web3.js to open a position.
      * Contract Code: [PositionManager.openPosition](https://github.com/gedanziger/lendroid-protcol-private/blob/AddDockerSupport/src/PositionManager.sol))
