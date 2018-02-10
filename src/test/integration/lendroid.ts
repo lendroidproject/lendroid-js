@@ -1,15 +1,19 @@
 import * as chai from 'chai'
+import 'mocha'
 import * as ganache from 'ganache-cli'
 import { deployWalletContract, IDeployedContractResponse } from '../util/utils'
 import { Contract, TransactionReceipt } from 'web3/types'
 import { Lendroid } from '../../lendroid'
+import { Context } from '../../services/logger'
 
 const expect = chai.expect
 
 // Password for newly generated accounts in testing
 const password = 'password'
 
-describe('Lendroid', () => {
+describe('Lendroid', function () {
+    this.timeout(6000)
+
     const lendroid = new Lendroid('', ganache.provider({
         locked: false,
         total_accounts: 1
@@ -30,12 +34,12 @@ describe('Lendroid', () => {
     })
 
     it('successfully executes the deposit() function', async () => {
-        const deposit = 50
+        const deposit = 50000000000000444556777888
 
-        await lendroid.depositFunds(deposit)
+        const transactionHash = await lendroid.depositFunds(deposit)
 
-        setTimeout(async () => {
-            expect(await lendroid.getWithdrawableBalance()).to.equal(deposit)
-        }, 8000)
+        await lendroid.ensureTransactionSuccess(transactionHash, Context.GET_LOAN_OFFERS)
+
+        expect(await lendroid.getWithdrawableBalance()).to.equal(deposit)
     })
 })

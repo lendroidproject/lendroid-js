@@ -16,12 +16,12 @@ export class Web3Service {
 
     constructor(provider: t.Provider | string) {
         if (!provider || (typeof provider === 'string' && !(provider.includes('localhost:') || provider.includes('127.0.0.1:')))) {
-            Logger.info(Context.WEBPACK, `message=Invalid Web3 provider, provider=${provider}`)
+            Logger.info(Context.WEB3, `message=Invalid Web3 provider, provider=${provider}`)
             throw new Error('Invalid Web3 provider')
         } else {
             // @ts-ignore
             this._web3 = new Web3(provider)
-            Logger.info(Context.WEBPACK, `message=Successfully connected`)
+            Logger.info(Context.WEB3, `message=Successfully connected`)
         }
     }
 
