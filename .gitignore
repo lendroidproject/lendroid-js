@@ -24,3 +24,5 @@ node_modules/
 # Optional npm cache directory
 .npm
 
+# Index file for Webpack deployment & testing
+index.ts

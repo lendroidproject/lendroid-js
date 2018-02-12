@@ -1,4 +1,7 @@
-import { startApp } from './lendroid'
+import { Lendroid } from './lendroid'
+import { TokenName } from './constants/tokens'
 
-console.log('HELLO WORLD')
-startApp()
+
+const lendroid = new Lendroid({})
+lendroid.depositFunds(55, TokenName.ETH)
+    .catch()
