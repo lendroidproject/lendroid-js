@@ -9,6 +9,8 @@ Pre-reqs:
 
 To serve app on localhost:8080:
 
+Create an index.ts under src. This will be executed on Webpack server initialization
+
 `npm start` (serves files via Webpack, compiles on file changes)
 
 To watch and compile TypeScript to Javascript:

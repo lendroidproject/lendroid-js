@@ -1,8 +1,8 @@
 import { TokenAddress, TokenName } from './constants/tokens'
 import { Context, Logger } from './services/logger'
 import { Web3Service } from './services/web3-service'
-import { Contract, TransactionReceipt } from 'web3/types'
-import { wethAddress } from './constants/deployed-constants'
+import { Contract } from 'web3/types'
+import { DeployedConstants, IDeployConstantInitParams } from './constants/deployed-constants'
 import * as t from 'web3/types'
 import { ITransactionResponse } from './types/transaction-response'
 import 'isomorphic-fetch'
@@ -11,34 +11,35 @@ import * as moment from 'moment'
 import { extractR, extractS, extractV } from './services/utils'
 import { IZeroExOrder } from './types/0x-order'
 
-/**
- * Initializes the Web3 provider (for manual testing via Webpack)
- */
-export const startApp = () => {
-    const lendroid = new Lendroid()
-    lendroid.depositFunds(5)
+export interface ILendroidInitParams {
+    // Endpoint of local or remote backend server for order related calls
+    apiEndpoint?: string
+    // Web3 provider or local http link to node
+    provider?: t.Provider | string
+    // Parameters to initialize deployed contract details
+    deployedConstants?: IDeployConstantInitParams
 }
 
 /**
- * TODO
+ * Entry-point for all functions
+ * TODO: Break up into sub-domains like Web3
  */
 export class Lendroid {
 
-    private API_ENDPOINT = 'http://backend-server.lendroid.com/offers'
+    private API_ENDPOINT: string
     private web3Service: Web3Service
+    private _deployedConstants: DeployedConstants
 
-    constructor(apiEndpoint?, provider?: t.Provider | string) {
-        if (provider) {
-            // User-provided provider
-            this.web3Service = new Web3Service(provider)
+    constructor(params: ILendroidInitParams) {
+        this._deployedConstants = new DeployedConstants(params.deployedConstants || {})
+        this.API_ENDPOINT = params.apiEndpoint || 'http://localhost:8080'
+
+        if (params.provider) {
+            // User-provided Web3 provider
+            this.web3Service = new Web3Service(params.provider, this._deployedConstants)
         } else {
             // Attempting to load Metamask
-            this.web3Service = new Web3Service((window as any).web3.currentProvider)
-            // this.web3Service = new Web3Service('http://localhost:8545')
-        }
-
-        if (apiEndpoint) {
-            this.API_ENDPOINT = apiEndpoint
+            this.web3Service = new Web3Service((window as any).web3.currentProvider, this._deployedConstants)
         }
     }
 
@@ -118,11 +119,11 @@ export class Lendroid {
      * Wallet Smart Contract
      * @returns Transaction hash
      */
-    public async depositFunds(amount: number, token: string = TokenName.OMG): Promise<string> {
+    public async depositFunds(amount: number, token: string): Promise<string> {
         Logger.log(Context.DEPOSIT_FUNDS, `message=Depositing ${amount} for ${token}`)
 
-        if (amount <= 0) {
-            Logger.error(Context.DEPOSIT_FUNDS, `message=Invalid amount, amount=${amount}`)
+        if (amount <= 0 || !token) {
+            Logger.error(Context.DEPOSIT_FUNDS, `message=Invalid params, amount=${amount}, token=${token}`)
             return Promise.reject('Invalid amount')
         } else if (!TokenName[token]) {
             Logger.error(Context.DEPOSIT_FUNDS, `message=Invalid token, token=${token}`)
@@ -145,11 +146,11 @@ export class Lendroid {
      * TODO: Test amount > deposited funds
      * @returns Transaction hash
      */
-    public async commitFunds(amount: number, token: string = TokenName.OMG): Promise<string> {
+    public async commitFunds(amount: number, token: string): Promise<string> {
         Logger.log(Context.COMMIT_FUNDS, `message=Committing ${amount} for ${token}`)
 
-        if (amount <= 0) {
-            Logger.error(Context.COMMIT_FUNDS, `message=Invalid amount, amount= ${amount}`)
+        if (amount <= 0 || !token) {
+            Logger.error(Context.COMMIT_FUNDS, `message=Invalid params, amount=${amount}, token=${token}`)
             return Promise.reject('Invalid amount')
         } else if (!TokenName[token]) {
             Logger.error(Context.COMMIT_FUNDS, `message=Invalid token, token= ${token}`)
@@ -159,7 +160,7 @@ export class Lendroid {
         const contract: Contract = await this.web3Service.walletContract()
 
         return this.transactionResponseHandler(
-            contract.methods.commitFunds(wethAddress, amount).send({
+            contract.methods.commitFunds(this._deployedConstants.getWethAddress(), amount).send({
                 from: await this.web3Service.userAccount(),
                 gas: 4712388,
                 gasPrice: '12388',
@@ -331,6 +332,10 @@ export class Lendroid {
         return this.web3Service.Web3
     }
 
+    get deployedConstants(): DeployedConstants {
+        return this._deployedConstants
+    }
+
     /**
      * Returns all tokens supported by the platform
      */
@@ -346,6 +351,6 @@ export class Lendroid {
      * Returns address associated with @param token
      */
     public getTokenAddress(token: string): string {
-        return token ? TokenAddress[token.toUpperCase()] : 'Unsupported Token'
+        return token ? TokenAddress[token.toUpperCase()] : ''
     }
 }

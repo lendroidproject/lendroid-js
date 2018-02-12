@@ -2,8 +2,8 @@ import * as t from 'web3/types'
 import Web3 = require("web3")
 import { Context, Logger } from './logger'
 import { Contract } from 'web3/types'
-import { getPositionManagerABI, getWalletAbi, walletAddress } from '../constants/deployed-constants'
 import { ILoanOffer } from '../types/loan-offer'
+import { DeployedConstants } from '../constants/deployed-constants'
 
 /**
  * Provides functionality that requires access to Web3. Also exposes the Web3 object for running built-in functions
@@ -13,8 +13,9 @@ export class Web3Service {
     private _web3
     private _walletContract: Contract
     private _userAccount: string
+    private deployedConstants: DeployedConstants
 
-    constructor(provider: t.Provider | string) {
+    constructor(provider: t.Provider | string, deployedContants: DeployedConstants) {
         if (!provider || (typeof provider === 'string' && !(provider.includes('localhost:') || provider.includes('127.0.0.1:')))) {
             Logger.info(Context.WEB3, `message=Invalid Web3 provider, provider=${provider}`)
             throw new Error('Invalid Web3 provider')
@@ -23,6 +24,7 @@ export class Web3Service {
             this._web3 = new Web3(provider)
             Logger.info(Context.WEB3, `message=Successfully connected`)
         }
+        this.deployedConstants = deployedContants
     }
 
     get Web3() {
@@ -51,7 +53,7 @@ export class Web3Service {
     public async walletContract(): Promise<Contract> {
         if (!this._walletContract) {
             try {
-                this._walletContract = new this._web3.eth.Contract(await getWalletAbi(), walletAddress)
+                this._walletContract = new this._web3.eth.Contract(await this.deployedConstants.getWalletAbi(), this.deployedConstants.getWalletAddress())
             } catch (error) {
                 Logger.error(Context.WEB3, `message=Error creating wallet object, error=${error}`)
                 throw Error(error)
@@ -65,7 +67,7 @@ export class Web3Service {
      */
     public async positionManagerContract(): Promise<Contract> {
         try {
-            return new this._web3.eth.Contract(await getPositionManagerABI(), walletAddress)
+            return new this._web3.eth.Contract(await this.deployedConstants.getPositionManagerAbi(), this.deployedConstants.getWalletAddress())
         } catch (error) {
             Logger.error(Context.WEB3, `message=Error creating wallet object, error=${error}`)
             throw Error(error)
