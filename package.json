@@ -1,16 +1,19 @@
 {
-  "name": "lendroid-js",
+  "name": "lendroid",
   "version": "0.1.0",
-  "description": "",
+  "description": "Web3.js wrapper that interacts with Lendroid Smart Contracts",
+  "repository": "https://github.com/norestlabs/lendroid-js",
+  "bugs": "https://github.com/norestlabs/lendroid-js/issues",
+  "main": "dist/lendroid.js",
   "scripts": {
     "build": "rm -rf ./dist; tsc",
     "clean": "rm -rf ./dist && rm -rf node_modules ",
     "clean-install": "npm run clean && npm install",
     "lint": "tslint './src/**/*.ts' -p . -c tslint.json",
     "start": "webpack-dev-server --inline --hot",
-    "integration": "clear; mocha --harmony ./dist/test/integration/**/*.js",
+    "integration": "clear; npm run build && mocha --harmony ./dist/test/integration/**/*.js",
     "unit": "clear; mocha --harmony .dist/test/unit/**/*.js",
-    "test": "clear; mocha --harmony ./dist/test/**/lendroid.js",
+    "test": "npm run build; clear; mocha --harmony ./dist/test/**/lendroid.js",
     "watch": "rm -rf ./dist && tsc --watch",
     "webpack": "rm -rf dist; webpack --config webpack.config.js"
   },
