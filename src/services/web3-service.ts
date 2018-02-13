@@ -54,12 +54,25 @@ export class Web3Service {
         if (!this._walletContract) {
             try {
                 this._walletContract = new this._web3.eth.Contract(await this.deployedConstants.getWalletAbi(), this.deployedConstants.getWalletAddress())
+                return this._walletContract
             } catch (error) {
-                Logger.error(Context.WEB3, `message=Error creating wallet object, error=${error}`)
+                Logger.error(Context.WEB3, `message=Error creating wallet contract instance, error=${error}`)
                 throw Error(error)
             }
         }
         return this._walletContract
+    }
+
+    /**
+     * Returns an ERC20 Contract instance
+     */
+    public async ERC20Contract(tokenAddress: string): Promise<Contract> {
+        try {
+            return new this._web3.eth.Contract(await this.deployedConstants.getERC20Abi(), tokenAddress)
+        } catch (error) {
+            Logger.error(Context.WEB3, `message=Error creating ERC20 contract instance, error=${error}, tokenAddress=${tokenAddress}`)
+            throw Error(error)
+        }
     }
 
     /**
@@ -83,5 +96,15 @@ export class Web3Service {
                 Logger.error(Context.SIGN_LOAN_OFFER, `message=An error occurred, error=${error}`)
                 throw Error(error)
             })
+    }
+
+    /**
+     * Gets a user's balance in the ERC20 token at @param tokenAddress
+     */
+    public async getUserBalance(tokenAddress: string): Promise<number> {
+        const contract = await this.ERC20Contract(tokenAddress)
+        return contract.methods.balanceOf(await this.userAccount()).call({
+            from: await this.userAccount()
+        })
     }
 }

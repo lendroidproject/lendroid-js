@@ -8,8 +8,9 @@ import { ITransactionResponse } from './types/transaction-response'
 import 'isomorphic-fetch'
 import { ILoanOffer, ILoanOfferWithSignature } from './types/loan-offer'
 import * as moment from 'moment'
-import { extractR, extractS, extractV } from './services/utils'
+import { extractR, extractS, extractV, toBigNumber } from './services/utils'
 import { IZeroExOrder } from './types/0x-order'
+import * as axios from 'axios'
 
 export interface ILendroidInitParams {
     // Endpoint of local or remote backend server for order related calls
@@ -32,7 +33,7 @@ export class Lendroid {
 
     constructor(params: ILendroidInitParams) {
         this._deployedConstants = new DeployedConstants(params.deployedConstants || {})
-        this.API_ENDPOINT = params.apiEndpoint || 'http://localhost:8080'
+        this.API_ENDPOINT = params.apiEndpoint || 'http://localhost:8080/offers'
 
         if (params.provider) {
             // User-provided Web3 provider
@@ -46,7 +47,7 @@ export class Lendroid {
     /**
      *
      */
-    public async createLoanOffer(loanTokenSymbol: string, loanTokenAmount: number, loanCostTokenAmount: number, loanCostTokenSymbol: string, loanInterestAmount: number): Promise<void> {
+    public async createLoanOffer(loanTokenSymbol: string, loanTokenAmount: number, loanCostTokenAmount: number, loanCostTokenSymbol: string, loanInterestTokenAmount: number): Promise<void> {
         if (!loanTokenSymbol || !loanCostTokenSymbol) {
             Logger.error(Context.CREATE_LOAN_OFFER, `message=Undefined token(s), loanToken=${loanTokenSymbol}, quoteToken=${loanCostTokenSymbol}`)
             return Promise.reject('')
@@ -72,13 +73,13 @@ export class Lendroid {
             lenderAddress: await this.web3Service.userAccount(),
             market: `${loanTokenSymbol}/${loanCostTokenSymbol}`,
             loanTokenAddress: TokenAddress[loanTokenSymbol],
-            loanTokenAmount,
+            loanTokenAmount: toBigNumber(loanTokenAmount),
             loanTokenSymbol,
             loanCostTokenAddress: TokenAddress[loanCostTokenSymbol],
-            loanCostTokenAmount,
+            loanCostTokenAmount: toBigNumber(loanCostTokenAmount),
             loanCostTokenSymbol,
             loanInterestTokenAddress: TokenAddress[loanCostTokenSymbol],
-            loanInterestAmount,
+            loanInterestTokenAmount: toBigNumber(loanInterestTokenAmount),
             loanInterestTokenSymbol: loanCostTokenSymbol
         }
 
@@ -88,14 +89,9 @@ export class Lendroid {
         const loanOfferToSend: ILoanOfferWithSignature = { ...loanOfferToSign, ecSignature }
 
         // TODO: Address CORS
-        return fetch(this.API_ENDPOINT,
-            {
-                method: 'POST',
-                body: JSON.stringify(loanOfferToSend),
-                headers: new Headers({ 'Content-Type': 'application/json' }),
-                mode: 'no-cors'
-            })
-            .then(response => response.json())
+        // @ts-ignore
+        return axios.post(this.API_ENDPOINT, loanOfferToSend)
+        // .then(response => response.json())
             .then(response => Logger.info(Context.CREATE_LOAN_OFFER, `message=Successfully created loan offer, response=${response}`))
             .catch(error => Logger.error(Context.CREATE_LOAN_OFFER, `message=An error occurred while creating loan offer, error=${error}`))
     }
@@ -119,10 +115,16 @@ export class Lendroid {
      */
     public async depositFunds(amount: number, token: string): Promise<string> {
         Logger.log(Context.DEPOSIT_FUNDS, `message=Depositing ${amount} for ${token}`)
-
         if (amount <= 0 || !token) {
             Logger.error(Context.DEPOSIT_FUNDS, `message=Invalid params, amount=${amount}, token=${token}`)
-            return Promise.reject('Invalid amount')
+            return Promise.reject('Invalid params')
+        }
+
+        token = token.toUpperCase()
+
+        if (!TokenAddress[token]) {
+            Logger.error(Context.DEPOSIT_FUNDS, `message=Invalid token, token=${token}`)
+            return Promise.reject('Invalid token')
         } else if (!TokenSymbol[token]) {
             Logger.error(Context.DEPOSIT_FUNDS, `message=Invalid token, token=${token}`)
             return Promise.reject('Invalid token')
@@ -131,11 +133,10 @@ export class Lendroid {
         const contract: Contract = await this.web3Service.walletContract()
 
         return this.transactionResponseHandler(
-            contract.methods.deposit().send({
+            contract.methods.deposit(TokenAddress[token], amount).send({
                 from: await this.web3Service.userAccount(),
                 gas: 47188,
-                gasPrice: '1238888888',
-                value: amount
+                gasPrice: '1238888888'
             }), Context.DEPOSIT_FUNDS)
     }
 
@@ -156,7 +157,6 @@ export class Lendroid {
         }
 
         const contract: Contract = await this.web3Service.walletContract()
-
         return this.transactionResponseHandler(
             contract.methods.commitFunds(this._deployedConstants.getWethAddress(), amount).send({
                 from: await this.web3Service.userAccount(),
@@ -164,6 +164,23 @@ export class Lendroid {
                 gasPrice: '12388',
                 value: 50
             }), Context.COMMIT_FUNDS)
+    }
+
+    public async getApproval(tokenAddress: string): Promise<string> {
+        if (!tokenAddress || !this.Web3.utils.isHex(tokenAddress)) {
+            Logger.error(Context.GET_APPROVAL, `message=Invalid token address, tokenAddress= ${tokenAddress}`)
+            return Promise.reject('Invalid token address')
+        }
+
+        const contract = await this.web3Service.ERC20Contract(tokenAddress)
+        return this.transactionResponseHandler(
+            contract.methods.approve(this._deployedConstants.getWalletAddress(), await this.web3Service.getUserBalance(tokenAddress))
+                .send({
+                    from: await this.web3Service.userAccount(),
+                    gas: 4712388,
+                    gasPrice: '12388'
+                }),
+            Context.GET_APPROVAL)
     }
 
     /**
@@ -195,7 +212,7 @@ export class Lendroid {
         const onSuccess = () => Logger.info(loggerContext, `message=Transaction successful, transactionHash=${transactionHash}`)
         const onFailure = () => Logger.error(loggerContext, `message=Transaction success could not be detected, most likely still mining, transactionHash=${transactionHash}`)
 
-        this.ensureTransactionSuccess(transactionHash, loggerContext, onSuccess, onFailure)
+        this.ensureTransactionSuccess(transactionHash, loggerContext, onSuccess)
     }
 
     /**
@@ -297,7 +314,7 @@ export class Lendroid {
     /**
      * Retrieves the user's total balance committed for trading or lending
      */
-    public async getCashBalance(token: TokenAddress = TokenAddress.OMG): Promise<number> {
+    public async getCashBalance(token: TokenAddress): Promise<number> {
         const contract: Contract = await this.web3Service.walletContract()
         return this.balanceResponseHandler(contract.methods.getCashBalance(token).call({ from: await this.web3Service.userAccount() }), Context.GET_CASH_BALANCE)
     }
@@ -305,7 +322,7 @@ export class Lendroid {
     /**
      * Retrieves a trader's locked balance on a position or a lender's locked balance in a loan
      */
-    public async getLockedBalance(token: TokenAddress = TokenAddress.OMG): Promise<number> {
+    public async getLockedBalance(token: TokenAddress): Promise<number> {
         const contract: Contract = await this.web3Service.walletContract()
         return this.balanceResponseHandler(contract.methods.getLockedBalance(token).call({ from: await this.web3Service.userAccount() }), Context.GET_LOCKED_BALANCE)
     }
@@ -313,7 +330,7 @@ export class Lendroid {
     /**
      * Retrieves a trader's position balance
      */
-    public async getPositionBalance(token: TokenAddress = TokenAddress.OMG): Promise<number> {
+    public async getPositionBalance(token: TokenAddress): Promise<number> {
         const contract: Contract = await this.web3Service.walletContract()
         return this.balanceResponseHandler(contract.methods.getPositionBalance(token).call({ from: await this.web3Service.userAccount() }), Context.GET_POSITION_BALANCE)
     }
@@ -321,9 +338,9 @@ export class Lendroid {
     /**
      * Retrieves the user's total withdrawable balance that has not been committed for lending/trading or is not locked in a loan/trade
      */
-    public async getWithdrawableBalance(token: TokenAddress = TokenAddress.OMG): Promise<number> {
+    public async getWithdrawableBalance(token: TokenAddress): Promise<number> {
         const contract: Contract = await this.web3Service.walletContract()
-        return this.balanceResponseHandler(contract.methods.getBalance(token).call({ from: await this.web3Service.userAccount() }), Context.GET_WITHDRAWABLE_BALANCE)
+        return this.balanceResponseHandler(contract.methods.getWithdrawableBalance(token).call({ from: await this.web3Service.userAccount() }), Context.GET_WITHDRAWABLE_BALANCE)
     }
 
     get Web3() {

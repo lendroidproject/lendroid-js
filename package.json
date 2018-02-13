@@ -1,6 +1,6 @@
 {
   "name": "lendroid",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Web3.js wrapper that interacts with Lendroid Smart Contracts",
   "repository": "https://github.com/norestlabs/lendroid-js",
   "bugs": "https://github.com/norestlabs/lendroid-js/issues",
@@ -15,11 +15,13 @@
     "unit": "clear; mocha --harmony .dist/test/unit/**/*.js",
     "test": "npm run build; clear; mocha --harmony ./dist/test/**/lendroid.js",
     "watch": "rm -rf ./dist && tsc --watch",
-    "webpack": "rm -rf dist; webpack --config webpack.config.js"
+    "webpack": "webpack --display-error-details --progress --color --config webpack.config.js"
   },
   "author": "lendroid",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.17.1",
+    "bignumber.js": "^6.0.0",
     "config": "^1.29.4",
     "isomorphic-fetch": "^2.2.1",
     "moment": "^2.20.1",
