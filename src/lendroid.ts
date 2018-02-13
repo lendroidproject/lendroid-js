@@ -1,4 +1,4 @@
-import { TokenAddress, TokenName } from './constants/tokens'
+import { TokenAddress, TokenSymbol } from './constants/tokens'
 import { Context, Logger } from './services/logger'
 import { Web3Service } from './services/web3-service'
 import { Contract } from 'web3/types'
@@ -21,7 +21,7 @@ export interface ILendroidInitParams {
 }
 
 /**
- * Entry-point for all functions
+ * Entry-point for all functions. All function calls should go through this class
  * TODO: Break up into sub-domains like Web3
  */
 export class Lendroid {
@@ -46,23 +46,23 @@ export class Lendroid {
     /**
      *
      */
-    public async createLoanOffer(loanToken: string, loanQuantity: number, loanCostAmount: number, quoteToken: string, loanInterestAmount: number): Promise<void> {
-        if (!loanToken || !quoteToken) {
-            Logger.error(Context.CREATE_LOAN_OFFER, `message=Undefined token(s), loanToken=${loanToken}, quoteToken=${quoteToken}`)
+    public async createLoanOffer(loanTokenSymbol: string, loanTokenAmount: number, loanCostTokenAmount: number, loanCostTokenSymbol: string, loanInterestAmount: number): Promise<void> {
+        if (!loanTokenSymbol || !loanCostTokenSymbol) {
+            Logger.error(Context.CREATE_LOAN_OFFER, `message=Undefined token(s), loanToken=${loanTokenSymbol}, quoteToken=${loanCostTokenSymbol}`)
             return Promise.reject('')
         }
 
-        loanToken = loanToken.toUpperCase()
-        quoteToken = quoteToken.toUpperCase()
+        loanTokenSymbol = loanTokenSymbol.toUpperCase()
+        loanCostTokenSymbol = loanCostTokenSymbol.toUpperCase()
 
         // Validating params
-        if (!TokenName[loanToken] || !TokenName[quoteToken]) {
-            Logger.error(Context.CREATE_LOAN_OFFER, `message=Invalid token(s), loanToken=${loanToken}, quoteToken=${quoteToken}`)
+        if (!TokenSymbol[loanTokenSymbol] || !TokenSymbol[loanCostTokenSymbol]) {
+            Logger.error(Context.CREATE_LOAN_OFFER, `message=Invalid token(s), loanToken=${loanTokenSymbol}, quoteToken=${loanCostTokenSymbol}`)
             return Promise.reject('')
-        } else if (!loanQuantity) {
-            Logger.error(Context.CREATE_LOAN_OFFER, `message=Invalid loan amount, amount=${loanQuantity}`)
+        } else if (!loanTokenAmount) {
+            Logger.error(Context.CREATE_LOAN_OFFER, `message=Invalid loan amount, amount=${loanTokenAmount}`)
             return Promise.reject('')
-        } else if (loanCostAmount === undefined) {
+        } else if (loanCostTokenAmount === undefined) {
             Logger.error(Context.CREATE_LOAN_OFFER, `message=Undefined loan cost`)
             return Promise.reject('')
         }
@@ -70,22 +70,20 @@ export class Lendroid {
         // Building loan offer to generate signature
         const loanOfferToSign: ILoanOffer = {
             lenderAddress: await this.web3Service.userAccount(),
-            tokenPair: `${loanToken}/${quoteToken}`,
-            baseTokenAddress: TokenAddress[loanToken],
-            quoteTokenAddress: TokenAddress[quoteToken],
-            loanQuantity,
-            loanToken,
-            loanTokenAddress: TokenAddress[loanToken],
-            loanCostAmount,
-            loanCostToken: quoteToken,
+            market: `${loanTokenSymbol}/${loanCostTokenSymbol}`,
+            loanTokenAddress: TokenAddress[loanTokenSymbol],
+            loanTokenAmount,
+            loanTokenSymbol,
+            loanCostTokenAddress: TokenAddress[loanCostTokenSymbol],
+            loanCostTokenAmount,
+            loanCostTokenSymbol,
+            loanInterestTokenAddress: TokenAddress[loanCostTokenSymbol],
             loanInterestAmount,
-            loanInterestTokenAddress: TokenAddress[quoteToken],
-            loanDepositAmount: loanCostAmount - loanInterestAmount,
-            loanDepositTokenAddress: TokenAddress[quoteToken]
+            loanInterestTokenSymbol: loanCostTokenSymbol
         }
 
         // Generating signature
-        const ecSignature = await this.web3Service.signLoanOffer(loanOfferToSign)
+        const ecSignature: string = await this.web3Service.signLoanOffer(loanOfferToSign)
         // Building loan offer to POST
         const loanOfferToSend: ILoanOfferWithSignature = { ...loanOfferToSign, ecSignature }
 
@@ -125,7 +123,7 @@ export class Lendroid {
         if (amount <= 0 || !token) {
             Logger.error(Context.DEPOSIT_FUNDS, `message=Invalid params, amount=${amount}, token=${token}`)
             return Promise.reject('Invalid amount')
-        } else if (!TokenName[token]) {
+        } else if (!TokenSymbol[token]) {
             Logger.error(Context.DEPOSIT_FUNDS, `message=Invalid token, token=${token}`)
             return Promise.reject('Invalid token')
         }
@@ -152,7 +150,7 @@ export class Lendroid {
         if (amount <= 0 || !token) {
             Logger.error(Context.COMMIT_FUNDS, `message=Invalid params, amount=${amount}, token=${token}`)
             return Promise.reject('Invalid amount')
-        } else if (!TokenName[token]) {
+        } else if (!TokenSymbol[token]) {
             Logger.error(Context.COMMIT_FUNDS, `message=Invalid token, token= ${token}`)
             return Promise.reject('Invalid token')
         }
@@ -248,10 +246,10 @@ export class Lendroid {
     /**
      * orderAddresses index order: 0:lender, 1:trader, 2:lenderToken, 3:traderToken, 4:wranglerAddress
      * orderValues index order: 0:makerTokenAmount, 1:takerTokenAmount, 2:lenderFee, 3:traderFee, 4:expirationTimeStampInSec, 5:salt
-     * offerValues index order: 0: loanQuantity, 1:loanCostAmount,
+     * offerValues index order: 0: loanQuantity, 1:loanCostTokenAmount,
      * @returns Transaction hash
      */
-    public async openMarginTradingPosition(offer: ILoanOfferWithSignature, order: IZeroExOrder, fillTakerTokenAmount: number, traderToken: string = TokenName.ETH, wranglerAddress: string = ''): Promise<string> {
+    public async openMarginTradingPosition(offer: ILoanOfferWithSignature, order: IZeroExOrder, fillTakerTokenAmount: number, traderToken: string = TokenSymbol.ETH, wranglerAddress: string = ''): Promise<string> {
         const orderAddresses: string [] = []
         const orderValues: string [] = []
         const offerValues: string [] = []
@@ -263,7 +261,7 @@ export class Lendroid {
 
         orderAddresses[0] = offer.lenderAddress
         orderAddresses[1] = await this.web3Service.userAccount()
-        orderAddresses[2] = TokenAddress[offer.loanToken]
+        orderAddresses[2] = TokenAddress[offer.loanTokenSymbol]
         orderAddresses[3] = traderToken
         orderAddresses[4] = wranglerAddress
 
@@ -276,7 +274,7 @@ export class Lendroid {
 
 
         // orderValues[0] = offer.loanQuantity
-        // orderValues[1] = offer.loanCostAmount
+        // orderValues[1] = offer.loanCostTokenAmount
         // orderValues[2] = 100
         // // TODO: Where does the trader fee come from?
         // orderValues[3] = 0
@@ -286,7 +284,7 @@ export class Lendroid {
 
         const contract: Contract = await this.web3Service.positionManagerContract()
         return this.transactionResponseHandler
-        (contract.methods.openPosition(orderAddresses, orderValues, v, r, s, expiryDate, offer.tokenPair, offer.ecSignature, fillTakerTokenAmount)
+        (contract.methods.openPosition(orderAddresses, orderValues, v, r, s, expiryDate, offer.market, offer.ecSignature, fillTakerTokenAmount)
             .send({
                 from: await this.web3Service.userAccount(),
                 gas: 4712388,
@@ -341,7 +339,7 @@ export class Lendroid {
      */
     public getTokenNames(): string [] {
         const names: string [] = []
-        for (let token in TokenName) {
+        for (let token in TokenSymbol) {
             names.push(token)
         }
         return names

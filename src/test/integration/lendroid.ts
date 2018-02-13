@@ -5,7 +5,7 @@ import { deployWalletContract, IDeployedContractResponse } from '../util/utils'
 import { Contract, TransactionReceipt } from 'web3/types'
 import { Lendroid } from '../../lendroid'
 import { Context } from '../../services/logger'
-import { TokenName } from '../../constants/tokens'
+import { TokenSymbol } from '../../constants/tokens'
 
 const expect = chai.expect
 
@@ -41,7 +41,7 @@ describe('Lendroid', function () {
     it('successfully executes the deposit() function', async () => {
         const deposit = 50000000000000444556777888
 
-        const transactionHash = await lendroid.depositFunds(deposit, TokenName.ETH)
+        const transactionHash = await lendroid.depositFunds(deposit, TokenSymbol.ETH)
 
         await lendroid.ensureTransactionSuccess(transactionHash, Context.GET_LOAN_OFFERS)
 

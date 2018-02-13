@@ -1,6 +1,6 @@
 {
   "name": "lendroid",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Web3.js wrapper that interacts with Lendroid Smart Contracts",
   "repository": "https://github.com/norestlabs/lendroid-js",
   "bugs": "https://github.com/norestlabs/lendroid-js/issues",
@@ -20,7 +20,6 @@
   "author": "lendroid",
   "license": "ISC",
   "dependencies": {
-    "@types/moment": "^2.13.0",
     "config": "^1.29.4",
     "isomorphic-fetch": "^2.2.1",
     "moment": "^2.20.1",

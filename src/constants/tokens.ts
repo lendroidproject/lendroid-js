@@ -1,4 +1,4 @@
-export enum TokenName {
+export enum TokenSymbol {
     OMG = 'OMG',
     ETH = 'ETH'
 }

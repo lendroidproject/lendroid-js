@@ -1,7 +1,7 @@
 import { Lendroid } from './lendroid'
-import { TokenName } from './constants/tokens'
+import { TokenSymbol } from './constants/tokens'
 
 
-const lendroid = new Lendroid({})
-lendroid.depositFunds(55, TokenName.ETH)
+const lendroid = new Lendroid({ deployedConstants: { walletAddress: '', wethAddress: ''}})
+lendroid.depositFunds(55, TokenSymbol.ETH)
     .catch()

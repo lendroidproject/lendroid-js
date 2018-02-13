@@ -1,4 +1,5 @@
 import 'isomorphic-fetch'
+import { TokenAddress, TokenSymbol } from './tokens'
 
 export interface IDeployConstantInitParams {
     walletAddress?: string
@@ -24,8 +25,8 @@ export class DeployedConstants {
     constructor(params: IDeployConstantInitParams) {
         this.WALLET_BYTECODE = ''
         this.WALLET_ADDRESS = params.walletAddress || ''
-        this.OMG_ADDRESS = params.omgAddress || ''
-        this.WETH_ADDRESS = params.wethAddress || '0xd0a1e359811322d97991e03f863a0c30c2cf029c'
+        this.OMG_ADDRESS = params.omgAddress || TokenAddress[TokenSymbol.OMG]
+        this.WETH_ADDRESS = params.wethAddress || TokenAddress[TokenSymbol.ETH]
         this.POSITION_MANAGER_ADDRESS = params.positionManagerAddress || ''
     }
 
