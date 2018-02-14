@@ -5,7 +5,7 @@ import { deployWalletContract, IDeployedContractResponse } from '../util/utils'
 import { Contract, TransactionReceipt } from 'web3/types'
 import { Lendroid } from '../../lendroid'
 import { Context } from '../../services/logger'
-import { TokenSymbol } from '../../constants/tokens'
+import { TokenAddress, TokenSymbol } from '../../constants/tokens'
 
 const expect = chai.expect
 
@@ -15,14 +15,7 @@ const password = 'password'
 describe('Lendroid', function () {
     this.timeout(6000)
 
-    const lendroid = new Lendroid({
-        apiEndpoint: '',
-        provider: ganache.provider({
-            locked: false,
-            total_accounts: 1
-        }),
-        deployedConstants: { walletAddress: '' }
-    })
+    let lendroid = new Lendroid({ provider: 'http://localhost:8545' })
 
     let contract: Contract
     let receipt: TransactionReceipt
@@ -35,7 +28,9 @@ describe('Lendroid', function () {
         contract = response.contract
         receipt = response.receipt
         walletContractAddress = response.receipt.contractAddress
+        lendroid.deployedConstants._walletAddress(walletContractAddress)
         testAccount = await lendroid.Web3.eth.personal.newAccount(password)
+ //       await lendroid.Web3.eth.personal.unlockAccount(testAccount, password)
     })
 
     it('successfully executes the deposit() function', async () => {
@@ -44,7 +39,6 @@ describe('Lendroid', function () {
         const transactionHash = await lendroid.depositFunds(deposit, TokenSymbol.ETH)
 
         await lendroid.ensureTransactionSuccess(transactionHash, Context.GET_LOAN_OFFERS)
-
-       // expect(await lendroid.getWithdrawableBalance()).to.equal(deposit)
+        // expect(await lendroid.getWithdrawableBalance(TokenAddress.ETH)).to.equal(deposit)
     })
 })

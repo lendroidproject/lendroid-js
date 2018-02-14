@@ -6,7 +6,7 @@
     "removeComments": true,
     "strictNullChecks": true,
     "module": "commonjs",
-    "target": "es6",
+    "target": "es5",
     "lib": [
       "es2017",
       "dom"

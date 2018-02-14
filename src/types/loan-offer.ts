@@ -21,6 +21,7 @@ export interface ILoanOffer {
     loanInterestTokenAmount: string
     // ETH in OMG/ETH
     loanInterestTokenSymbol: string
+    wranglerAddress: string
 }
 
 export interface ILoanOfferWithSignature extends ILoanOffer {

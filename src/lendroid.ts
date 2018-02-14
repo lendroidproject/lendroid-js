@@ -22,8 +22,9 @@ export interface ILendroidInitParams {
 }
 
 /**
- * Entry-point for all functions. All function calls should go through this class
- * TODO: Break up into sub-domains like Web3
+ * Entry-point for external calls. All function calls should go through this class
+ * Exposes internal Web3 module for direct method calls
+ * TODO: Break up into sub-domains
  */
 export class Lendroid {
 
@@ -47,7 +48,8 @@ export class Lendroid {
     /**
      *
      */
-    public async createLoanOffer(loanTokenSymbol: string, loanTokenAmount: number, loanCostTokenAmount: number, loanCostTokenSymbol: string, loanInterestTokenAmount: number): Promise<void> {
+    public async createLoanOffer(loanTokenSymbol: string, loanTokenAmount: number, loanCostTokenAmount: number, loanCostTokenSymbol: string,
+                                 loanInterestTokenAmount: number, wranglerAddress: string): Promise<void> {
         if (!loanTokenSymbol || !loanCostTokenSymbol) {
             Logger.error(Context.CREATE_LOAN_OFFER, `message=Undefined token(s), loanToken=${loanTokenSymbol}, quoteToken=${loanCostTokenSymbol}`)
             return Promise.reject('')
@@ -80,7 +82,8 @@ export class Lendroid {
             loanCostTokenSymbol,
             loanInterestTokenAddress: TokenAddress[loanCostTokenSymbol],
             loanInterestTokenAmount: toBigNumber(loanInterestTokenAmount),
-            loanInterestTokenSymbol: loanCostTokenSymbol
+            loanInterestTokenSymbol: loanCostTokenSymbol,
+            wranglerAddress
         }
 
         // Generating signature
@@ -131,7 +134,6 @@ export class Lendroid {
         }
 
         const contract: Contract = await this.web3Service.walletContract()
-
         return this.transactionResponseHandler(
             contract.methods.deposit(TokenAddress[token], amount).send({
                 from: await this.web3Service.userAccount(),
@@ -341,12 +343,21 @@ export class Lendroid {
     public async getWithdrawableBalance(token: TokenAddress): Promise<number> {
         const contract: Contract = await this.web3Service.walletContract()
         return this.balanceResponseHandler(contract.methods.getWithdrawableBalance(token).call({ from: await this.web3Service.userAccount() }), Context.GET_WITHDRAWABLE_BALANCE)
+        // const contract = this._eth.contract(await this._deployedConstants.getWalletAbi()).at(this._deployedConstants.getWalletAddress())
+        // return contract.getWithdrawableBalance(token)
     }
 
+
+    /**
+     * Exposes the internal Web3 module
+     */
     get Web3() {
         return this.web3Service.Web3
     }
 
+    /**
+     * Exposes the service that handles constants such as Wallet address
+     */
     get deployedConstants(): DeployedConstants {
         return this._deployedConstants
     }
