@@ -1,9 +1,9 @@
-export enum TokenName {
+export enum TokenSymbol {
     OMG = 'OMG',
     ETH = 'ETH'
 }
 
 export enum TokenAddress {
-    OMG = '0xcc2704ce33089d0f051eb0aff1750bb99fdfab46',
-    ETH = '0xd0a1e359811322d97991e03f863a0c30c2cf029c'
+    OMG = '0x7d9c0988eba39f9b9fd2bc05d59d035d1c29a9ef',
+    ETH = '0xb6f86e9651f9a4ef82af78ba947babe3317827f7'
 }

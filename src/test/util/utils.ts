@@ -15,8 +15,8 @@ export const deployWalletContract = async (web3): Promise<IDeployedContractRespo
     contract = await contract.deploy({ data: walletByteCode })
         .send({
             from: account,
-            gas: 4712388,
-            gasPrice: '12388'
+            gas: 47188,
+            gasPrice: '12388000'
         })
         .on('error', error => {
             throw Error(error)

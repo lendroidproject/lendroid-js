@@ -29,6 +29,7 @@ export enum Context {
     WEBPACK = 'Webpack',
     WEB3 = 'Web3',
     COMMIT_FUNDS = 'CommitFunds',
+    GET_APPROVAL = 'GetApproval',
     GET_WITHDRAWABLE_BALANCE = 'GetWithdrawableBalance',
     GET_POSITION_BALANCE = 'GetPositionBalance',
     GET_CASH_BALANCE = 'GetCashBalance',
