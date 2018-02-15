@@ -13,7 +13,7 @@ export class Web3Service {
     private _web3
     private _walletContract: Contract
     private _userAccount: string
-    private deployedConstants: DeployedConstants
+    private _deployedConstants: DeployedConstants
 
     constructor(provider: t.Provider | string, deployedContants: DeployedConstants) {
         if (!provider || (typeof provider === 'string' && !(provider.includes('localhost:') || provider.includes('127.0.0.1:')))) {
@@ -24,10 +24,15 @@ export class Web3Service {
             this._web3 = new Web3(provider)
             Logger.info(Context.WEB3, `message=Successfully connected`)
         }
-        this.deployedConstants = deployedContants
+        this._deployedConstants = deployedContants
     }
 
-    get Web3() {
+    // TODO: Deprecate
+    get deployedConstants(): DeployedConstants {
+        return this._deployedConstants;
+    }
+
+    get Web3(): Web3.default {
         if (!this._web3) {
             Logger.error(Context.WEB3, 'message=Web3 not defined')
         }
@@ -76,18 +81,6 @@ export class Web3Service {
     }
 
     /**
-     * Returns a PositionManager Contract object
-     */
-    public async positionManagerContract(): Promise<Contract> {
-        try {
-            return new this._web3.eth.Contract(await this.deployedConstants.getPositionManagerAbi(), this.deployedConstants.getWalletAddress())
-        } catch (error) {
-            Logger.error(Context.WEB3, `message=Error creating wallet object, error=${error}`)
-            throw Error(error)
-        }
-    }
-
-    /**
      * Signs a loan offer and generates a signature with @param loanOffer
      */
     public async signLoanOffer(loanOffer: ILoanOffer): Promise<string> {
@@ -106,5 +99,30 @@ export class Web3Service {
         return contract.methods.balanceOf(await this.userAccount()).call({
             from: await this.userAccount()
         })
+    }
+
+    // TODO: Document and refactor
+    public async addBalanceToERC20Token(tokenAddress: string): Promise<void> {
+        const contract = await this.ERC20Contract(tokenAddress)
+        const account = await this.userAccount()
+
+        return contract.methods.deposit().send({
+            from: account,
+            value: 50000
+        })
+    }
+
+    // TODO: Document and refactor
+    public async transferToERC20Token(tokenAddress: string, amount: number): Promise<void> {
+        const contract = await this.ERC20Contract(tokenAddress)
+
+    }
+
+    // TODO: Document and refactor
+    public async getERC20Balance(tokenAddress: string): Promise<number> {
+        const contract = await this.ERC20Contract(tokenAddress)
+        const account = await this.userAccount()
+
+        return this.Web3.eth.getBalance(tokenAddress)
     }
 }

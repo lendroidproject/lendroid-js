@@ -4,29 +4,19 @@ import has = Reflect.has
 
 
 const lendroid = new Lendroid({
-    apiEndpoint: 'https://requestb.in/167t2u11',
-    deployedConstants: { walletAddress: '0xaecf50f01a8002ab8d34bbd83a5da60ca2e0203d' }
+    deployedConstants: { walletAddress: '0x04Ad601827AabD2259a6F5Ed67978401aEDF3cBE' }
 })
 
-// lendroid.getWithdrawableBalance(TokenAddress.OMG).then(console.log)
+// lendroid.approveWalletForTransfer(100, TokenAddress.WETH)
+// lendroid.depositFunds(3, TokenSymbol.WETH)
+//lendroid.getWithdrawableBalance(TokenAddress.WETH).then(console.log)
+// lendroid.getCashBalance(TokenAddress.WETH).then(console.log)
+lendroid.commitFunds(0.5, TokenSymbol.WETH)
+    .then(() => lendroid.getCashBalance(TokenAddress.WETH))
+    .then(console.log)
 
-lendroid.depositFunds(500, TokenSymbol.OMG).then(() => {
-    lendroid.commitFunds(500, TokenSymbol.OMG).then(() => {
-        lendroid.getCashBalance(TokenAddress.OMG).then(console.log)
-    })
-})
-
-
-// lendroid.getWithdrawableBalance(TokenAddress.OMG).then(console.log)
+//     .then(() => lendroid.depositFunds(90, TokenSymbol.WETH))
+//     .then(() => lendroid.getWithdrawableBalance(TokenAddress.WETH))
+//     .then(() => )
 //
-// lendroid.depositFunds(55, TokenSymbol.OMG).then(() => {
-//     lendroid.getWithdrawableBalance(TokenAddress.OMG).then(console.log)
-// })
 
-// lendroid.getApproval(TokenAddress.ETH).then(hash => console.log('TRANSACTION', hash))
-//     .then(() => {
-//         setTimeout(() => {
-//             lendroid.depositFunds(123, TokenSymbol.ETH)
-//                 .then(console.log)
-//         }, 5000)
-//     })

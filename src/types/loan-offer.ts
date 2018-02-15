@@ -1,25 +1,25 @@
 export interface ILoanOffer {
     // Wallet address of loan creator
     lenderAddress: string
-    // Loan market e.g. 'OMG/ETH'
+    // Loan market e.g. 'OMG/WETH'
     market: string
-    // Address of OMG in OMG/ETH market
+    // Address of OMG in OMG/WETH market
     loanTokenAddress: string
-    // 1000 in 1000 OMG for 100 ETH
+    // 1000 in 1000 OMG for 100 WETH
     loanTokenAmount: string
-    // OMG in OMG/ETH market
+    // OMG in OMG/WETH market
     loanTokenSymbol: string
-    // Address of ETH (WETH) in OMG/ETH market
+    // Address of WETH (WETH) in OMG/WETH market
     loanCostTokenAddress: string
-    // 100 in 1000 OMG for 100 ETH
+    // 100 in 1000 OMG for 100 WETH
     loanCostTokenAmount: string
-    // ETH in OMG/ETH market
+    // WETH in OMG/WETH market
     loanCostTokenSymbol: string
-    // Smart contract address for token wanted for interest (currently same as loanCostToken so ETH)
+    // Smart contract address for token wanted for interest (currently same as loanCostToken so WETH)
     loanInterestTokenAddress: string
     // Fixed interest rate that lender sets for loan
     loanInterestTokenAmount: string
-    // ETH in OMG/ETH
+    // WETH in OMG/WETH
     loanInterestTokenSymbol: string
     wranglerAddress: string
 }
