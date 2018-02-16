@@ -20,6 +20,8 @@
   "author": "lendroid",
   "license": "ISC",
   "dependencies": {
+    "0x.js": "^0.32.3",
+    "@types/bignumber.js": "^5.0.0",
     "axios": "^0.17.1",
     "bignumber.js": "^6.0.0",
     "config": "^1.29.4",

@@ -42,7 +42,7 @@ export class Web3Service {
     public async userAccount(): Promise<string> {
         if (!this._userAccount) {
             try {
-                this._userAccount = (await this._web3.eth.getAccounts())[0]
+                this._userAccount = (await this._web3.eth.getAccounts())[0].toLowerCase()
             } catch (error) {
                 Logger.error(Context.WEB3, `message=Error retrieving user account, error=${error}`)
                 throw Error(error)
@@ -83,7 +83,7 @@ export class Web3Service {
     /**
      * Signs a loan offer and generates a signature with @param loanOffer
      */
-    public async signLoanOffer(loanOffer: ILoanOffer): Promise<string> {
+    public async signLoanOffer(loanOffer: any): Promise<string> {
         return this._web3.eth.personal.sign(JSON.stringify(loanOffer), this._userAccount)
             .catch(error => {
                 Logger.error(Context.SIGN_LOAN_OFFER, `message=An error occurred, error=${error}`)

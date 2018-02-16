@@ -11,7 +11,7 @@ export interface IZeroExOrder {
     takerFee: string
     expirationUnixTimestampSec: string
     salt: string
-    ecSignature: IEcSignature
+    ecSignature: string
 }
 
 export interface IEcSignature {

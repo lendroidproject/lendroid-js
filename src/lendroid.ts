@@ -12,6 +12,8 @@ import { extractR, extractS, extractV, toBigNumber } from './services/utils'
 import { IZeroExOrder } from './types/0x-order'
 import * as axios from 'axios'
 import Web3 from 'web3'
+import { ZeroEx, Order } from '0x.js'
+import { BigNumber } from '@0xproject/utils'
 
 export interface ILendroidInitParams {
     // Endpoint of local or remote backend server for order related calls
@@ -35,13 +37,15 @@ export enum PositionStatus {
  */
 export class Lendroid {
 
+    private DECIMALS = 18
     private API_ENDPOINT: string
     private _web3Service: Web3Service
     private _deployedConstants: DeployedConstants
+    public zeroEx: ZeroEx
 
     constructor(params: ILendroidInitParams) {
         this._deployedConstants = new DeployedConstants(params.deployedConstants || {})
-        this.API_ENDPOINT = params.apiEndpoint || 'http://localhost:8080/offers'
+        this.API_ENDPOINT = params.apiEndpoint || 'http://localhost:8080'
 
         if (params.provider) {
             // User-provided Web3 provider
@@ -50,10 +54,39 @@ export class Lendroid {
             // Attempting to load Metamask
             try {
                 this._web3Service = new Web3Service((window as any).web3.currentProvider, this._deployedConstants)
+                this.zeroEx = new ZeroEx((window as any).web3.currentProvider, { networkId: 100 })
             } catch (e) {
                 alert('Please ensure that you are logged in to Metamask')
             }
         }
+    }
+
+    public async createOrder(makerTokenAddress: string, takerTokenAddress: string, makerTokenAmount: number, takerTokenAmount: number) {
+        const order: Order = {
+            maker: await this._web3Service.userAccount(),
+            taker: ZeroEx.NULL_ADDRESS,
+            feeRecipient: ZeroEx.NULL_ADDRESS,
+            makerTokenAddress: makerTokenAddress.toLowerCase(),
+            takerTokenAddress: takerTokenAddress.toLowerCase(),
+            exchangeContractAddress: this._deployedConstants.getExchangeAddress(),
+            salt: ZeroEx.generatePseudoRandomSalt(),
+            makerFee: new BigNumber(0),
+            takerFee: new BigNumber(0),
+            makerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(makerTokenAmount), this.DECIMALS),
+            takerTokenAmount: ZeroEx.toBaseUnitAmount(new BigNumber(takerTokenAmount), this.DECIMALS),
+            expirationUnixTimestampSec: new BigNumber(Date.now() + (3600000 * 24 * 365))
+        }
+
+        const orderHash = ZeroEx.getOrderHashHex(order)
+        const ecSignature = await this._web3Service.signLoanOffer(orderHash)
+
+        const signedOrder = { ...order, ecSignature }
+
+        console.log(JSON.stringify(signedOrder))
+        // @ts-ignore
+        return axios.post(`${this.API_ENDPOINT}/orders`, signedOrder)
+            .then(response => Logger.info(Context.CREATE_ORDER, `message=Successfully created order, response=${JSON.stringify(response)}`))
+            .catch(error => Logger.error(Context.CREATE_ORDER, `message=An error occurred while creating order, error=${JSON.stringify(error)}`))
     }
 
     /**
@@ -102,10 +135,13 @@ export class Lendroid {
         // Building loan offer to POST
         const loanOfferToSend: ILoanOfferWithSignature = { ...loanOfferToSign, ecSignature }
 
-        // TODO: Address CORS
+        console.log(loanOfferToSend)
+        console.log('V', extractV(loanOfferToSend.ecSignature))
+        console.log('R', extractR(loanOfferToSend.ecSignature))
+        console.log('S', extractS(loanOfferToSend.ecSignature))
+
         // @ts-ignore
-        return axios.post(this.API_ENDPOINT, loanOfferToSend)
-        // .then(response => response.json())
+        return axios.post(`${this.API_ENDPOINT}/offers`, loanOfferToSend)
             .then(response => Logger.info(Context.CREATE_LOAN_OFFER, `message=Successfully created loan offer, response=${JSON.stringify(response)}`))
             .catch(error => Logger.error(Context.CREATE_LOAN_OFFER, `message=An error occurred while creating loan offer, error=${JSON.stringify(error)}`))
     }
@@ -288,11 +324,15 @@ export class Lendroid {
         const offerValues: number [] = []
         const loanBytes: string [] = []
 
+        const v = extractV(order.ecSignature)
+        const r = extractR(order.ecSignature)
+        const s = '0x' + extractS(order.ecSignature)
+
         orderAddresses[0] = offer.lenderAddress
         orderAddresses[1] = order.takerTokenAddress
         orderAddresses[2] = offer.loanTokenAddress
         orderAddresses[3] = offer.loanCostTokenAddress
-        orderAddresses[4] = '0x00'
+        orderAddresses[4] = '0x731a10897d267e19B34503aD902d0A29173Ba4B1'
 
         orderValues[0] = parseInt(order.makerTokenAmount)
         orderValues[1] = parseInt(order.takerTokenAmount)
@@ -301,31 +341,31 @@ export class Lendroid {
         orderValues[4] = parseInt(order.expirationUnixTimestampSec)
         orderValues[5] = parseInt(order.salt)
 
-        offerAddresses[0] = offer.lenderAddress
-        offerAddresses[1] = order.takerTokenAddress
-        offerAddresses[2] = offer.loanTokenAddress
-        offerAddresses[3] = offer.loanCostTokenAddress
+        offerAddresses[0] = offer.lenderAddress.toLowerCase()
+        offerAddresses[1] = order.takerTokenAddress.toLowerCase()
+        offerAddresses[2] = offer.loanTokenAddress.toLowerCase()
+        offerAddresses[3] = offer.loanCostTokenAddress.toLowerCase()
 
-        offerValues[0] = parseInt(offer.loanTokenAmount) - parseInt(offer.loanInterestTokenAmount)
+        offerValues[0] = (parseInt(offer.loanTokenAmount) - parseInt(offer.loanInterestTokenAmount))
         offerValues[1] = parseInt(offer.loanCostTokenAmount)
 
         const expiryDate = moment.utc().add(1, 'day').format('DD-MMM-YYYY')
 
-        loanBytes[0] = offer.market
-        loanBytes[1] = expiryDate
-        loanBytes[2] = offer.ecSignature
+        loanBytes[0] = this.Web3.utils.asciiToHex(offer.market)
+        loanBytes[1] = this.Web3.utils.asciiToHex(expiryDate)
+        // @ts-ignore
+        loanBytes[2] = ZeroEx.getOrderHashHex(order)
 
         const contract: Contract = await this._web3Service.walletContract()
         return this.transactionResponseHandler
-        (contract.methods.openPosition(orderAddresses, orderValues, offerAddresses, offerValues, order.ecSignature.v,
-            [order.ecSignature.r, order.ecSignature.s], loanBytes, fillTakerTokenAmount, offer.wranglerAddress)
+        (contract.methods.openPosition(orderAddresses, orderValues, offerAddresses, offerValues, v,
+            [r, s], loanBytes, fillTakerTokenAmount, offer.wranglerAddress)
             .send({
                 from: await this._web3Service.userAccount(),
                 gas: 64393,
                 gasPrice: '1238888888'
             }), Context.WEB3)
     }
-
 
     /**
      * Retrieves the user's total balance committed for trading or lending
