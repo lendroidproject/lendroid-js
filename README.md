@@ -7,7 +7,7 @@ Pre-reqs:
 
 `npm install -g tslint`
 
-To serve app on localhost:8080:
+To serve app on localhost:9100:
 
 Create an index.ts under src. This will be executed on Webpack server initialization
 

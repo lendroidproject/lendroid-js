@@ -1,6 +1,9 @@
 const path = require('path')
 
 module.exports = {
+    devServer: {
+        port: 9100
+    },
     entry: "./src/index.ts",
     output: {
         filename: "bundle.js",

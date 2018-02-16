@@ -24,21 +24,21 @@ describe('Lendroid', function () {
 
     // Deploying a Wallet contract before each test
     before(async () => {
-        const response: IDeployedContractResponse = await deployWalletContract(lendroid.Web3)
+        const response: IDeployedContractResponse = await deployWalletContract(lendroid.web3Service)
         contract = response.contract
         receipt = response.receipt
         walletContractAddress = response.receipt.contractAddress
         lendroid.deployedConstants._walletAddress(walletContractAddress)
-        testAccount = await lendroid.Web3.eth.personal.newAccount(password)
+      //  testAccount = await lendroid.Web3.eth.personal.newAccount(password)
  //       await lendroid.Web3.eth.personal.unlockAccount(testAccount, password)
     })
 
     it('successfully executes the deposit() function', async () => {
         const deposit = 50000000000000444556777888
 
-        const transactionHash = await lendroid.depositFunds(deposit, TokenSymbol.ETH)
+      //  const transactionHash = await lendroid.depositFunds(deposit, TokenSymbol.WETH)
 
-        await lendroid.ensureTransactionSuccess(transactionHash, Context.GET_LOAN_OFFERS)
-        // expect(await lendroid.getWithdrawableBalance(TokenAddress.ETH)).to.equal(deposit)
+    //    await lendroid.ensureTransactionSuccess(transactionHash, Context.GET_LOAN_OFFERS)
+        // expect(await lendroid.getWithdrawableBalance(TokenAddress.WETH)).to.equal(deposit)
     })
 })
