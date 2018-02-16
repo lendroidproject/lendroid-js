@@ -106,8 +106,8 @@ export class Lendroid {
         // @ts-ignore
         return axios.post(this.API_ENDPOINT, loanOfferToSend)
         // .then(response => response.json())
-            .then(response => Logger.info(Context.CREATE_LOAN_OFFER, `message=Successfully created loan offer, response=${response}`))
-            .catch(error => Logger.error(Context.CREATE_LOAN_OFFER, `message=An error occurred while creating loan offer, error=${error}`))
+            .then(response => Logger.info(Context.CREATE_LOAN_OFFER, `message=Successfully created loan offer, response=${JSON.stringify(response)}`))
+            .catch(error => Logger.error(Context.CREATE_LOAN_OFFER, `message=An error occurred while creating loan offer, error=${JSON.stringify(error)}`))
     }
 
     /**

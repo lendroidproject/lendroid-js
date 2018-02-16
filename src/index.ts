@@ -11,9 +11,10 @@ const lendroid = new Lendroid({
 // lendroid.depositFunds(3, TokenSymbol.WETH)
 //lendroid.getWithdrawableBalance(TokenAddress.WETH).then(console.log)
 // lendroid.getCashBalance(TokenAddress.WETH).then(console.log)
-lendroid.commitFunds(0.5, TokenSymbol.WETH)
-    .then(() => lendroid.getCashBalance(TokenAddress.WETH))
-    .then(console.log)
+lendroid.depositFunds(1, TokenSymbol.WETH)
+// lendroid.commitFunds(0.5, TokenSymbol.WETH)
+//     .then(() => lendroid.getCashBalance(TokenAddress.WETH))
+//     .then(console.log)
 
 //     .then(() => lendroid.depositFunds(90, TokenSymbol.WETH))
 //     .then(() => lendroid.getWithdrawableBalance(TokenAddress.WETH))
