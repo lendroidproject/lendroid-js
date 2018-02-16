@@ -1,6 +1,6 @@
 {
   "name": "lendroid",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "description": "Web3.js wrapper that interacts with Lendroid Smart Contracts",
   "repository": "https://github.com/norestlabs/lendroid-js",
   "bugs": "https://github.com/norestlabs/lendroid-js/issues",
