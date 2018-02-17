@@ -6,7 +6,6 @@ import { Context } from '../services/logger'
 export interface IDeployConstantInitParams {
     walletAddress?: string
     wethAddress?: string
-    omgAddress?: string
 	exchangeAddress?: string
 	walletBytecode?: string
 	positionManagerAddress?: string
