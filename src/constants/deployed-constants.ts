@@ -46,7 +46,7 @@ export class DeployedConstants {
         }
         return this.ERC20_ABI
 	}
-	
+
     public async getPositionManagerAbi(): Promise<any> {
         if (!this.POSITION_MANAGER_ABI) {
             this.POSITION_MANAGER_ABI = await Promise.resolve(positionManagerABI)
