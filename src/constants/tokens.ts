@@ -5,6 +5,6 @@ export enum TokenSymbol {
 }
 // TODO: These should look up a registry
 export enum TokenAddress {
-    OMG = '0x7d9c0988eba39f9b9fd2bc05d59d035d1c29a9ef',
-    WETH = '0x731a10897d267e19B34503aD902d0A29173Ba4B1'
+    OMG = '0xa03BE17F85Fe38672AC7758F981a53BC08fF62D1',
+    WETH = '0xd0a1e359811322d97991e03f863a0c30c2cf029c'
 }
