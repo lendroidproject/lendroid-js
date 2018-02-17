@@ -11,6 +11,7 @@ export interface IDeployConstantInitParams {
 	walletBytecode?: string
 	positionManagerAddress?: string
     networkParamsAddress?: string
+    omgAddress?: string
 }
 
 /**
