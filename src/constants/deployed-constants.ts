@@ -2,10 +2,10 @@ import 'isomorphic-fetch'
 import { TokenAddress, TokenSymbol } from './tokens'
 
 export interface IDeployConstantInitParams {
-    walletAddress?: "0x64a7c74ea4188a8c70c5bebd8bcc61afa1393090"
-    wethAddress?: "0xd0a1e359811322d97991e03f863a0c30c2cf029c"
-    positionManagerAddress?: "0x42c435b355cbd8ec3f372ffa3a7f9021dd1a65e3"
-    omgAddress?: "0xa03BE17F85Fe38672AC7758F981a53BC08fF62D1"
+    walletAddress?: string
+    wethAddress?: string
+    positionManagerAddress?: string
+    omgAddress?: string
 }
 
 /**
