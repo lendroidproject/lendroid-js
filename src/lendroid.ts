@@ -59,6 +59,8 @@ export class Lendroid {
                 alert('Please ensure that you are logged in to Metamask')
             }
         }
+
+        this.setWalletNetworkParameters(params.deployedConstants ? params.deployedConstants.networkParamsAddress : undefined)
     }
 
     public async createOrder(makerTokenAddress: string, takerTokenAddress: string, makerTokenAmount: number, takerTokenAmount: number) {
@@ -89,15 +91,18 @@ export class Lendroid {
             .catch(error => Logger.error(Context.CREATE_ORDER, `message=An error occurred while creating order, error=${JSON.stringify(error)}`))
     }
 
-    public async setWalletNetworkParameters(address: string): Promise<string> {
-        const contract: Contract = await this._web3Service.walletContract()
-        const account = await this._web3Service.userAccount()
-        return this.transactionResponseHandler(
-            contract.methods.setLendroidNetworkParameters(address).send({
-                from: account,
-                gas: 64393,
-                gasPrice: '1238888888',
-            }), Context.DEPOSIT_FUNDS)
+    public async setWalletNetworkParameters(address: string | undefined): Promise<string> {
+        if (address) {
+            const contract: Contract = await this._web3Service.walletContract()
+            const account = await this._web3Service.userAccount()
+            return this.transactionResponseHandler(
+                contract.methods.setLendroidNetworkParameters(address).send({
+                    from: account,
+                    gas: 64393,
+                    gasPrice: '1238888888',
+                }), Context.DEPOSIT_FUNDS)
+        }
+        return Promise.resolve('')
     }
 
     /**

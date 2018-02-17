@@ -1,5 +1,7 @@
 import 'isomorphic-fetch'
 import { TokenAddress, TokenSymbol } from './tokens'
+import { Contract } from 'web3/types'
+import { Context } from '../services/logger'
 
 export interface IDeployConstantInitParams {
     walletAddress?: string
@@ -8,6 +10,7 @@ export interface IDeployConstantInitParams {
 	exchangeAddress?: string
 	walletBytecode?: string
 	positionManagerAddress?: string
+    networkParamsAddress?: string
 }
 
 /**
