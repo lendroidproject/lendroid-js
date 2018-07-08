@@ -1,6 +1,6 @@
 import * as ABIs from './ContractABIs'
 
-export const contractAddresses = {
+export const CONTRACT_ADDRESSES = {
   WETH: {
     1: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     42: '0xd0a1e359811322d97991e03f863a0c30c2cf029c'
@@ -32,3 +32,6 @@ export const contractAddresses = {
     def: ABIs.WranglerLoanRegistryABI
   }
 }
+
+export const CONTRACT_TOKENS = Object.keys(CONTRACT_ADDRESSES)
+export const BALLANCE_TOKENS = CONTRACT_TOKENS.filter(token => token.length < 5 && token !== 'Loan')
