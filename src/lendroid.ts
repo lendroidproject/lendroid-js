@@ -273,9 +273,9 @@ export class Lendroid {
   }
 
   public onFillLoan(approval, callback) {
-    const { contracts } = this
+    const { contracts, metamask } = this
     const loanOfferRegistryContractInstance = contracts.contracts.LoanOfferRegistry
-    fillLoan({ approval, loanOfferRegistryContractInstance }, callback)
+    fillLoan({ approval, loanOfferRegistryContractInstance, metamask }, callback)
   }
 
   public onClosePosition(data, callback) {

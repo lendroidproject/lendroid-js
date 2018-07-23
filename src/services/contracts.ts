@@ -232,7 +232,7 @@ export const allowance = (payload, callback) => {
 }
 
 export const fillLoan = (payload, callback) => {
-  const { approval, loanOfferRegistryContractInstance } = payload
+  const { approval, loanOfferRegistryContractInstance, metamask } = payload
 
   loanOfferRegistryContractInstance.methods.fill(
     approval._addresses,
@@ -241,7 +241,7 @@ export const fillLoan = (payload, callback) => {
     approval._rS,
     approval._sS,
     approval._isOfferCreatorLender
-  ).send()
+  ).send({ from: metamask.address })
     .then(hash => callback(null, hash))
     .catch(err => callback(err))
 }
