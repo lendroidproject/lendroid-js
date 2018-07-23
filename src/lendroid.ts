@@ -222,11 +222,11 @@ export class Lendroid {
   }
 
   public onWrapETH(amount, isWrap) {
-    const { web3, contracts } = this
+    const { web3, contracts, metamask } = this
     const _WETHContractInstance = contracts.contracts.WETH
     if (!_WETHContractInstance) { return }
 
-    wrapETH({ web3, amount, isWrap, _WETHContractInstance }, (err, hash) => {
+    wrapETH({ web3, amount, isWrap, _WETHContractInstance, metamask }, (err, hash) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.loading.wrapping = true
       this.stateCallback()

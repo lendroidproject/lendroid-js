@@ -58,8 +58,8 @@ export const fetchAllowanceByToken = (payload, callback) => {
   const web3 = payload.web3 as Web3
 
   if (!contractInstance.methods.allowance) { return callback({ message: 'No allowance() in Contract Instance' }) }
-  contractInstance.methods.allowance(address, tokenTransferProxyContract._address)
-    .call()
+  contractInstance.methods.allowance(contractInstance._address, tokenTransferProxyContract._address)
+    .call({ from: address })
     .then(res => {
       const value = web3.utils.fromWei(res.toString(), 'ether')
       callback(null, { data: value })
@@ -181,16 +181,16 @@ export const fetchLoanPositions = (payload, callback) => {
 }
 
 export const wrapETH = (payload, callback) => {
-  const { amount, isWrap, _WETHContractInstance } = payload
+  const { amount, isWrap, _WETHContractInstance, metamask } = payload
   const web3 = payload.web3 as Web3
 
   if (isWrap) {
-    _WETHContractInstance.methods.deposit({ value: web3.utils.toWei(amount.toString(), 'ether') }).send()
-      .then(hash => callback(null, hash))
+    _WETHContractInstance.methods.deposit().send({ value: web3.utils.toWei(amount.toString(), 'ether'), from: metamask.address })
+      .then(hash => callback(null, hash.transactionHash))
       .catch(err => callback(err))
   } else {
-    _WETHContractInstance.methods.withdraw(web3.utils.toWei(amount.toString(), 'ether'), {}).send()
-      .then(hash => callback(null, hash))
+    _WETHContractInstance.methods.withdraw(web3.utils.toWei(amount.toString(), 'ether')).send({ from: metamask.address })
+      .then(hash => callback(null, hash.transactionHash))
       .catch(err => callback(err))
   }
 }
@@ -208,7 +208,7 @@ export const allowance = (payload, callback) => {
       web3.utils.toWei(newAllowance.toString(), 'ether')
     )
       .call({ from: address })
-      .then(hash => callback(null, hash))
+      .then(res => callback(null, res))
       .catch(err => callback(err))
   } else {
     if (newAllowance > tokenAllowance) {
@@ -217,7 +217,7 @@ export const allowance = (payload, callback) => {
         web3.utils.toWei((newAllowance - tokenAllowance).toString(), 'ether')
       )
         .call({ from: address })
-        .then(hash => callback(null, hash))
+        .then(res => callback(null, res))
         .catch(err => callback(err))
     } else {
       tokenContractInstance.methods.decreaseApproval(
@@ -225,7 +225,7 @@ export const allowance = (payload, callback) => {
         web3.utils.toWei((tokenAllowance - newAllowance).toString(), 'ether')
       )
         .call({ from: address })
-        .then(hash => callback(null, hash))
+        .then(res => callback(null, res))
         .catch(err => callback(err))
     }
   }
