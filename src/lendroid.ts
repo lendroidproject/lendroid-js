@@ -261,18 +261,10 @@ export class Lendroid {
     }, (err, hash) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.loading.allowance = true
-      this.stateCallback()
-      const allowanceInterval = setInterval(() => {
-        web3.eth.getTransactionReceipt(hash)
-          .then(res => {
-            if (res && res.status) {
-              this.loading.allowance = false
-              setTimeout(() => this.stateCallback(), 8000)
-              clearInterval(allowanceInterval)
-            }
-          })
-          .catch(error => Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message))
-      }, 3000)
+      setTimeout(() => {
+        this.loading.allowance = false
+        this.stateCallback()
+      }, 8000)
     })
   }
 

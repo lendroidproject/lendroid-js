@@ -58,7 +58,7 @@ export const fetchAllowanceByToken = (payload, callback) => {
   const web3 = payload.web3 as Web3
 
   if (!contractInstance.methods.allowance) { return callback({ message: 'No allowance() in Contract Instance' }) }
-  contractInstance.methods.allowance(address, tokenTransferProxyContract.address)
+  contractInstance.methods.allowance(address, tokenTransferProxyContract._address)
     .call()
     .then(res => {
       const value = web3.utils.fromWei(res.toString(), 'ether')
@@ -203,27 +203,27 @@ export const allowance = (payload, callback) => {
     || !tokenContractInstance.methods.increaseApproval
     || !tokenContractInstance.methods.decreaseApproval) {
     tokenContractInstance.methods.approve(
-      tokenTransferProxyContract.address,
-      web3.utils.toWei(newAllowance.toString(), 'ether'),
-      { from: address })
-      .send()
+      tokenTransferProxyContract._address,
+      web3.utils.toWei(newAllowance.toString(), 'ether')
+    )
+      .call({ from: address })
       .then(hash => callback(null, hash))
       .catch(err => callback(err))
   } else {
     if (newAllowance > tokenAllowance) {
       tokenContractInstance.methods.increaseApproval(
-        tokenTransferProxyContract.address,
-        web3.utils.toWei((newAllowance - tokenAllowance).toString(), 'ether'),
-        { from: address })
-        .send()
+        tokenTransferProxyContract._address,
+        web3.utils.toWei((newAllowance - tokenAllowance).toString(), 'ether')
+      )
+        .call({ from: address })
         .then(hash => callback(null, hash))
         .catch(err => callback(err))
     } else {
       tokenContractInstance.methods.decreaseApproval(
-        tokenTransferProxyContract.address,
-        web3.utils.toWei((tokenAllowance - newAllowance).toString(), 'ether'),
-        { from: address })
-        .send()
+        tokenTransferProxyContract._address,
+        web3.utils.toWei((tokenAllowance - newAllowance).toString(), 'ether')
+      )
+        .call({ from: address })
         .then(hash => callback(null, hash))
         .catch(err => callback(err))
     }
