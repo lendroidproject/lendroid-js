@@ -1,4 +1,6 @@
-import Web3 from 'web3'
+//tslint:disable
+const Web3 = require('web3')
+//tslint:enable
 
 import * as Constants from './constants'
 import {
@@ -9,6 +11,7 @@ import {
   fetchLoanPositions,
   fillLoan,
   closePosition,
+  topUpPosition,
   fetchOrders,
   createOrder,
   deleteOrder,
@@ -30,7 +33,7 @@ import {
 } from './interfaces'
 
 export class Lendroid {
-  private web3: Web3
+  private web3: any
   private apiEndpoint: string
   private apiLoanRequests: string
   private metamask: IMetaMask
@@ -268,6 +271,13 @@ export class Lendroid {
 
   public onClosePosition(data, callback) {
     closePosition({ data }, (err, result) => {
+      if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
+      callback(err, result)
+    })
+  }
+
+  public onTopUpPosition(data, topUpCollateralAmount, callback) {
+    topUpPosition({ data, topUpCollateralAmount }, (err, result) => {
       if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       callback(err, result)
     })

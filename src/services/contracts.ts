@@ -33,7 +33,7 @@ export const fetchETHBallance = (payload, callback) => {
 
   web3.eth.getBalance(address)
     .then(value => {
-      callback(null, { data: value })
+      callback(null, { data: web3.utils.fromWei(value.toString(), 'ether') })
     })
     .catch(err => callback(err))
 }
@@ -43,8 +43,8 @@ export const fetchBallanceByToken = (payload, callback) => {
   const web3 = payload.web3 as Web3
   const contractInstance = payload.contractInstance
 
-  if (!contractInstance.balanceOf) { return callback({ message: 'No ballanceOf() in Contract Instance' }) }
-  contractInstance.balanceOf(address)
+  if (!contractInstance.methods.balanceOf) { return callback({ message: 'No ballanceOf() in Contract Instance' }) }
+  contractInstance.methods.balanceOf(address)
     .call()
     .then(res => {
       const value = web3.utils.fromWei(res.toString(), 'ether')
@@ -57,8 +57,8 @@ export const fetchAllowanceByToken = (payload, callback) => {
   const { address, contractInstance } = payload
   const web3 = payload.web3 as Web3
 
-  if (!contractInstance.allowance) { return callback({ message: 'No allowance() in Contract Instance' }) }
-  contractInstance.allowance(address, contractInstance.address)
+  if (!contractInstance.methods.allowance) { return callback({ message: 'No allowance() in Contract Instance' }) }
+  contractInstance.methods.allowance(address, contractInstance.address)
     .call()
     .then(res => {
       const value = web3.utils.fromWei(res.toString(), 'ether')
@@ -156,11 +156,11 @@ export const wrapETH = (payload, callback) => {
   const web3 = payload.web3 as Web3
 
   if (isWrap) {
-    _WETHContractInstance.methods.deposit({ value: web3.utils.toWei(amount, 'ether') }).send()
+    _WETHContractInstance.methods.deposit({ value: web3.utils.toWei(amount.toString(), 'ether') }).send()
       .then(hash => callback(null, hash))
       .catch(err => callback(err))
   } else {
-    _WETHContractInstance.methods.withdraw(web3.utils.toWei(amount, 'ether'), {}).send()
+    _WETHContractInstance.methods.withdraw(web3.utils.toWei(amount.toString(), 'ether'), {}).send()
       .then(hash => callback(null, hash))
       .catch(err => callback(err))
   }
@@ -172,11 +172,11 @@ export const allowance = (payload, callback) => {
 
   if (
     tokenAllowance === 0
-    || !tokenContractInstance.increaseApproval
-    || !tokenContractInstance.decreaseApproval) {
+    || !tokenContractInstance.methods.increaseApproval
+    || !tokenContractInstance.methods.decreaseApproval) {
     tokenContractInstance.methods.approve(
       tokenContractInstance.address,
-      web3.utils.toWei(newAllowance, 'ether'),
+      web3.utils.toWei(newAllowance.toString(), 'ether'),
       { from: address })
       .send()
       .then(hash => callback(null, hash))
@@ -185,7 +185,7 @@ export const allowance = (payload, callback) => {
     if (newAllowance > tokenAllowance) {
       tokenContractInstance.methods.increaseApproval(
         tokenContractInstance.address,
-        web3.utils.toWei(newAllowance - tokenAllowance, 'ether'),
+        web3.utils.toWei((newAllowance - tokenAllowance).toString(), 'ether'),
         { from: address })
         .send()
         .then(hash => callback(null, hash))
@@ -193,7 +193,7 @@ export const allowance = (payload, callback) => {
     } else {
       tokenContractInstance.methods.decreaseApproval(
         tokenContractInstance.address,
-        web3.utils.toWei(tokenAllowance - newAllowance, 'ether'),
+        web3.utils.toWei((tokenAllowance - newAllowance).toString(), 'ether'),
         { from: address })
         .send()
         .then(hash => callback(null, hash))
@@ -220,7 +220,26 @@ export const fillLoan = (payload, callback) => {
 export const closePosition = (payload, callback) => {
   const { data } = payload
 
-  data.origin.loanContract.methods.close(data.origin.userAddress)
+  data.origin.loanContract.methods.close(
+    data.origin.collateralToken,
+    { from: data.origin.userAddress }
+  )
+    .send()
+    .then(hash => {
+      setTimeout(callback, 5000, null, hash)
+    })
+    .catch(err => callback(err))
+}
+
+export const topUpPosition = (payload, callback) => {
+  const { data, topUpCollateralAmount } = payload
+
+  data.LoanContract.methods.topUp(
+    data.collateralToken,
+    topUpCollateralAmount,
+    { from: data.userAddress },
+    callback
+  )
     .send()
     .then(hash => {
       setTimeout(callback, 5000, null, hash)
