@@ -54,11 +54,11 @@ export const fetchBallanceByToken = (payload, callback) => {
 }
 
 export const fetchAllowanceByToken = (payload, callback) => {
-  const { address, contractInstance } = payload
+  const { address, contractInstance, tokenTransferProxyContract } = payload
   const web3 = payload.web3 as Web3
 
   if (!contractInstance.methods.allowance) { return callback({ message: 'No allowance() in Contract Instance' }) }
-  contractInstance.methods.allowance(address, contractInstance.address)
+  contractInstance.methods.allowance(address, tokenTransferProxyContract.address)
     .call()
     .then(res => {
       const value = web3.utils.fromWei(res.toString(), 'ether')
@@ -105,6 +105,8 @@ export const fetchLoanPositions = (payload, callback) => {
         //   ii.display the result of`Loan.collateralAmount() / currentCollateralAmount * 100`
         let loanAmountBorrowed = await loanContract.methods.loanAmountBorrowed().call()
         loanAmountBorrowed = web3.utils.fromWei(loanAmountBorrowed.toString(), 'ether')
+        let loanStatus = await loanContract.methods.status().call()
+        loanStatus = web3.utils.fromWei(loanStatus.toString(), 'ether')
         let loanAmountOwed = await loanContract.methods.loanAmountOwed().call()
         loanAmountOwed = web3.utils.fromWei(loanAmountOwed.toString(), 'ether')
         let collateralAmount = await loanContract.methods.collateralAmount().call()
@@ -132,18 +134,23 @@ export const fetchLoanPositions = (payload, callback) => {
           borrower,
           wrangler,
           userAddress: address,
+          status: loanStatus,
           owner,
         }
       }
 
+      const activePositions = positions.filter(position => position.origin.status !== Constants.LOAN_STATUS_DEACTIVATED)
+
       callback(null, {
         positions: {
-          lent: positions
+          lent: activePositions
             .filter(position => (position.type === 'lent'))
-            .sort((a, b) => (b.origin.createdAtTimestamp - a.origin.createdAtTimestamp)),
-          borrowed: positions
+            .sort((a, b) => (b.origin.createdAtTimestamp - a.origin.createdAtTimestamp))
+            .slice(0, 10),
+          borrowed: activePositions
             .filter(position => (position.type === 'borrowed'))
-            .sort((a, b) => (b.origin.createdAtTimestamp - a.origin.createdAtTimestamp)),
+            .sort((a, b) => (b.origin.createdAtTimestamp - a.origin.createdAtTimestamp))
+            .slice(0, 10),
         },
         counts
       })
@@ -167,7 +174,7 @@ export const wrapETH = (payload, callback) => {
 }
 
 export const allowance = (payload, callback) => {
-  const { address, tokenContractInstance, tokenAllowance, newAllowance } = payload
+  const { address, tokenContractInstance, tokenAllowance, newAllowance, tokenTransferProxyContract } = payload
   const web3 = payload.web3 as Web3
 
   if (
@@ -175,7 +182,7 @@ export const allowance = (payload, callback) => {
     || !tokenContractInstance.methods.increaseApproval
     || !tokenContractInstance.methods.decreaseApproval) {
     tokenContractInstance.methods.approve(
-      tokenContractInstance.address,
+      tokenTransferProxyContract.address,
       web3.utils.toWei(newAllowance.toString(), 'ether'),
       { from: address })
       .send()
@@ -184,7 +191,7 @@ export const allowance = (payload, callback) => {
   } else {
     if (newAllowance > tokenAllowance) {
       tokenContractInstance.methods.increaseApproval(
-        tokenContractInstance.address,
+        tokenTransferProxyContract.address,
         web3.utils.toWei((newAllowance - tokenAllowance).toString(), 'ether'),
         { from: address })
         .send()
@@ -192,7 +199,7 @@ export const allowance = (payload, callback) => {
         .catch(err => callback(err))
     } else {
       tokenContractInstance.methods.decreaseApproval(
-        tokenContractInstance.address,
+        tokenTransferProxyContract.address,
         web3.utils.toWei((tokenAllowance - newAllowance).toString(), 'ether'),
         { from: address })
         .send()

@@ -126,7 +126,12 @@ export class Lendroid {
     const { address } = metamask
     if (!this.contracts.contracts[token]) { return }
 
-    fetchAllowanceByToken({ web3, contractInstance: this.contracts.contracts[token], address }, (err, res) => {
+    fetchAllowanceByToken({
+      web3,
+      address,
+      contractInstance: this.contracts.contracts[token],
+      tokenTransferProxyContract: this.contracts.contracts.TokenTransferProxy
+    }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.allowances[token] = res.data
       this.stateCallback()
@@ -149,8 +154,10 @@ export class Lendroid {
   }
 
   public fetchContracts() {
-    Constants.CONTRACT_TOKENS.forEach(token => {
-      this.fetchContractByToken(token)
+    this.fetchContractByToken('TokenTransferProxy', () => {
+      Constants.CONTRACT_TOKENS.forEach(token => {
+        this.fetchContractByToken(token, null)
+      })
     })
   }
 
@@ -238,10 +245,17 @@ export class Lendroid {
     const { web3, contracts, metamask } = this
     const { address } = metamask
     const tokenContractInstance = contracts.contracts[token]
+    const tokenTransferProxyContract = contracts.contracts.TokenTransferProxy
     const tokenAllowance = contracts.allowances[token]
     if (newAllowance === tokenAllowance) { return }
 
-    allowance({ web3, address, tokenContractInstance, tokenAllowance, newAllowance }, (err, hash) => {
+    allowance({
+      web3,
+      tokenContractInstance,
+      tokenAllowance,
+      newAllowance,
+      tokenTransferProxyContract,
+    }, (err, hash) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.loading.allowance = true
       this.stateCallback()
@@ -250,7 +264,7 @@ export class Lendroid {
           .then(res => {
             if (res && res.status) {
               this.loading.allowance = false
-              setTimeout(() => this.stateCallback(), 6000)
+              setTimeout(() => this.stateCallback(), 8000)
               clearInterval(allowanceInterval)
             }
           })
@@ -313,13 +327,17 @@ export class Lendroid {
     this.loading = Constants.DEFAULT_LOADINGS
   }
 
-  private fetchContractByToken(token) {
+  private fetchContractByToken(token, callback) {
     const { web3, metamask } = this
     const { network } = metamask
 
     fetchContractByToken(token, { web3, network }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.contracts[token] = res.data
+
+      if (callback) {
+        return callback()
+      }
 
       if (Constants.BALLANCE_TOKENS.indexOf(token) !== -1) {
         this.fetchBallanceByToken(token)

@@ -26,3 +26,9 @@ export const DEFAULT_EXCHANGES = {
   currentWETHExchangeRate: 0,
   currentDAIExchangeRate: 0,
 }
+
+export const LOAN_STATUS_ACTIVE = 0
+export const LOAN_STATUS_CLOSED = 1
+export const LOAN_STATUS_LIQUIDATING = 2
+export const LOAN_STATUS_LIQUIDATED = 3
+export const LOAN_STATUS_DEACTIVATED = 4
