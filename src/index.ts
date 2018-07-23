@@ -1,3 +1,4 @@
+export * from './lendroid'
 import { Lendroid } from './lendroid'
 
 const lendroid = new Lendroid({
