@@ -16,7 +16,7 @@ export const CONTRACT_ADDRESSES = {
     def: ABIs.DAIABI
   },
   LoanOfferRegistry: {
-    42: '0x9f2d0e710754046c35fc7fc29b4ae12c7ac7568b',
+    42: '0xfc3215de7e7a013d242bc8b0ae1a41f63539e6ec',
     def: ABIs.LoanOfferRegisteryABI
   },
   LoanRegistry: {

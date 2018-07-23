@@ -294,7 +294,8 @@ export const cancelOrder = async (payload, callback) => {
     data.loanAmountOffered,
     data.interestRatePerDay,
     data.loanDuration,
-    data.offerExpiryTimestamp,
+    // data.offerExpiryTimestamp,
+    data.offerExpiry,
     data.relayerFeeLST,
     data.monitoringFeeLST,
     data.rolloverFeeLST,
@@ -303,9 +304,9 @@ export const cancelOrder = async (payload, callback) => {
   ]
 
   const orderHash = await loanOfferRegistryContractInstance.methods.computeOfferHash(addresses, values).call()
-  let filledAmount = await loanOfferRegistryContractInstance.methods.filled(orderHash).call()
-  filledAmount = web3.utils.fromWei(filledAmount.toString(), 'ether')
-  const cancelledCollateralTokenAmount = data.loanAmountOffered * currentWETHExchangeRate - filledAmount
+  let filledOrCancelledLoanAmount = await loanOfferRegistryContractInstance.methods.getFilledOrCancelledLoanAmount(orderHash).call()
+  filledOrCancelledLoanAmount = web3.utils.fromWei(filledOrCancelledLoanAmount.toString(), 'ether')
+  const cancelledCollateralTokenAmount = data.loanAmountOffered - filledOrCancelledLoanAmount
   loanOfferRegistryContractInstance.methods.cancel(
     addresses,
     values,
