@@ -70,13 +70,14 @@ export const fetchAllowanceByToken = (payload, callback) => {
 export const fetchLoanPositions = (payload, callback) => {
   const { address, LoanRegistry, Loan, specificAddress, oldPostions } = payload
   const web3 = payload.web3 as Web3
-  const loanABI = Loan.abi
+  const loanABI = Loan._jsonInterface
 
   LoanRegistry.methods.getLoanCounts(address).call()
-    .then(async (err, res) => {
-      if (err) { return callback(err) }
+    .then(async res => {
 
-      const counts = res.map(item => item.toNumber())
+      const counts = res
+      counts[0] = Number(counts[0])
+      counts[1] = Number(counts[1])
       let positions: any[] = []
 
       for (let i = 0; i < counts[0]; i++) {
@@ -122,7 +123,7 @@ export const fetchLoanPositions = (payload, callback) => {
         const borrower = await loanContract.methods.borrower().call()
         const wrangler = await loanContract.methods.wrangler().call()
         const owner = await loanContract.methods.owner().call()
-        const collateralToken = loanContract.methods.collateralToken().call()
+        const collateralToken = await loanContract.methods.collateralToken().call()
 
         position.loanNumber = address
         position.amount = loanAmountBorrowed

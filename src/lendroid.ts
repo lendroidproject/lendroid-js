@@ -164,7 +164,7 @@ export class Lendroid {
     })
   }
 
-  public onCreateOrder(postData) {
+  public async onCreateOrder(postData) {
     const { web3, contracts, metamask } = this
     const { address } = metamask
 
@@ -194,7 +194,7 @@ export class Lendroid {
     const loanOfferRegistryContractInstance = contracts.contracts ? contracts.contracts.LoanOfferRegistry : null
 
     const onSign = hash => {
-      web3.eth.sign(address, hash)
+      web3.eth.sign(hash, address)
         .then(result => {
           postData.ecSignatureCreator = result
           result = result.substr(2)
@@ -213,7 +213,7 @@ export class Lendroid {
         })
     }
 
-    const orderHash = loanOfferRegistryContractInstance.method.computeOfferHash(addresses, values).call()
+    const orderHash = await loanOfferRegistryContractInstance.methods.computeOfferHash(addresses, values).call()
     onSign(orderHash)
   }
 
@@ -328,13 +328,14 @@ export class Lendroid {
 
     fetchContractByToken(token, { web3, network }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
+      const oldContract = this.contracts.contracts[token]
       this.contracts.contracts[token] = res.data
 
       if (callback) {
         return callback()
       }
 
-      if (Constants.BALLANCE_TOKENS.indexOf(token) !== -1) {
+      if (Constants.BALLANCE_TOKENS.indexOf(token) !== -1 && !oldContract) {
         this.fetchBallanceByToken(token)
         this.fetchAllowanceByToken(token)
       }
