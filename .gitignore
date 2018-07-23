@@ -26,3 +26,6 @@ node_modules/
 
 # Index file for Webpack deployment & testing
 index.ts
+
+# Yarn (prefer package.json.lock remained)
+yarn.lock
