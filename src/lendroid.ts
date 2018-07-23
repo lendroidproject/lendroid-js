@@ -139,13 +139,16 @@ export class Lendroid {
     setTimeout(this.fetchAllowanceByToken, 5000, token)
   }
 
-  public fetchLoanPositions() {
+  public fetchLoanPositions(specificAddress = null) {
     const { web3, metamask, contracts } = this
     const { address } = metamask
     const { Loan, LoanRegistry } = contracts.contracts
     this.loading.positions = true
 
-    fetchLoanPositions({ web3, address, Loan, LoanRegistry }, (err, res) => {
+    fetchLoanPositions({
+      web3, address, Loan, LoanRegistry,
+      specificAddress, oldPostions: this.contracts.positions
+    }, (err, res) => {
       this.loading.positions = false
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.positions = res.positions

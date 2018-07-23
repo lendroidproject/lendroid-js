@@ -68,7 +68,7 @@ export const fetchAllowanceByToken = (payload, callback) => {
 }
 
 export const fetchLoanPositions = (payload, callback) => {
-  const { address, LoanRegistry, Loan } = payload
+  const { address, LoanRegistry, Loan, specificAddress, oldPostions } = payload
   const web3 = payload.web3 as Web3
   const loanABI = Loan.abi
 
@@ -77,7 +77,7 @@ export const fetchLoanPositions = (payload, callback) => {
       if (err) { return callback(err) }
 
       const counts = res.map(item => item.toNumber())
-      const positions: any[] = []
+      let positions: any[] = []
 
       for (let i = 0; i < counts[0]; i++) {
         const response = await LoanRegistry.methods.lentLoans(address, i).call()
@@ -92,6 +92,10 @@ export const fetchLoanPositions = (payload, callback) => {
           type: 'borrowed',
           address: response
         })
+      }
+
+      if (specificAddress) {
+        positions = positions.filter(position => position.address !== specificAddress)
       }
 
       for (const position of positions) {
@@ -118,6 +122,7 @@ export const fetchLoanPositions = (payload, callback) => {
         const borrower = await loanContract.methods.borrower().call()
         const wrangler = await loanContract.methods.wrangler().call()
         const owner = await loanContract.methods.owner().call()
+        const collateralToken = loanContract.methods.collateralToken().call()
 
         position.loanNumber = address
         position.amount = loanAmountBorrowed
@@ -125,7 +130,7 @@ export const fetchLoanPositions = (payload, callback) => {
         position.term = (parseInt(expiresAtTimestamp.toString(), 10) - Date.now()) / 3600
 
         let status = 'Unknown'
-        switch (loanStatus) {
+        switch (Number(loanStatus)) {
           case Constants.LOAN_STATUS_ACTIVE: status = 'Active'; break
           case Constants.LOAN_STATUS_CLOSED: status = 'Closed'; break
           case Constants.LOAN_STATUS_LIQUIDATED: status = 'Liquidated'; break
@@ -147,7 +152,12 @@ export const fetchLoanPositions = (payload, callback) => {
           userAddress: address,
           loanStatus,
           owner,
+          collateralToken,
         }
+      }
+
+      if (specificAddress) {
+        positions = positions.concat(oldPostions.lent, oldPostions.borrowed)
       }
 
       const activePositions = positions.filter(position => position.origin.loanStatus !== Constants.LOAN_STATUS_DEACTIVATED)
