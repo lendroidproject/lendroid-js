@@ -58,7 +58,7 @@ export const fetchAllowanceByToken = (payload, callback) => {
   const web3 = payload.web3 as Web3
 
   if (!contractInstance.methods.allowance) { return callback({ message: 'No allowance() in Contract Instance' }) }
-  contractInstance.methods.allowance(contractInstance._address, tokenTransferProxyContract._address)
+  contractInstance.methods.allowance(address, tokenTransferProxyContract._address)
     .call({ from: address })
     .then(res => {
       const value = web3.utils.fromWei(res.toString(), 'ether')
@@ -207,8 +207,8 @@ export const allowance = (payload, callback) => {
       tokenTransferProxyContract._address,
       web3.utils.toWei(newAllowance.toString(), 'ether')
     )
-      .call({ from: address })
-      .then(res => callback(null, res))
+      .send({ from: address })
+      .then(res => callback(null, res.transactionHash))
       .catch(err => callback(err))
   } else {
     if (newAllowance > tokenAllowance) {
@@ -216,16 +216,16 @@ export const allowance = (payload, callback) => {
         tokenTransferProxyContract._address,
         web3.utils.toWei((newAllowance - tokenAllowance).toString(), 'ether')
       )
-        .call({ from: address })
-        .then(res => callback(null, res))
+        .send({ from: address })
+        .then(res => callback(null, res.transactionHash))
         .catch(err => callback(err))
     } else {
       tokenContractInstance.methods.decreaseApproval(
         tokenTransferProxyContract._address,
         web3.utils.toWei((tokenAllowance - newAllowance).toString(), 'ether')
       )
-        .call({ from: address })
-        .then(res => callback(null, res))
+        .send({ from: address })
+        .then(res => callback(null, res.transactionHash))
         .catch(err => callback(err))
     }
   }
@@ -250,10 +250,9 @@ export const closePosition = (payload, callback) => {
   const { data } = payload
 
   data.origin.loanContract.methods.close(
-    data.origin.collateralToken,
-    { from: data.origin.userAddress }
+    data.origin.collateralToken
   )
-    .send()
+    .send({ from: data.origin.userAddress })
     .then(hash => {
       setTimeout(callback, 5000, null, hash)
     })
@@ -263,13 +262,11 @@ export const closePosition = (payload, callback) => {
 export const topUpPosition = (payload, callback) => {
   const { data, topUpCollateralAmount } = payload
 
-  data.LoanContract.methods.topUp(
+  data.loanContract.methods.topUp(
     data.collateralToken,
-    topUpCollateralAmount,
-    { from: data.userAddress },
-    callback
+    topUpCollateralAmount
   )
-    .send()
+    .send({ from: data.userAddress })
     .then(hash => {
       setTimeout(callback, 5000, null, hash)
     })

@@ -253,6 +253,7 @@ export class Lendroid {
     if (newAllowance === tokenAllowance) { return }
 
     allowance({
+      address,
       web3,
       tokenContractInstance,
       tokenAllowance,
@@ -261,10 +262,17 @@ export class Lendroid {
     }, (err, hash) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.loading.allowance = true
-      setTimeout(() => {
-        this.loading.allowance = false
-        this.stateCallback()
-      }, 8000)
+      const allowanceInterval = setInterval(() => {
+        web3.eth.getTransactionReceipt(hash)
+          .then(res => {
+            if (res) {
+              this.loading.allowance = false
+              setTimeout(() => this.stateCallback(), 6000)
+              clearInterval(allowanceInterval)
+            }
+          })
+          .catch(error => Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message))
+      }, 3000)
     })
   }
 
