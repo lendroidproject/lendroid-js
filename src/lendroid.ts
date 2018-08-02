@@ -11,6 +11,7 @@ import {
   fetchLoanPositions,
   fillLoan,
   closePosition,
+  cleanContract,
   topUpPosition,
   fetchOrders,
   createOrder,
@@ -65,6 +66,7 @@ export class Lendroid {
     this.onPostLoans = this.onPostLoans.bind(this)
     this.onFillLoan = this.onFillLoan.bind(this)
     this.onClosePosition = this.onClosePosition.bind(this)
+    this.onCleanContract = this.onCleanContract.bind(this)
     this.onCancelOrder = this.onCancelOrder.bind(this)
   }
 
@@ -288,6 +290,15 @@ export class Lendroid {
 
   public onClosePosition(data, callback) {
     closePosition({ data }, (err, result) => {
+      if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
+      callback(err, result)
+    })
+  }
+
+  public onCleanContract(data, callback) {
+    const { contracts, metamask } = this
+    const wranglerLoanRegistry = contracts.contracts.WranglerLoanRegistry
+    cleanContract({ metamask, data, wranglerLoanRegistry }, (err, result) => {
       if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       callback(err, result)
     })

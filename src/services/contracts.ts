@@ -79,8 +79,6 @@ export const fetchLoanPositions = (payload, callback) => {
       counts[0] = Number(counts[0])
       counts[1] = Number(counts[1])
       let positions: any[] = []
-      let isLentPosition = {}
-      let isBorrowedPosition = {}
 
       for (let i = 0; i < counts[0]; i++) {
         const response = await LoanRegistry.methods.lentLoans(address, i).call()
@@ -118,7 +116,7 @@ export const fetchLoanPositions = (payload, callback) => {
         //   ii.display the result of`Loan.collateralAmount() / currentCollateralAmount * 100`
         let loanAmountBorrowed = await loanContract.methods.loanAmountBorrowed().call()
         loanAmountBorrowed = web3.utils.fromWei(loanAmountBorrowed.toString(), 'ether')
-        let loanStatus = await loanContract.methods.status().call()
+        const loanStatus = await loanContract.methods.status().call()
         let loanAmountOwed = await loanContract.methods.loanAmountOwed().call()
         loanAmountOwed = web3.utils.fromWei(loanAmountOwed.toString(), 'ether')
         let collateralAmount = await loanContract.methods.collateralAmount().call()
@@ -260,6 +258,18 @@ export const closePosition = (payload, callback) => {
   data.origin.loanContract.methods.close(
     data.origin.collateralToken
   )
+    .send({ from: data.origin.userAddress })
+    .then(hash => {
+      setTimeout(callback, 5000, null, hash)
+    })
+    .catch(err => callback(err))
+}
+
+export const cleanContract = (payload, callback) => {
+  const {  wranglerLoanRegistry, data } = payload
+  console.log(wranglerLoanRegistry)
+
+  wranglerLoanRegistry.methods.releaseContract(data.address)
     .send({ from: data.origin.userAddress })
     .then(hash => {
       setTimeout(callback, 5000, null, hash)
