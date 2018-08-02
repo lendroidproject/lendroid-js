@@ -79,20 +79,28 @@ export const fetchLoanPositions = (payload, callback) => {
       counts[0] = Number(counts[0])
       counts[1] = Number(counts[1])
       let positions: any[] = []
+      let isLentPosition = {}
+      let isBorrowedPosition = {}
 
       for (let i = 0; i < counts[0]; i++) {
         const response = await LoanRegistry.methods.lentLoans(address, i).call()
+        // if (!isLentPosition[response]) {
+        //   isLentPosition[response] = true
         positions.push({
           type: 'lent',
           address: response
         })
+        // }
       }
       for (let i = 0; i < counts[1]; i++) {
         const response = await LoanRegistry.methods.borrowedLoans(address, i).call()
+        // if (!isBorrowedPosition[response]) {
+        //   isBorrowedPosition[response] = true
         positions.push({
           type: 'borrowed',
           address: response
         })
+        // }
       }
 
       if (specificAddress) {
@@ -111,7 +119,6 @@ export const fetchLoanPositions = (payload, callback) => {
         let loanAmountBorrowed = await loanContract.methods.loanAmountBorrowed().call()
         loanAmountBorrowed = web3.utils.fromWei(loanAmountBorrowed.toString(), 'ether')
         let loanStatus = await loanContract.methods.status().call()
-        loanStatus = web3.utils.fromWei(loanStatus.toString(), 'ether')
         let loanAmountOwed = await loanContract.methods.loanAmountOwed().call()
         loanAmountOwed = web3.utils.fromWei(loanAmountOwed.toString(), 'ether')
         let collateralAmount = await loanContract.methods.collateralAmount().call()
@@ -136,6 +143,7 @@ export const fetchLoanPositions = (payload, callback) => {
           case Constants.LOAN_STATUS_CLOSED: status = 'Closed'; break
           case Constants.LOAN_STATUS_LIQUIDATED: status = 'Liquidated'; break
           case Constants.LOAN_STATUS_LIQUIDATING: status = 'Liquidating'; break
+          case Constants.LOAN_STATUS_DEACTIVATED: status = 'Deactivated'; break
           default: status = 'Unknown'
         }
 
