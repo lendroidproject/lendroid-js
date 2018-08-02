@@ -122,6 +122,25 @@ export const WranglerLoanRegistryABI = [
     "constant": false,
     "inputs": [
       {
+        "name": "loanAddress",
+        "type": "address"
+      }
+    ],
+    "name": "releaseContract",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "name": "_newOwner",
         "type": "address"
       }

@@ -266,8 +266,7 @@ export const closePosition = (payload, callback) => {
 }
 
 export const cleanContract = (payload, callback) => {
-  const {  wranglerLoanRegistry, data } = payload
-  console.log(wranglerLoanRegistry)
+  const { wranglerLoanRegistry, data } = payload
 
   wranglerLoanRegistry.methods.releaseContract(data.address)
     .send({ from: data.origin.userAddress })
