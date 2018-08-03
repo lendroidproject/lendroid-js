@@ -160,7 +160,7 @@ export const fetchLoanPositions = (payload, callback) => {
           borrower,
           wrangler,
           userAddress: address,
-          loanStatus,
+          loanStatus: Number(loanStatus),
           owner,
           collateralToken,
         }
