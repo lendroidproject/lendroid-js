@@ -291,7 +291,7 @@ export const topUpPosition = (payload, callback) => {
 }
 
 export const cancelOrder = async (payload, callback) => {
-  const { data, currentWETHExchangeRate, loanOfferRegistryContractInstance } = payload
+  const { data, currentWETHExchangeRate, loanOfferRegistryContractInstance, metamask } = payload
   const web3 = payload.web3 as Web3
 
   // 1. an array of addresses[6] in this order: lender, borrower, relayer, wrangler, collateralToken, loanToken
@@ -321,7 +321,7 @@ export const cancelOrder = async (payload, callback) => {
   const orderHash = await loanOfferRegistryContractInstance.methods.computeOfferHash(addresses, values).call()
   let filledOrCancelledLoanAmount = await loanOfferRegistryContractInstance.methods.getFilledOrCancelledLoanAmount(orderHash).call()
   filledOrCancelledLoanAmount = web3.utils.fromWei(filledOrCancelledLoanAmount.toString(), 'ether')
-  const cancelledCollateralTokenAmount = data.loanAmountOffered - filledOrCancelledLoanAmount
+  const cancelledCollateralTokenAmount = web3.utils.fromWei(data.loanAmountOffered.toString(), 'ether') - filledOrCancelledLoanAmount
   loanOfferRegistryContractInstance.methods.cancel(
     addresses,
     values,
@@ -329,7 +329,7 @@ export const cancelOrder = async (payload, callback) => {
     data.rCreator,
     data.sCreator,
     web3.utils.toWei(cancelledCollateralTokenAmount.toString(), 'ether'),
-  ).send()
+  ).send({ from: metamask.address })
     .then(result => callback(null, result))
     .catch(err => callback(err))
 }
