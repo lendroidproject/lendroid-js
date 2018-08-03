@@ -79,26 +79,28 @@ export const fetchLoanPositions = (payload, callback) => {
       counts[0] = Number(counts[0])
       counts[1] = Number(counts[1])
       let positions: any[] = []
+      let borrowedPositionExists = {}
+      let lentPositionExists = {}
 
       for (let i = 0; i < counts[0]; i++) {
         const response = await LoanRegistry.methods.lentLoans(address, i).call()
-        // if (!isLentPosition[response]) {
-        //   isLentPosition[response] = true
-        positions.push({
-          type: 'lent',
-          address: response
-        })
-        // }
+        if (!lentPositionExists[response]) {
+          lentPositionExists[response] = true
+          positions.push({
+            type: 'lent',
+            address: response
+          })
+        }
       }
       for (let i = 0; i < counts[1]; i++) {
         const response = await LoanRegistry.methods.borrowedLoans(address, i).call()
-        // if (!isBorrowedPosition[response]) {
-        //   isBorrowedPosition[response] = true
-        positions.push({
-          type: 'borrowed',
-          address: response
-        })
-        // }
+        if (!borrowedPositionExists[response]) {
+          borrowedPositionExists[response] = true
+          positions.push({
+            type: 'borrowed',
+            address: response
+          })
+        }
       }
 
       if (specificAddress) {
