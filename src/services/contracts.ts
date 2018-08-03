@@ -253,12 +253,12 @@ export const fillLoan = (payload, callback) => {
 }
 
 export const closePosition = (payload, callback) => {
-  const { data } = payload
+  const { data, metamask } = payload
 
   data.origin.loanContract.methods.close(
     data.origin.collateralToken
   )
-    .send({ from: data.origin.userAddress })
+    .send({ from: data.origin.borrower })
     .then(hash => {
       setTimeout(callback, 5000, null, hash)
     })

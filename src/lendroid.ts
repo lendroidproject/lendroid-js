@@ -68,6 +68,14 @@ export class Lendroid {
     this.onClosePosition = this.onClosePosition.bind(this)
     this.onCleanContract = this.onCleanContract.bind(this)
     this.onCancelOrder = this.onCancelOrder.bind(this)
+
+    // setInterval(() => {
+    //   this.web3.eth.getAccounts()
+    //     .then(result => {
+    //       if (result[0] !== this.metamask.address) { this.metamask.address = result[0] }
+    //     })
+    //     .catch(err => console.log(222, err))
+    // }, 5000)
   }
 
   public reset(metamask, stateCallback) {
@@ -289,7 +297,8 @@ export class Lendroid {
   }
 
   public onClosePosition(data, callback) {
-    closePosition({ data }, (err, result) => {
+    const { metamask } = this
+    closePosition({ data, metamask }, (err, result) => {
       if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       callback(err, result)
     })
