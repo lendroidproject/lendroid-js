@@ -133,7 +133,7 @@ export const fetchLoanPositions = (payload, callback) => {
         const owner = await loanContract.methods.owner().call()
         const collateralToken = await loanContract.methods.collateralToken().call()
 
-        position.loanNumber = address
+        position.loanNumber = position.address
         position.amount = loanAmountBorrowed
         position.totalInterest = parseFloat(loanAmountOwed.toString()) - parseFloat(loanAmountBorrowed.toString())
         position.term = (parseInt(expiresAtTimestamp.toString(), 10) - Date.now()) / 3600
