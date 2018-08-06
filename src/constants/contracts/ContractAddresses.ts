@@ -28,7 +28,7 @@ export const CONTRACT_ADDRESSES = {
     def: ABIs.LoanABI
   },
   WranglerLoanRegistry: {
-    42: '0x2f95d4cdad3a040c066babc832891a8677d95d3f',
+    42: '0x005f8a0d936224c7a5d39ac37469541030a309bb',
     def: ABIs.WranglerLoanRegistryABI
   },
   TokenTransferProxy: {
