@@ -135,7 +135,7 @@ export const fetchLoanPositions = (payload, callback) => {
 
         position.loanNumber = position.address
         position.amount = loanAmountBorrowed
-        position.totalInterest = parseFloat(loanAmountOwed.toString()) - parseFloat(loanAmountBorrowed.toString())
+        position.totalInterest = parseFloat(web3.utils.fromWei((web3.utils.toBN(web3.utils.toWei(loanAmountOwed)).sub(web3.utils.toBN(web3.utils.toWei(loanAmountBorrowed)))), 'ether').toString())
         position.term = (parseInt(expiresAtTimestamp.toString(), 10) - Date.now()) / 1000
 
         let status = 'Unknown'
