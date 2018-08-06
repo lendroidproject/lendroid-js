@@ -136,7 +136,7 @@ export const fetchLoanPositions = (payload, callback) => {
         position.loanNumber = position.address
         position.amount = loanAmountBorrowed
         position.totalInterest = parseFloat(loanAmountOwed.toString()) - parseFloat(loanAmountBorrowed.toString())
-        position.term = (parseInt(expiresAtTimestamp.toString(), 10) - Date.now()) / 3600
+        position.term = (parseInt(expiresAtTimestamp.toString(), 10) - Date.now()) / 1000
 
         let status = 'Unknown'
         switch (Number(loanStatus)) {
