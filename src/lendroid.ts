@@ -15,6 +15,7 @@ import {
   topUpPosition,
   fetchOrders,
   createOrder,
+  fillOrderServer,
   deleteOrder,
   postLoans,
   cancelOrder,
@@ -60,6 +61,7 @@ export class Lendroid {
     this.fetchAllowanceByToken = this.fetchAllowanceByToken.bind(this)
     this.fetchLoanPositions = this.fetchLoanPositions.bind(this)
     this.onCreateOrder = this.onCreateOrder.bind(this)
+    this.onFillOrderServer = this.onFillOrderServer.bind(this)
     this.onDeleteOrder = this.onDeleteOrder.bind(this)
     this.onWrapETH = this.onWrapETH.bind(this)
     this.onAllowance = this.onAllowance.bind(this)
@@ -225,6 +227,10 @@ export class Lendroid {
 
     const orderHash = await loanOfferRegistryContractInstance.methods.computeOfferHash(addresses, values).call()
     onSign(orderHash)
+  }
+
+  public onFillOrderServer(id, value, callback) {
+    fillOrderServer(this.apiEndpoint, id, value, callback)
   }
 
   public onDeleteOrder(id, callback) {
