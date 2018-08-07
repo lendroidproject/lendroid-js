@@ -323,15 +323,14 @@ export const cancelOrder = async (payload, callback) => {
 
   const orderHash = await loanOfferRegistryContractInstance.methods.computeOfferHash(addresses, values).call()
   let filledOrCancelledLoanAmount = await loanOfferRegistryContractInstance.methods.getFilledOrCancelledLoanAmount(orderHash).call()
-  filledOrCancelledLoanAmount = web3.utils.fromWei(filledOrCancelledLoanAmount.toString(), 'ether')
-  const cancelledCollateralTokenAmount = web3.utils.fromWei(data.loanAmountOffered.toString(), 'ether') - filledOrCancelledLoanAmount
+  const cancelledCollateralTokenAmount = web3.utils.toBN(data.loanAmountOffered).sub(web3.utils.toBN(filledOrCancelledLoanAmount))
   loanOfferRegistryContractInstance.methods.cancel(
     addresses,
     values,
     data.vCreator,
     data.rCreator,
     data.sCreator,
-    web3.utils.toWei(cancelledCollateralTokenAmount.toString(), 'ether'),
+    cancelledCollateralTokenAmount.toString(),
   ).send({ from: metamask.address })
     .then(result => callback(null, result))
     .catch(err => callback(err))
