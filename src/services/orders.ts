@@ -13,7 +13,7 @@ export const createOrder = (base, data, callback) => {
 }
 
 export const fillOrderServer = (base, id, value, callback) => {
-  apiPost(base, `/offers/fill/${id}/${value}`, callback)
+  apiPost(base, `/offers/fill/${id}/${value}`, {}, callback)
 }
 
 export const deleteOrder = (base, id, callback) => {
