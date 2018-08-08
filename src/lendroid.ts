@@ -44,6 +44,7 @@ export class Lendroid {
   private orders: IOrders
   private loading: ILoadings
   private stateCallback: () => void
+  private debounceUpdate: () => void
 
   constructor(initParams) {
     this.web3 = new Web3(initParams.provider || (window as any).web3.currentProvider)
@@ -78,12 +79,15 @@ export class Lendroid {
     //     })
     //     .catch(err => console.log(222, err))
     // }, 5000)
+
+    this.debounceUpdate = this.debounce(this.stateCallback, 3500, null)
   }
 
   public reset(metamask, stateCallback) {
     Logger.info(LOGGER_CONTEXT.RESET, metamask)
     this.metamask = metamask
     this.stateCallback = stateCallback
+    this.debounceUpdate = this.debounce(this.stateCallback, 1000, null)
     if (metamask.network) {
       this.init()
       this.fetchETHBallance()
@@ -95,7 +99,7 @@ export class Lendroid {
   public fetchOrders() {
     const { address } = this.metamask
     this.loading.orders = true
-    this.stateCallback()
+    this.debounceUpdate()
 
     fetchOrders(this.apiEndpoint, (err, orders) => {
       this.loading.orders = false
@@ -104,7 +108,7 @@ export class Lendroid {
       this.orders.myOrders.lend = orders.offers.filter(item => (item.lender === address))
       this.orders.myOrders.borrow = orders.offers.filter(item => (item.borrower === address))
       this.orders.orders = orders.offers.filter(item => (item.lender !== address && item.borrower !== address))
-      setTimeout(() => this.stateCallback(), 1000)
+      setTimeout(() => this.debounceUpdate(), 1000)
     })
   }
 
@@ -115,7 +119,7 @@ export class Lendroid {
     fetchETHBallance({ web3, address }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.balances.ETH = res.data
-      this.stateCallback()
+      this.debounceUpdate()
     })
     setTimeout(this.fetchETHBallance, 5000)
   }
@@ -128,7 +132,7 @@ export class Lendroid {
     fetchBallanceByToken({ web3, contractInstance: this.contracts.contracts[token], address }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.balances[token] = res.data
-      this.stateCallback()
+      this.debounceUpdate()
     })
     setTimeout(this.fetchBallanceByToken, 5000, token)
   }
@@ -146,7 +150,7 @@ export class Lendroid {
     }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.allowances[token] = res.data
-      this.stateCallback()
+      this.debounceUpdate()
     })
     setTimeout(this.fetchAllowanceByToken, 5000, token)
   }
@@ -164,7 +168,7 @@ export class Lendroid {
       this.loading.positions = false
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.positions = res.positions
-      this.stateCallback()
+      this.debounceUpdate()
     })
   }
 
@@ -245,13 +249,13 @@ export class Lendroid {
     wrapETH({ web3, amount, isWrap, _WETHContractInstance, metamask }, (err, hash) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.loading.wrapping = true
-      this.stateCallback()
+      this.debounceUpdate()
       const wrapInterval = setInterval(() => {
         web3.eth.getTransactionReceipt(hash)
           .then(res => {
             if (res) {
               this.loading.wrapping = false
-              setTimeout(() => this.stateCallback(), 6000)
+              setTimeout(() => this.debounceUpdate(), 6000)
               clearInterval(wrapInterval)
             }
           })
@@ -283,7 +287,7 @@ export class Lendroid {
           .then(res => {
             if (res) {
               this.loading.allowance = false
-              setTimeout(() => this.stateCallback(), 6000)
+              setTimeout(() => this.debounceUpdate(), 6000)
               clearInterval(allowanceInterval)
             }
           })
@@ -348,6 +352,22 @@ export class Lendroid {
     getTokenExchangeRate('DAI', rate => {
       _.exchangeRates.currentDAIExchangeRate = rate
     })
+  }
+
+  public debounce(func, wait, immediate) {
+    let timeout = -1
+    return function() {
+      const context = this
+      const args = arguments
+      const later = () => {
+        timeout = -1
+        if (!immediate) { func.apply(context, args) }
+      }
+      const callNow = immediate && !timeout
+      if (timeout !== -1) { clearTimeout(timeout) }
+      timeout = setTimeout(later, wait)
+      if (callNow) { func.apply(context, args) }
+    }
   }
 
   private init() {

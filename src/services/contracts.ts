@@ -322,7 +322,7 @@ export const cancelOrder = async (payload, callback) => {
   ]
 
   const orderHash = await loanOfferRegistryContractInstance.methods.computeOfferHash(addresses, values).call()
-  let filledOrCancelledLoanAmount = await loanOfferRegistryContractInstance.methods.getFilledOrCancelledLoanAmount(orderHash).call()
+  const filledOrCancelledLoanAmount = await loanOfferRegistryContractInstance.methods.getFilledOrCancelledLoanAmount(orderHash).call()
   const cancelledCollateralTokenAmount = web3.utils.toBN(data.loanAmountOffered).sub(web3.utils.toBN(filledOrCancelledLoanAmount))
   loanOfferRegistryContractInstance.methods.cancel(
     addresses,
