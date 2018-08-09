@@ -40,13 +40,13 @@ export class Lendroid {
   private web3: any
   private apiEndpoint: string
   private apiLoanRequests: string
-  private metamask: IMetaMask
   private exchangeRates: IExchangeRates
   private contracts: IContracts
   private orders: IOrders
   private loading: ILoadings
   private stateCallback: () => void
   private debounceUpdate: () => void
+  public metamask: IMetaMask
   public web3Utils: Web3Utils
 
   constructor(initParams) {
