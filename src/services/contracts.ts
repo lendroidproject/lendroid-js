@@ -164,7 +164,9 @@ export const fetchLoanPositions = (payload, callback) => {
       }
 
       if (specificAddress) {
-        positions = positions.concat(oldPostions.lent, oldPostions.borrowed)
+        let oldPos = oldPostions.lent.concat(oldPostions.borrowed)
+        oldPos = oldPos.filter(position => position.address === specificAddress)
+        positions = positions.concat(oldPos)
       }
 
       const activePositions = positions.filter(position => position.origin.loanStatus !== Constants.LOAN_STATUS_DEACTIVATED)
