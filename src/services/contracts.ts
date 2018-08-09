@@ -129,6 +129,7 @@ export const fetchLoanPositions = (payload, callback) => {
         let createdAtTimestamp = await loanContract.methods.createdAtTimestamp().call()
         createdAtTimestamp = createdAtTimestamp.toString() * 1000
         const borrower = await loanContract.methods.borrower().call()
+        const lender = await loanContract.methods.lender().call()
         const wrangler = await loanContract.methods.wrangler().call()
         const owner = await loanContract.methods.owner().call()
         const collateralToken = await loanContract.methods.collateralToken().call()
@@ -136,6 +137,7 @@ export const fetchLoanPositions = (payload, callback) => {
         position.loanNumber = position.address
         position.amount = loanAmountBorrowed
         position.totalInterest = parseFloat(web3.utils.fromWei((web3.utils.toBN(web3.utils.toWei(loanAmountOwed, 'ether')).sub(web3.utils.toBN(web3.utils.toWei(loanAmountBorrowed, 'ether')))), 'ether').toString())
+        position.totalInterest = position.totalInterest < 0 ? 0 : position.totalInterest
         position.term = (parseInt(expiresAtTimestamp.toString(), 10) - Date.now()) / 1000
 
         let status = 'Unknown'
@@ -158,6 +160,7 @@ export const fetchLoanPositions = (payload, callback) => {
           createdAtTimestamp,
           loanContract,
           borrower,
+          lender,
           wrangler,
           userAddress: address,
           loanStatus: Number(loanStatus),
