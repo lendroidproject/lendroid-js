@@ -296,6 +296,19 @@ export const topUpPosition = (payload, callback) => {
     .catch(err => callback(err))
 }
 
+export const liquidatePosition = (payload, callback) => {
+  const { data } = payload
+
+  data.origin.loanContract.methods.liquidate(
+    data.origin.collateralToken
+  )
+    .send({ from: data.origin.userAddress })
+    .then(hash => {
+      setTimeout(callback, 5000, null, hash)
+    })
+    .catch(err => callback(err))
+}
+
 export const cancelOrder = async (payload, callback) => {
   const { data, currentWETHExchangeRate, loanOfferRegistryContractInstance, metamask } = payload
   const web3 = payload.web3 as Web3

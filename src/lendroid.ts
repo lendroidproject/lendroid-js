@@ -13,6 +13,7 @@ import {
   closePosition,
   cleanContract,
   topUpPosition,
+  liquidatePosition,
   fetchOrders,
   createOrder,
   fillOrderServer,
@@ -69,6 +70,8 @@ export class Lendroid {
     this.onPostLoans = this.onPostLoans.bind(this)
     this.onFillLoan = this.onFillLoan.bind(this)
     this.onClosePosition = this.onClosePosition.bind(this)
+    this.onTopUpPosition = this.onTopUpPosition.bind(this)
+    this.onLiquidatePosition = this.onLiquidatePosition.bind(this)
     this.onCleanContract = this.onCleanContract.bind(this)
     this.onCancelOrder = this.onCancelOrder.bind(this)
 
@@ -325,6 +328,14 @@ export class Lendroid {
 
   public onTopUpPosition(data, topUpCollateralAmount, callback) {
     topUpPosition({ data, topUpCollateralAmount }, (err, result) => {
+      if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
+      callback(err, result)
+    })
+  }
+
+  public onLiquidatePosition(data, callback) {
+    callback(null, {})
+    liquidatePosition({data}, (err, result) => {
       if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       callback(err, result)
     })
