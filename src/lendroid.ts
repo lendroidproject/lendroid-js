@@ -334,7 +334,6 @@ export class Lendroid {
   }
 
   public onLiquidatePosition(data, callback) {
-    callback(null, {})
     liquidatePosition({data}, (err, result) => {
       if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       callback(err, result)
