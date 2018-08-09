@@ -44,7 +44,10 @@ export class Web3Utils {
   public substractBN(value1, value2) {
     const bnValue1 = this.toBN(value1)
     const bnValue2 = this.toBN(value2)
-    return bnValue1.sub(bnValue2)
+    return parseFloat(
+      this.fromWei(
+        bnValue1.sub(bnValue2)
+      ).toString())
   }
 
   public createContract(abi, address) {
