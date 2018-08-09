@@ -25,6 +25,7 @@ import {
   getTokenExchangeRate,
   Logger,
   LOGGER_CONTEXT,
+  Web3Utils,
 } from './services'
 
 import {
@@ -46,12 +47,15 @@ export class Lendroid {
   private loading: ILoadings
   private stateCallback: () => void
   private debounceUpdate: () => void
+  public web3Utils: Web3Utils
 
   constructor(initParams) {
     this.web3 = new Web3(initParams.provider || (window as any).web3.currentProvider)
+    this.web3Utils = new Web3Utils(this.web3)
     this.apiEndpoint = initParams.apiEndpoint || Constants.API_ENDPOINT
     this.apiLoanRequests = initParams.apiLoanRequests || Constants.API_LOAN_REQUESTS
-    this.metamask = initParams.metamask
+    this.stateCallback = initParams.stateCallback
+    this.metamask = { address: undefined, network: undefined }
     this.exchangeRates = Constants.DEFAULT_EXCHANGES
     this.getETD()
     this.getETW()
@@ -75,21 +79,22 @@ export class Lendroid {
     this.onCleanContract = this.onCleanContract.bind(this)
     this.onCancelOrder = this.onCancelOrder.bind(this)
 
-    // setInterval(() => {
-    //   this.web3.eth.getAccounts()
-    //     .then(result => {
-    //       if (result[0] !== this.metamask.address) { this.metamask.address = result[0] }
-    //     })
-    //     .catch(err => console.log(222, err))
-    // }, 5000)
+    setInterval(async () => {
+      const accounts = await this.web3.eth.getAccounts()
+      const network = await this.web3.eth.net.getId()
+      if (
+        (accounts && accounts[0] !== this.metamask.address)
+        || network !== this.metamask.network) {
+        this.reset({ address: accounts[0], network })
+      }
+    }, 2000)
 
     this.debounceUpdate = this.debounce(this.stateCallback, 3500, null)
   }
 
-  public reset(metamask, stateCallback) {
+  public reset(metamask) {
     Logger.info(LOGGER_CONTEXT.RESET, metamask)
     this.metamask = metamask
-    this.stateCallback = stateCallback
     this.debounceUpdate = this.debounce(this.stateCallback, 1000, null)
     if (metamask.network) {
       this.init()
@@ -116,10 +121,10 @@ export class Lendroid {
   }
 
   public fetchETHBallance() {
-    const { web3, metamask } = this
+    const { web3Utils, metamask } = this
     const { address } = metamask
 
-    fetchETHBallance({ web3, address }, (err, res) => {
+    fetchETHBallance({ web3Utils, address }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.balances.ETH = res.data
       this.debounceUpdate()
@@ -128,11 +133,11 @@ export class Lendroid {
   }
 
   public fetchBallanceByToken(token) {
-    const { web3, metamask } = this
+    const { web3Utils, metamask } = this
     const { address } = metamask
     if (!this.contracts.contracts[token]) { return }
 
-    fetchBallanceByToken({ web3, contractInstance: this.contracts.contracts[token], address }, (err, res) => {
+    fetchBallanceByToken({ web3Utils, contractInstance: this.contracts.contracts[token], address }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.balances[token] = res.data
       this.debounceUpdate()
@@ -141,12 +146,12 @@ export class Lendroid {
   }
 
   public fetchAllowanceByToken(token) {
-    const { web3, metamask } = this
+    const { web3Utils, metamask } = this
     const { address } = metamask
     if (!this.contracts.contracts[token]) { return }
 
     fetchAllowanceByToken({
-      web3,
+      web3Utils,
       address,
       contractInstance: this.contracts.contracts[token],
       tokenTransferProxyContract: this.contracts.contracts.TokenTransferProxy
@@ -159,13 +164,13 @@ export class Lendroid {
   }
 
   public fetchLoanPositions(specificAddress = null) {
-    const { web3, metamask, contracts } = this
+    const { web3Utils, metamask, contracts } = this
     const { address } = metamask
     const { Loan, LoanRegistry } = contracts.contracts
     this.loading.positions = true
 
     fetchLoanPositions({
-      web3, address, Loan, LoanRegistry,
+      web3Utils, address, Loan, LoanRegistry,
       specificAddress, oldPostions: this.contracts.positions
     }, (err, res) => {
       this.loading.positions = false
@@ -184,7 +189,7 @@ export class Lendroid {
   }
 
   public async onCreateOrder(postData) {
-    const { web3, contracts, metamask } = this
+    const { web3Utils, contracts, metamask } = this
     const { address } = metamask
 
     // 1. an array of addresses[6] in this order: lender, borrower, relayer, wrangler, collateralToken, loanToken
@@ -199,28 +204,28 @@ export class Lendroid {
 
     // 2. an array of uints[9] in this order: loanAmountOffered, interestRatePerDay, loanDuration, offerExpiryTimestamp, relayerFeeLST, monitoringFeeLST, rolloverFeeLST, closureFeeLST, creatorSalt
     const values = [
-      postData.loanAmountOffered = web3.utils.toWei(postData.loanAmountOffered, 'ether'),
-      postData.interestRatePerDay = web3.utils.toWei(postData.interestRatePerDay, 'ether'),
+      postData.loanAmountOffered = web3Utils.toWei(postData.loanAmountOffered),
+      postData.interestRatePerDay = web3Utils.toWei(postData.interestRatePerDay),
       postData.loanDuration,
       postData.offerExpiry,
-      postData.relayerFeeLST = web3.utils.toWei(postData.relayerFeeLST, 'ether'),
-      postData.monitoringFeeLST = web3.utils.toWei(postData.monitoringFeeLST, 'ether'),
-      postData.rolloverFeeLST = web3.utils.toWei(postData.rolloverFeeLST, 'ether'),
-      postData.closureFeeLST = web3.utils.toWei(postData.closureFeeLST, 'ether'),
+      postData.relayerFeeLST = web3Utils.toWei(postData.relayerFeeLST),
+      postData.monitoringFeeLST = web3Utils.toWei(postData.monitoringFeeLST),
+      postData.rolloverFeeLST = web3Utils.toWei(postData.rolloverFeeLST),
+      postData.closureFeeLST = web3Utils.toWei(postData.closureFeeLST),
       postData.creatorSalt
     ]
 
     const loanOfferRegistryContractInstance = contracts.contracts ? contracts.contracts.LoanOfferRegistry : null
 
     const onSign = hash => {
-      web3.eth.sign(hash, address)
+      web3Utils.eth.sign(hash, address)
         .then(result => {
           postData.ecSignatureCreator = result
           result = result.substr(2)
 
           postData.rCreator = `0x${result.slice(0, 64)}`
           postData.sCreator = `0x${result.slice(64, 128)}`
-          postData.vCreator = web3.utils.toDecimal(`0x${result.slice(128, 130)}`)
+          postData.vCreator = web3Utils.toDecimal(`0x${result.slice(128, 130)}`)
 
           createOrder(this.apiEndpoint, postData, (err, res) => {
             if (err) { return Logger.error(LOGGER_CONTEXT.API_ERROR, err.message) }
@@ -228,7 +233,7 @@ export class Lendroid {
           })
         })
         .catch(err => {
-          if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
+          return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
         })
     }
 
@@ -245,16 +250,16 @@ export class Lendroid {
   }
 
   public onWrapETH(amount, isWrap) {
-    const { web3, contracts, metamask } = this
+    const { web3Utils, contracts, metamask } = this
     const _WETHContractInstance = contracts.contracts.WETH
     if (!_WETHContractInstance) { return }
 
-    wrapETH({ web3, amount, isWrap, _WETHContractInstance, metamask }, (err, hash) => {
+    wrapETH({ web3Utils, amount, isWrap, _WETHContractInstance, metamask }, (err, hash) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.loading.wrapping = true
       this.debounceUpdate()
       const wrapInterval = setInterval(() => {
-        web3.eth.getTransactionReceipt(hash)
+        web3Utils.eth.getTransactionReceipt(hash)
           .then(res => {
             if (res) {
               this.loading.wrapping = false
@@ -268,7 +273,7 @@ export class Lendroid {
   }
 
   public onAllowance(token, newAllowance) {
-    const { web3, contracts, metamask } = this
+    const { web3Utils, contracts, metamask } = this
     const { address } = metamask
     const tokenContractInstance = contracts.contracts[token]
     const tokenTransferProxyContract = contracts.contracts.TokenTransferProxy
@@ -277,7 +282,7 @@ export class Lendroid {
 
     allowance({
       address,
-      web3,
+      web3Utils,
       tokenContractInstance,
       tokenAllowance,
       newAllowance,
@@ -286,7 +291,7 @@ export class Lendroid {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.loading.allowance = true
       const allowanceInterval = setInterval(() => {
-        web3.eth.getTransactionReceipt(hash)
+        web3Utils.eth.getTransactionReceipt(hash)
           .then(res => {
             if (res) {
               this.loading.allowance = false
@@ -334,7 +339,7 @@ export class Lendroid {
   }
 
   public onLiquidatePosition(data, callback) {
-    liquidatePosition({data}, (err, result) => {
+    liquidatePosition({ data }, (err, result) => {
       if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       callback(err, result)
     })
@@ -366,7 +371,8 @@ export class Lendroid {
 
   public debounce(func, wait, immediate) {
     let timeout = -1
-    return function() {
+    //tslint:disable
+    return function () {
       const context = this
       const args = arguments
       const later = () => {
@@ -378,6 +384,7 @@ export class Lendroid {
       timeout = setTimeout(later, wait)
       if (callNow) { func.apply(context, args) }
     }
+    //tslint:enable
   }
 
   private init() {
@@ -387,10 +394,10 @@ export class Lendroid {
   }
 
   private fetchContractByToken(token, callback) {
-    const { web3, metamask } = this
+    const { web3Utils, metamask } = this
     const { network } = metamask
 
-    fetchContractByToken(token, { web3, network }, (err, res) => {
+    fetchContractByToken(token, { web3Utils, network }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       const oldContract = this.contracts.contracts[token]
       this.contracts.contracts[token] = res.data
