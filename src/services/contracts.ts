@@ -105,7 +105,7 @@ export const fetchLoanPositions = (payload, callback) => {
       }
 
       if (specificAddress) {
-        positions = positions.filter(position => position.address !== specificAddress)
+        positions = positions.filter(position => position.address === specificAddress)
       }
 
       for (const position of positions) {
