@@ -16,23 +16,23 @@ export const CONTRACT_ADDRESSES = {
     def: ABIs.DAIABI
   },
   LoanOfferRegistry: {
-    42: '0xfc3215de7e7a013d242bc8b0ae1a41f63539e6ec',
+    42: '0xef7001fe7f77cef83d931ebb651f8bb72d0d602e',
     def: ABIs.LoanOfferRegisteryABI
   },
   LoanRegistry: {
-    42: '0xc31ea8c26a74490c70e98c0badf37bb7ec97cc0c',
+    42: '0x4b946fdf267f542a22f25c7a58b7fef2de90843b',
     def: ABIs.LoanRegistryABI
   },
   Loan: {
-    42: '0x0000000000000000000000000000000000000000',
+    42: '0xa758f4da5bccbf8fca61dd3fdb8d601648160522',
     def: ABIs.LoanABI
   },
   WranglerLoanRegistry: {
-    42: '0x0000000000000000000000000000000000000000',
+    42: '0x974ce7bc3ab45714a9bbd3bd6e7cf50b10c7e30c',
     def: ABIs.WranglerLoanRegistryABI
   },
   TokenTransferProxy: {
-    42: '0xcc94204e4a20c3c371e6bad853f04f079d4b1540',
+    42: '0xf1dbcef9820a758eead322f525e38c9289dc09d0',
     def: ABIs.TokenTransferProxyABI
   },
 }

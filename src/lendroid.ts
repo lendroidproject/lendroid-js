@@ -11,9 +11,12 @@ import {
   fetchLoanPositions,
   fillLoan,
   closePosition,
+  cleanContract,
   topUpPosition,
+  liquidatePosition,
   fetchOrders,
   createOrder,
+  fillOrderServer,
   deleteOrder,
   postLoans,
   cancelOrder,
@@ -22,6 +25,7 @@ import {
   getTokenExchangeRate,
   Logger,
   LOGGER_CONTEXT,
+  Web3Utils,
 } from './services'
 
 import {
@@ -36,18 +40,22 @@ export class Lendroid {
   private web3: any
   private apiEndpoint: string
   private apiLoanRequests: string
-  private metamask: IMetaMask
   private exchangeRates: IExchangeRates
   private contracts: IContracts
   private orders: IOrders
   private loading: ILoadings
   private stateCallback: () => void
+  private debounceUpdate: () => void
+  public metamask: IMetaMask
+  public web3Utils: Web3Utils
 
   constructor(initParams) {
     this.web3 = new Web3(initParams.provider || (window as any).web3.currentProvider)
+    this.web3Utils = new Web3Utils(this.web3)
     this.apiEndpoint = initParams.apiEndpoint || Constants.API_ENDPOINT
     this.apiLoanRequests = initParams.apiLoanRequests || Constants.API_LOAN_REQUESTS
-    this.metamask = initParams.metamask
+    this.stateCallback = initParams.stateCallback
+    this.metamask = { address: undefined, network: undefined }
     this.exchangeRates = Constants.DEFAULT_EXCHANGES
     this.getETD()
     this.getETW()
@@ -59,19 +67,35 @@ export class Lendroid {
     this.fetchAllowanceByToken = this.fetchAllowanceByToken.bind(this)
     this.fetchLoanPositions = this.fetchLoanPositions.bind(this)
     this.onCreateOrder = this.onCreateOrder.bind(this)
+    this.onFillOrderServer = this.onFillOrderServer.bind(this)
     this.onDeleteOrder = this.onDeleteOrder.bind(this)
     this.onWrapETH = this.onWrapETH.bind(this)
     this.onAllowance = this.onAllowance.bind(this)
     this.onPostLoans = this.onPostLoans.bind(this)
     this.onFillLoan = this.onFillLoan.bind(this)
     this.onClosePosition = this.onClosePosition.bind(this)
+    this.onTopUpPosition = this.onTopUpPosition.bind(this)
+    this.onLiquidatePosition = this.onLiquidatePosition.bind(this)
+    this.onCleanContract = this.onCleanContract.bind(this)
     this.onCancelOrder = this.onCancelOrder.bind(this)
+
+    setInterval(async () => {
+      const accounts = await this.web3.eth.getAccounts()
+      const network = await this.web3.eth.net.getId()
+      if (
+        (accounts && accounts[0] !== this.metamask.address)
+        || network !== this.metamask.network) {
+        this.reset({ address: accounts[0], network })
+      }
+    }, 2000)
+
+    this.debounceUpdate = this.debounce(this.stateCallback, 3500, null)
   }
 
-  public reset(metamask, stateCallback) {
+  public reset(metamask) {
     Logger.info(LOGGER_CONTEXT.RESET, metamask)
     this.metamask = metamask
-    this.stateCallback = stateCallback
+    this.debounceUpdate = this.debounce(this.stateCallback, 1000, null)
     if (metamask.network) {
       this.init()
       this.fetchETHBallance()
@@ -83,7 +107,7 @@ export class Lendroid {
   public fetchOrders() {
     const { address } = this.metamask
     this.loading.orders = true
-    this.stateCallback()
+    this.debounceUpdate()
 
     fetchOrders(this.apiEndpoint, (err, orders) => {
       this.loading.orders = false
@@ -92,67 +116,67 @@ export class Lendroid {
       this.orders.myOrders.lend = orders.offers.filter(item => (item.lender === address))
       this.orders.myOrders.borrow = orders.offers.filter(item => (item.borrower === address))
       this.orders.orders = orders.offers.filter(item => (item.lender !== address && item.borrower !== address))
-      setTimeout(() => this.stateCallback(), 1000)
+      setTimeout(() => this.debounceUpdate(), 1000)
     })
   }
 
   public fetchETHBallance() {
-    const { web3, metamask } = this
+    const { web3Utils, metamask } = this
     const { address } = metamask
 
-    fetchETHBallance({ web3, address }, (err, res) => {
+    fetchETHBallance({ web3Utils, address }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.balances.ETH = res.data
-      this.stateCallback()
+      this.debounceUpdate()
     })
     setTimeout(this.fetchETHBallance, 5000)
   }
 
   public fetchBallanceByToken(token) {
-    const { web3, metamask } = this
+    const { web3Utils, metamask } = this
     const { address } = metamask
     if (!this.contracts.contracts[token]) { return }
 
-    fetchBallanceByToken({ web3, contractInstance: this.contracts.contracts[token], address }, (err, res) => {
+    fetchBallanceByToken({ web3Utils, contractInstance: this.contracts.contracts[token], address }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.balances[token] = res.data
-      this.stateCallback()
+      this.debounceUpdate()
     })
     setTimeout(this.fetchBallanceByToken, 5000, token)
   }
 
   public fetchAllowanceByToken(token) {
-    const { web3, metamask } = this
+    const { web3Utils, metamask } = this
     const { address } = metamask
     if (!this.contracts.contracts[token]) { return }
 
     fetchAllowanceByToken({
-      web3,
+      web3Utils,
       address,
       contractInstance: this.contracts.contracts[token],
       tokenTransferProxyContract: this.contracts.contracts.TokenTransferProxy
     }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.allowances[token] = res.data
-      this.stateCallback()
+      this.debounceUpdate()
     })
     setTimeout(this.fetchAllowanceByToken, 5000, token)
   }
 
   public fetchLoanPositions(specificAddress = null) {
-    const { web3, metamask, contracts } = this
+    const { web3Utils, metamask, contracts } = this
     const { address } = metamask
     const { Loan, LoanRegistry } = contracts.contracts
     this.loading.positions = true
 
     fetchLoanPositions({
-      web3, address, Loan, LoanRegistry,
+      web3Utils, address, Loan, LoanRegistry,
       specificAddress, oldPostions: this.contracts.positions
     }, (err, res) => {
       this.loading.positions = false
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.contracts.positions = res.positions
-      this.stateCallback()
+      this.debounceUpdate()
     })
   }
 
@@ -165,7 +189,7 @@ export class Lendroid {
   }
 
   public async onCreateOrder(postData) {
-    const { web3, contracts, metamask } = this
+    const { web3Utils, contracts, metamask } = this
     const { address } = metamask
 
     // 1. an array of addresses[6] in this order: lender, borrower, relayer, wrangler, collateralToken, loanToken
@@ -180,28 +204,28 @@ export class Lendroid {
 
     // 2. an array of uints[9] in this order: loanAmountOffered, interestRatePerDay, loanDuration, offerExpiryTimestamp, relayerFeeLST, monitoringFeeLST, rolloverFeeLST, closureFeeLST, creatorSalt
     const values = [
-      postData.loanAmountOffered = web3.utils.toWei(postData.loanAmountOffered, 'ether'),
-      postData.interestRatePerDay = web3.utils.toWei(postData.interestRatePerDay, 'ether'),
+      postData.loanAmountOffered = web3Utils.toWei(postData.loanAmountOffered),
+      postData.interestRatePerDay = web3Utils.toWei(postData.interestRatePerDay),
       postData.loanDuration,
       postData.offerExpiry,
-      postData.relayerFeeLST = web3.utils.toWei(postData.relayerFeeLST, 'ether'),
-      postData.monitoringFeeLST = web3.utils.toWei(postData.monitoringFeeLST, 'ether'),
-      postData.rolloverFeeLST = web3.utils.toWei(postData.rolloverFeeLST, 'ether'),
-      postData.closureFeeLST = web3.utils.toWei(postData.closureFeeLST, 'ether'),
+      postData.relayerFeeLST = web3Utils.toWei(postData.relayerFeeLST),
+      postData.monitoringFeeLST = web3Utils.toWei(postData.monitoringFeeLST),
+      postData.rolloverFeeLST = web3Utils.toWei(postData.rolloverFeeLST),
+      postData.closureFeeLST = web3Utils.toWei(postData.closureFeeLST),
       postData.creatorSalt
     ]
 
     const loanOfferRegistryContractInstance = contracts.contracts ? contracts.contracts.LoanOfferRegistry : null
 
     const onSign = hash => {
-      web3.eth.sign(hash, address)
+      web3Utils.eth.sign(hash, address)
         .then(result => {
           postData.ecSignatureCreator = result
           result = result.substr(2)
 
           postData.rCreator = `0x${result.slice(0, 64)}`
           postData.sCreator = `0x${result.slice(64, 128)}`
-          postData.vCreator = web3.utils.toDecimal(`0x${result.slice(128, 130)}`)
+          postData.vCreator = web3Utils.toDecimal(`0x${result.slice(128, 130)}`)
 
           createOrder(this.apiEndpoint, postData, (err, res) => {
             if (err) { return Logger.error(LOGGER_CONTEXT.API_ERROR, err.message) }
@@ -209,7 +233,7 @@ export class Lendroid {
           })
         })
         .catch(err => {
-          if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
+          return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
         })
     }
 
@@ -217,25 +241,29 @@ export class Lendroid {
     onSign(orderHash)
   }
 
+  public onFillOrderServer(id, value, callback) {
+    fillOrderServer(this.apiEndpoint, id, value, callback)
+  }
+
   public onDeleteOrder(id, callback) {
     deleteOrder(this.apiEndpoint, id, callback)
   }
 
   public onWrapETH(amount, isWrap) {
-    const { web3, contracts, metamask } = this
+    const { web3Utils, contracts, metamask } = this
     const _WETHContractInstance = contracts.contracts.WETH
     if (!_WETHContractInstance) { return }
 
-    wrapETH({ web3, amount, isWrap, _WETHContractInstance, metamask }, (err, hash) => {
+    wrapETH({ web3Utils, amount, isWrap, _WETHContractInstance, metamask }, (err, hash) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.loading.wrapping = true
-      this.stateCallback()
+      this.debounceUpdate()
       const wrapInterval = setInterval(() => {
-        web3.eth.getTransactionReceipt(hash)
+        web3Utils.eth.getTransactionReceipt(hash)
           .then(res => {
             if (res) {
               this.loading.wrapping = false
-              setTimeout(() => this.stateCallback(), 6000)
+              setTimeout(() => this.debounceUpdate(), 6000)
               clearInterval(wrapInterval)
             }
           })
@@ -245,7 +273,7 @@ export class Lendroid {
   }
 
   public onAllowance(token, newAllowance) {
-    const { web3, contracts, metamask } = this
+    const { web3Utils, contracts, metamask } = this
     const { address } = metamask
     const tokenContractInstance = contracts.contracts[token]
     const tokenTransferProxyContract = contracts.contracts.TokenTransferProxy
@@ -253,7 +281,8 @@ export class Lendroid {
     if (newAllowance === tokenAllowance) { return }
 
     allowance({
-      web3,
+      address,
+      web3Utils,
       tokenContractInstance,
       tokenAllowance,
       newAllowance,
@@ -261,10 +290,17 @@ export class Lendroid {
     }, (err, hash) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       this.loading.allowance = true
-      setTimeout(() => {
-        this.loading.allowance = false
-        this.stateCallback()
-      }, 8000)
+      const allowanceInterval = setInterval(() => {
+        web3Utils.eth.getTransactionReceipt(hash)
+          .then(res => {
+            if (res) {
+              this.loading.allowance = false
+              setTimeout(() => this.debounceUpdate(), 6000)
+              clearInterval(allowanceInterval)
+            }
+          })
+          .catch(error => Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message))
+      }, 3000)
     })
   }
 
@@ -279,7 +315,17 @@ export class Lendroid {
   }
 
   public onClosePosition(data, callback) {
-    closePosition({ data }, (err, result) => {
+    const { metamask } = this
+    closePosition({ data, metamask }, (err, result) => {
+      if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
+      callback(err, result)
+    })
+  }
+
+  public onCleanContract(data, callback) {
+    const { contracts, metamask } = this
+    const wranglerLoanRegistry = contracts.contracts.WranglerLoanRegistry
+    cleanContract({ metamask, data, wranglerLoanRegistry }, (err, result) => {
       if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       callback(err, result)
     })
@@ -292,11 +338,18 @@ export class Lendroid {
     })
   }
 
+  public onLiquidatePosition(data, callback) {
+    liquidatePosition({ data }, (err, result) => {
+      if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
+      callback(err, result)
+    })
+  }
+
   public onCancelOrder(data, callback) {
-    const { web3, contracts } = this
+    const { web3, contracts, metamask } = this
     const loanOfferRegistryContractInstance = contracts.contracts.LoanOfferRegistry
     const { currentWETHExchangeRate } = this.exchangeRates
-    cancelOrder({ web3, data, currentWETHExchangeRate, loanOfferRegistryContractInstance }, (err, result) => {
+    cancelOrder({ web3, data, currentWETHExchangeRate, loanOfferRegistryContractInstance, metamask }, (err, result) => {
       if (err) { Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       callback(err, result)
     })
@@ -316,6 +369,24 @@ export class Lendroid {
     })
   }
 
+  public debounce(func, wait, immediate) {
+    let timeout = -1
+    //tslint:disable
+    return function () {
+      const context = this
+      const args = arguments
+      const later = () => {
+        timeout = -1
+        if (!immediate) { func.apply(context, args) }
+      }
+      const callNow = immediate && !timeout
+      if (timeout !== -1) { clearTimeout(timeout) }
+      timeout = setTimeout(later, wait)
+      if (callNow) { func.apply(context, args) }
+    }
+    //tslint:enable
+  }
+
   private init() {
     this.contracts = Constants.DEFAULT_CONTRACTS
     this.orders = Constants.DEFAULT_ORDERS
@@ -323,10 +394,10 @@ export class Lendroid {
   }
 
   private fetchContractByToken(token, callback) {
-    const { web3, metamask } = this
+    const { web3Utils, metamask } = this
     const { network } = metamask
 
-    fetchContractByToken(token, { web3, network }, (err, res) => {
+    fetchContractByToken(token, { web3Utils, network }, (err, res) => {
       if (err) { return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message) }
       const oldContract = this.contracts.contracts[token]
       this.contracts.contracts[token] = res.data
