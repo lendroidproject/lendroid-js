@@ -54,7 +54,7 @@ export class Lendroid {
     this.web3Utils = new Web3Utils(this.web3)
     this.apiEndpoint = initParams.apiEndpoint || Constants.API_ENDPOINT
     this.apiLoanRequests = initParams.apiLoanRequests || Constants.API_LOAN_REQUESTS
-    this.stateCallback = initParams.stateCallback
+    this.stateCallback = initParams.stateCallback || (() => console.log('State callback is not set'))
     this.metamask = { address: undefined, network: undefined }
     this.exchangeRates = Constants.DEFAULT_EXCHANGES
     this.getETD()
