@@ -49,7 +49,7 @@ export class Lendroid {
   public metamask: IMetaMask
   public web3Utils: Web3Utils
 
-  constructor(initParams) {
+  constructor(initParams: any = {}) {
     this.web3 = new Web3(initParams.provider || (window as any).web3.currentProvider)
     this.web3Utils = new Web3Utils(this.web3)
     this.apiEndpoint = initParams.apiEndpoint || Constants.API_ENDPOINT
