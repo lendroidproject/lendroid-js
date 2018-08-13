@@ -79,3 +79,9 @@ methods.onWrapETH(amount, operation === 'Wrap')
 - Copy `dist` folder to `<path-to-ui>/node_modules/lendroid/`
 
   e.g: `cp -rf ./dist ../reloanr-ui/node_modules/lendroid/`
+
+## relations
+
+- [Reloanr UI](https://github.com/lendroidproject/reloanr-ui)
+
+- [Deployed](https://app.reloanr.com)
