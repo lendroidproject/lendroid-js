@@ -339,7 +339,7 @@ export const cancelOrder = async (payload, callback) => {
     data.vCreator,
     data.rCreator,
     data.sCreator,
-    cancelledCollateralTokenAmount.toString(),
+    web3Utils.toWei(cancelledCollateralTokenAmount),
   ).send({ from: metamask.address })
     .then(result => callback(null, result))
     .catch(err => callback(err))
