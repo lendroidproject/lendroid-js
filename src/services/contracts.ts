@@ -10,17 +10,28 @@ export const fetchContractByToken = (token, payload, callback) => {
   }
 
   if (!CONTRACT_ADDRESSES[token].def) {
-    const url = `https://${network === 1 ? 'api' : 'api-kovan'}.etherscan.io/api?module=contract&action=getabi&address=${CONTRACT_ADDRESSES[token][network]}`
-    axios.get(url)
+    const url = `https://${
+      network === 1 ? 'api' : 'api-kovan'
+    }.etherscan.io/api?module=contract&action=getabi&address=${
+      CONTRACT_ADDRESSES[token][network]
+    }`
+    axios
+      .get(url)
       .then(res => {
         const contractABI = JSON.parse(res.data.result)
-        const contractInstance = web3Utils.createContract(contractABI, CONTRACT_ADDRESSES[token][network])
+        const contractInstance = web3Utils.createContract(
+          contractABI,
+          CONTRACT_ADDRESSES[token][network]
+        )
         callback(null, { data: contractInstance })
       })
       .catch(err => callback(err))
   } else {
     const contractABI = CONTRACT_ADDRESSES[token].def
-    const contractInstance = web3Utils.createContract(contractABI, CONTRACT_ADDRESSES[token][network])
+    const contractInstance = web3Utils.createContract(
+      contractABI,
+      CONTRACT_ADDRESSES[token][network]
+    )
     callback(null, { data: contractInstance })
   }
 }
@@ -28,7 +39,8 @@ export const fetchContractByToken = (token, payload, callback) => {
 export const fetchETHBallance = (payload, callback) => {
   const { address, web3Utils } = payload
 
-  web3Utils.eth.getBalance(address)
+  web3Utils.eth
+    .getBalance(address)
     .then(value => {
       callback(null, { data: web3Utils.fromWei(value) })
     })
@@ -39,8 +51,11 @@ export const fetchBallanceByToken = (payload, callback) => {
   const { address, web3Utils } = payload
   const contractInstance = payload.contractInstance
 
-  if (!contractInstance.methods.balanceOf) { return callback({ message: 'No ballanceOf() in Contract Instance' }) }
-  contractInstance.methods.balanceOf(address)
+  if (!contractInstance.methods.balanceOf) {
+    return callback({ message: 'No ballanceOf() in Contract Instance' })
+  }
+  contractInstance.methods
+    .balanceOf(address)
     .call()
     .then(res => {
       const value = web3Utils.fromWei(res)
@@ -50,10 +65,18 @@ export const fetchBallanceByToken = (payload, callback) => {
 }
 
 export const fetchAllowanceByToken = (payload, callback) => {
-  const { address, contractInstance, tokenTransferProxyContract, web3Utils } = payload
+  const {
+    address,
+    contractInstance,
+    tokenTransferProxyContract,
+    web3Utils
+  } = payload
 
-  if (!contractInstance.methods.allowance) { return callback({ message: 'No allowance() in Contract Instance' }) }
-  contractInstance.methods.allowance(address, tokenTransferProxyContract._address)
+  if (!contractInstance.methods.allowance) {
+    return callback({ message: 'No allowance() in Contract Instance' })
+  }
+  contractInstance.methods
+    .allowance(address, tokenTransferProxyContract._address)
     .call({ from: address })
     .then(res => {
       const value = web3Utils.fromWei(res)
@@ -63,12 +86,20 @@ export const fetchAllowanceByToken = (payload, callback) => {
 }
 
 export const fetchLoanPositions = (payload, callback) => {
-  const { address, LoanRegistry, Loan, specificAddress, oldPostions, web3Utils } = payload
+  const {
+    address,
+    LoanRegistry,
+    Loan,
+    specificAddress,
+    oldPostions,
+    web3Utils
+  } = payload
   const loanABI = Loan._jsonInterface
 
-  LoanRegistry.methods.getLoanCounts(address).call()
+  LoanRegistry.methods
+    .getLoanCounts(address)
+    .call()
     .then(async res => {
-
       const counts = res
       counts[0] = Number(counts[0])
       counts[1] = Number(counts[1])
@@ -88,7 +119,9 @@ export const fetchLoanPositions = (payload, callback) => {
 
       const borrowedPositionExists = {}
       for (let i = 0; i < counts[1]; i++) {
-        const response = await LoanRegistry.methods.borrowedLoans(address, i).call()
+        const response = await LoanRegistry.methods
+          .borrowedLoans(address, i)
+          .call()
         if (!borrowedPositionExists[response]) {
           borrowedPositionExists[response] = true
           positions.push({
@@ -99,7 +132,9 @@ export const fetchLoanPositions = (payload, callback) => {
       }
 
       if (specificAddress) {
-        positions = positions.filter(position => position.address === specificAddress)
+        positions = positions.filter(
+          position => position.address === specificAddress
+        )
       }
 
       for (const position of positions) {
@@ -111,37 +146,63 @@ export const fetchLoanPositions = (payload, callback) => {
         // d. `LOAN HEALTH` is calculated as follows:
         //   i. `var currentCollateralAmount = Loan.loanAmountBorrowed() / eth_To_DAI_Rate`
         //   ii.display the result of`Loan.collateralAmount() / currentCollateralAmount * 100`
-        let loanAmountBorrowed = await loanContract.methods.loanAmountBorrowed().call()
+        let loanAmountBorrowed = await loanContract.methods
+          .loanAmountBorrowed()
+          .call()
         loanAmountBorrowed = web3Utils.fromWei(loanAmountBorrowed)
         const loanStatus = await loanContract.methods.status().call()
         let loanAmountOwed = await loanContract.methods.loanAmountOwed().call()
         loanAmountOwed = web3Utils.fromWei(loanAmountOwed)
-        let collateralAmount = await loanContract.methods.collateralAmount().call()
+        let collateralAmount = await loanContract.methods
+          .collateralAmount()
+          .call()
         collateralAmount = web3Utils.fromWei(collateralAmount)
-        let expiresAtTimestamp = await loanContract.methods.expiresAtTimestamp().call()
+        let expiresAtTimestamp = await loanContract.methods
+          .expiresAtTimestamp()
+          .call()
         expiresAtTimestamp = expiresAtTimestamp * 1000
-        let createdAtTimestamp = await loanContract.methods.createdAtTimestamp().call()
+        let createdAtTimestamp = await loanContract.methods
+          .createdAtTimestamp()
+          .call()
         createdAtTimestamp = createdAtTimestamp * 1000
         const borrower = await loanContract.methods.borrower().call()
         const lender = await loanContract.methods.lender().call()
         const wrangler = await loanContract.methods.wrangler().call()
         const owner = await loanContract.methods.owner().call()
-        const collateralToken = await loanContract.methods.collateralToken().call()
+        const collateralToken = await loanContract.methods
+          .collateralToken()
+          .call()
 
         position.loanNumber = position.address
         position.amount = loanAmountBorrowed
-        position.totalInterest = web3Utils.substract(loanAmountOwed, loanAmountBorrowed)
-        position.totalInterest = position.totalInterest < 0 ? 0 : position.totalInterest
-        position.term = (parseInt(expiresAtTimestamp.toString(), 10) - Date.now()) / 1000
+        position.totalInterest = web3Utils.substract(
+          loanAmountOwed,
+          loanAmountBorrowed
+        )
+        position.totalInterest =
+          position.totalInterest < 0 ? 0 : position.totalInterest
+        position.term =
+          (parseInt(expiresAtTimestamp.toString(), 10) - Date.now()) / 1000
 
         let status = 'Unknown'
         switch (Number(loanStatus)) {
-          case Constants.LOAN_STATUS_ACTIVE: status = 'Active'; break
-          case Constants.LOAN_STATUS_CLOSED: status = 'Closed'; break
-          case Constants.LOAN_STATUS_LIQUIDATED: status = 'Liquidated'; break
-          case Constants.LOAN_STATUS_LIQUIDATING: status = 'Liquidating'; break
-          case Constants.LOAN_STATUS_DEACTIVATED: status = 'Deactivated'; break
-          default: status = 'Unknown'
+          case Constants.LOAN_STATUS_ACTIVE:
+            status = 'Active'
+            break
+          case Constants.LOAN_STATUS_CLOSED:
+            status = 'Closed'
+            break
+          case Constants.LOAN_STATUS_LIQUIDATED:
+            status = 'Liquidated'
+            break
+          case Constants.LOAN_STATUS_LIQUIDATING:
+            status = 'Liquidating'
+            break
+          case Constants.LOAN_STATUS_DEACTIVATED:
+            status = 'Deactivated'
+            break
+          default:
+            status = 'Unknown'
         }
 
         position.status = status
@@ -159,7 +220,7 @@ export const fetchLoanPositions = (payload, callback) => {
           userAddress: address,
           loanStatus: Number(loanStatus),
           owner,
-          collateralToken,
+          collateralToken
         }
       }
 
@@ -169,18 +230,27 @@ export const fetchLoanPositions = (payload, callback) => {
         positions = positions.concat(oldPos)
       }
 
-      const activePositions = positions.filter(position => position.origin.loanStatus !== Constants.LOAN_STATUS_DEACTIVATED)
+      const activePositions = positions.filter(
+        position =>
+          position.origin.loanStatus !== Constants.LOAN_STATUS_DEACTIVATED
+      )
 
       callback(null, {
         positions: {
           lent: activePositions
-            .filter(position => (position.type === 'lent'))
-            .sort((a, b) => (b.origin.createdAtTimestamp - a.origin.createdAtTimestamp))
+            .filter(position => position.type === 'lent')
+            .sort(
+              (a, b) =>
+                b.origin.createdAtTimestamp - a.origin.createdAtTimestamp
+            )
             .slice(0, 10),
           borrowed: activePositions
-            .filter(position => (position.type === 'borrowed'))
-            .sort((a, b) => (b.origin.createdAtTimestamp - a.origin.createdAtTimestamp))
-            .slice(0, 10),
+            .filter(position => position.type === 'borrowed')
+            .sort(
+              (a, b) =>
+                b.origin.createdAtTimestamp - a.origin.createdAtTimestamp
+            )
+            .slice(0, 10)
         },
         counts
       })
@@ -192,44 +262,59 @@ export const wrapETH = (payload, callback) => {
   const { amount, isWrap, _WETHContractInstance, metamask, web3Utils } = payload
 
   if (isWrap) {
-    _WETHContractInstance.methods.deposit().send({ value: web3Utils.toWei(amount), from: metamask.address })
+    _WETHContractInstance.methods
+      .deposit()
+      .send({ value: web3Utils.toWei(amount), from: metamask.address })
       .then(hash => callback(null, hash.transactionHash))
       .catch(err => callback(err))
   } else {
-    _WETHContractInstance.methods.withdraw(web3Utils.toWei(amount)).send({ from: metamask.address })
+    _WETHContractInstance.methods
+      .withdraw(web3Utils.toWei(amount))
+      .send({ from: metamask.address })
       .then(hash => callback(null, hash.transactionHash))
       .catch(err => callback(err))
   }
 }
 
 export const allowance = (payload, callback) => {
-  const { address, tokenContractInstance, tokenAllowance, newAllowance, tokenTransferProxyContract, web3Utils } = payload
+  const {
+    address,
+    tokenContractInstance,
+    tokenAllowance,
+    newAllowance,
+    tokenTransferProxyContract,
+    web3Utils
+  } = payload
 
   if (
-    tokenAllowance === 0
-    || !tokenContractInstance.methods.increaseApproval
-    || !tokenContractInstance.methods.decreaseApproval) {
-    tokenContractInstance.methods.approve(
-      tokenTransferProxyContract._address,
-      web3Utils.toWei(newAllowance)
-    )
+    tokenAllowance === 0 ||
+    !tokenContractInstance.methods.increaseApproval ||
+    !tokenContractInstance.methods.decreaseApproval
+  ) {
+    tokenContractInstance.methods
+      .approve(
+        tokenTransferProxyContract._address,
+        web3Utils.toWei(newAllowance)
+      )
       .send({ from: address })
       .then(res => callback(null, res.transactionHash))
       .catch(err => callback(err))
   } else {
     if (newAllowance > tokenAllowance) {
-      tokenContractInstance.methods.increaseApproval(
-        tokenTransferProxyContract._address,
-        web3Utils.toWei(newAllowance - tokenAllowance)
-      )
+      tokenContractInstance.methods
+        .increaseApproval(
+          tokenTransferProxyContract._address,
+          web3Utils.toWei(newAllowance - tokenAllowance)
+        )
         .send({ from: address })
         .then(res => callback(null, res.transactionHash))
         .catch(err => callback(err))
     } else {
-      tokenContractInstance.methods.decreaseApproval(
-        tokenTransferProxyContract._address,
-        web3Utils.toWei(tokenAllowance - newAllowance)
-      )
+      tokenContractInstance.methods
+        .decreaseApproval(
+          tokenTransferProxyContract._address,
+          web3Utils.toWei(tokenAllowance - newAllowance)
+        )
         .send({ from: address })
         .then(res => callback(null, res.transactionHash))
         .catch(err => callback(err))
@@ -238,16 +323,74 @@ export const allowance = (payload, callback) => {
 }
 
 export const fillLoan = (payload, callback) => {
-  const { approval, loanOfferRegistryContractInstance, metamask } = payload
+  const { approval, protocolContractInstance, metamask, web3Utils } = payload
 
-  loanOfferRegistryContractInstance.methods.fill(
-    approval._addresses,
-    approval._values,
-    approval._vS,
-    approval._rS,
-    approval._sS,
-    approval._isOfferCreatorLender
-  ).send({ from: metamask.address })
+  /*
+    {
+      "type": "address[6]",
+      "name": "_addresses"
+    },
+    {
+      "type": "uint256[7]",
+      "name": "_values"
+    },
+    {
+      "type": "uint256",
+      "name": "_nonce"
+    },
+    {
+      "type": "uint256",
+      "name": "_kernel_daily_interest_rate"
+    },
+    {
+      "type": "bool",
+      "name": "_is_creator_lender"
+    },
+    {
+      "type": "uint256[2]",
+      "name": "_timestamps"
+    },
+    {
+      "type": "uint256",
+      "name": "_position_duration_in_seconds",
+      "unit": "sec"
+    },
+    {
+      "type": "bytes32",
+      "name": "_kernel_creator_salt"
+    },
+    {
+      "type": "uint256[3][2]",
+      "name": "_sig_data"
+    }
+  */
+  const interestRatePerDay = web3Utils.toWei(parseFloat(approval._values[2]))
+
+  protocolContractInstance.methods
+    .fill_kernel(
+      approval._addresses,
+      [
+        // approval._values[0],
+        approval._values[1],
+        web3Utils.toWei('40'),
+        approval._values[5],
+        approval._values[6],
+        approval._values[7],
+        approval._values[8],
+        approval._values[12]
+      ],
+      parseInt(approval._values[10], 10), // _nonce
+      interestRatePerDay, // _kernel_daily_interest_rate
+      approval._isOfferCreatorLender,
+      [approval._values[4], approval._values[11]], // _timestamps
+      approval._values[3], // _position_duration_in_seconds
+      approval._values[9], // _kernel_creator_salt
+      [
+        [approval._vS[0], approval._rS[0], approval._sS[0]],
+        [approval._vS[1], approval._rS[1], approval._sS[1]]
+      ]
+    )
+    .send({ from: metamask.address })
     .then(hash => callback(null, hash))
     .catch(err => callback(err))
 }
@@ -255,9 +398,8 @@ export const fillLoan = (payload, callback) => {
 export const closePosition = (payload, callback) => {
   const { data, metamask } = payload
 
-  data.origin.loanContract.methods.close(
-    data.origin.collateralToken
-  )
+  data.origin.loanContract.methods
+    .close(data.origin.collateralToken)
     .send({ from: data.origin.borrower })
     .then(hash => {
       setTimeout(callback, 5000, null, hash)
@@ -268,7 +410,8 @@ export const closePosition = (payload, callback) => {
 export const cleanContract = (payload, callback) => {
   const { wranglerLoanRegistry, data } = payload
 
-  wranglerLoanRegistry.methods.releaseContract(data.address)
+  wranglerLoanRegistry.methods
+    .releaseContract(data.address)
     .send({ from: data.origin.userAddress })
     .then(hash => {
       setTimeout(callback, 5000, null, hash)
@@ -279,10 +422,8 @@ export const cleanContract = (payload, callback) => {
 export const topUpPosition = (payload, callback) => {
   const { data, topUpCollateralAmount } = payload
 
-  data.loanContract.methods.topUp(
-    data.collateralToken,
-    topUpCollateralAmount
-  )
+  data.loanContract.methods
+    .topUp(data.collateralToken, topUpCollateralAmount)
     .send({ from: data.userAddress })
     .then(hash => {
       setTimeout(callback, 5000, null, hash)
@@ -293,9 +434,8 @@ export const topUpPosition = (payload, callback) => {
 export const liquidatePosition = (payload, callback) => {
   const { data } = payload
 
-  data.origin.loanContract.methods.liquidate(
-    data.origin.collateralToken
-  )
+  data.origin.loanContract.methods
+    .liquidate(data.origin.collateralToken)
     .send({ from: data.origin.userAddress })
     .then(hash => {
       setTimeout(callback, 5000, null, hash)
@@ -304,7 +444,13 @@ export const liquidatePosition = (payload, callback) => {
 }
 
 export const cancelOrder = async (payload, callback) => {
-  const { data, currentWETHExchangeRate, loanOfferRegistryContractInstance, metamask, web3Utils } = payload
+  const {
+    data,
+    currentWETHExchangeRate,
+    loanOfferRegistryContractInstance,
+    metamask,
+    web3Utils
+  } = payload
 
   // 1. an array of addresses[6] in this order: lender, borrower, relayer, wrangler, collateralToken, loanToken
   const addresses = [
@@ -330,17 +476,26 @@ export const cancelOrder = async (payload, callback) => {
     data.creatorSalt
   ]
 
-  const orderHash = await loanOfferRegistryContractInstance.methods.computeOfferHash(addresses, values).call()
-  const filledOrCancelledLoanAmount = await loanOfferRegistryContractInstance.methods.getFilledOrCancelledLoanAmount(orderHash).call()
-  const cancelledCollateralTokenAmount = web3Utils.substractBN(data.loanAmountOffered, filledOrCancelledLoanAmount)
-  loanOfferRegistryContractInstance.methods.cancel(
-    addresses,
-    values,
-    data.vCreator,
-    data.rCreator,
-    data.sCreator,
-    web3Utils.toWei(cancelledCollateralTokenAmount),
-  ).send({ from: metamask.address })
+  const orderHash = await loanOfferRegistryContractInstance.methods
+    .computeOfferHash(addresses, values)
+    .call()
+  const filledOrCancelledLoanAmount = await loanOfferRegistryContractInstance.methods
+    .getFilledOrCancelledLoanAmount(orderHash)
+    .call()
+  const cancelledCollateralTokenAmount = web3Utils.substractBN(
+    data.loanAmountOffered,
+    filledOrCancelledLoanAmount
+  )
+  loanOfferRegistryContractInstance.methods
+    .cancel(
+      addresses,
+      values,
+      data.vCreator,
+      data.rCreator,
+      data.sCreator,
+      web3Utils.toWei(cancelledCollateralTokenAmount)
+    )
+    .send({ from: metamask.address })
     .then(result => callback(null, result))
     .catch(err => callback(err))
 }

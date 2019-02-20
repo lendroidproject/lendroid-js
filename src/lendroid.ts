@@ -395,11 +395,11 @@ export class Lendroid {
   }
 
   public onFillLoan(approval, callback) {
-    const { contracts, metamask } = this
-    const loanOfferRegistryContractInstance =
-      contracts.contracts.LoanOfferRegistry
+    const { contracts, metamask, web3Utils } = this
+    const protocolContractInstance =
+      contracts.contracts.Protocol
     fillLoan(
-      { approval, loanOfferRegistryContractInstance, metamask },
+      { approval, protocolContractInstance, metamask, web3Utils },
       callback
     )
   }
