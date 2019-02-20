@@ -183,7 +183,7 @@ export class Lendroid {
         web3Utils,
         address,
         contractInstance: this.contracts.contracts[token],
-        tokenTransferProxyContract: this.contracts.contracts.TokenTransferProxy
+        protocolContract: this.contracts.contracts.Protocol
       },
       (err, res) => {
         if (err) {
@@ -352,7 +352,7 @@ export class Lendroid {
     const { web3Utils, contracts, metamask } = this
     const { address } = metamask
     const tokenContractInstance = contracts.contracts[token]
-    const tokenTransferProxyContract = contracts.contracts.TokenTransferProxy
+    const protocolContract = contracts.contracts.Protocol
     const tokenAllowance = contracts.allowances[token]
     if (newAllowance === tokenAllowance) {
       return
@@ -365,7 +365,7 @@ export class Lendroid {
         tokenContractInstance,
         tokenAllowance,
         newAllowance,
-        tokenTransferProxyContract
+        protocolContract
       },
       (err, hash) => {
         if (err) {

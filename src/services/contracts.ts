@@ -68,7 +68,7 @@ export const fetchAllowanceByToken = (payload, callback) => {
   const {
     address,
     contractInstance,
-    tokenTransferProxyContract,
+    protocolContract,
     web3Utils
   } = payload
 
@@ -76,7 +76,7 @@ export const fetchAllowanceByToken = (payload, callback) => {
     return callback({ message: 'No allowance() in Contract Instance' })
   }
   contractInstance.methods
-    .allowance(address, tokenTransferProxyContract._address)
+    .allowance(address, protocolContract._address)
     .call({ from: address })
     .then(res => {
       const value = web3Utils.fromWei(res)
@@ -282,7 +282,7 @@ export const allowance = (payload, callback) => {
     tokenContractInstance,
     tokenAllowance,
     newAllowance,
-    tokenTransferProxyContract,
+    protocolContract,
     web3Utils
   } = payload
 
@@ -293,7 +293,7 @@ export const allowance = (payload, callback) => {
   ) {
     tokenContractInstance.methods
       .approve(
-        tokenTransferProxyContract._address,
+        protocolContract._address,
         web3Utils.toWei(newAllowance)
       )
       .send({ from: address })
@@ -303,7 +303,7 @@ export const allowance = (payload, callback) => {
     if (newAllowance > tokenAllowance) {
       tokenContractInstance.methods
         .increaseApproval(
-          tokenTransferProxyContract._address,
+          protocolContract._address,
           web3Utils.toWei(newAllowance - tokenAllowance)
         )
         .send({ from: address })
@@ -312,7 +312,7 @@ export const allowance = (payload, callback) => {
     } else {
       tokenContractInstance.methods
         .decreaseApproval(
-          tokenTransferProxyContract._address,
+          protocolContract._address,
           web3Utils.toWei(tokenAllowance - newAllowance)
         )
         .send({ from: address })
