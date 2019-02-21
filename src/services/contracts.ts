@@ -487,11 +487,6 @@ export const cancelOrder = async (payload, callback) => {
       data.loanDuration
     )
     .call()
-  let sign = await web3Utils.eth.sign(orderHash, metamask.address)
-  sign = sign.substr(2)
-  const rProtocol = `0x${sign.slice(0, 64)}`
-  const sProtocol = `0x${sign.slice(64, 128)}`
-  const vProtocol = sign.slice(128, 130) === '00' ? 27 : 28
   const filledOrCancelledLoanAmount = await protocolContractInstance.methods
     .filled_or_cancelled_loan_amount(orderHash)
     .call()
@@ -503,7 +498,7 @@ export const cancelOrder = async (payload, callback) => {
     .cancel_kernel(
       addresses,
       values,
-      parseInt(data.offerExpiry, 10) + parseInt(data.loanDuration, 10),
+      parseInt(data.offerExpiry, 10),
       data.creatorSalt,
       web3Utils.toWei(data.interestRatePerDay),
       data.loanDuration,
