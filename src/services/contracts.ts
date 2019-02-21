@@ -515,8 +515,9 @@ export const cancelOrder = async (payload, callback) => {
       addresses,
       values,
       [data.offerExpiry, data.offerExpiry + data.loanDuration],
-      data.loanDuration,
       data.creatorSalt,
+      web3Utils.toWei(data.interestRatePerDay),
+      data.loanDuration,
       [
         [data.vCreator, data.rCreator, data.sCreator],
         [vProtocol, rProtocol, sProtocol]
