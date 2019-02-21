@@ -356,31 +356,18 @@ export const fillLoan = (payload, callback) => {
       "name": "_sig_data"
     }
   */
-  const interestRatePerDay = web3Utils.toWei(parseFloat(approval._values[2]))
 
   protocolContractInstance.methods
     .fill_kernel(
       approval._addresses,
-      [
-        // approval._values[0],
-        approval._values[1],
-        web3Utils.toWei('40'),
-        approval._values[5],
-        approval._values[6],
-        approval._values[7],
-        approval._values[8],
-        approval._values[12]
-      ],
-      parseInt(approval._values[10], 10), // _nonce
-      interestRatePerDay, // _kernel_daily_interest_rate
-      approval._isOfferCreatorLender,
-      [approval._values[4], approval._values[11]], // _timestamps
-      approval._values[3], // _position_duration_in_seconds
-      approval._values[9], // _kernel_creator_salt
-      [
-        [approval._vS[0], approval._rS[0], approval._sS[0]],
-        [approval._vS[1], approval._rS[1], approval._sS[1]]
-      ]
+      approval._values,
+      approval._nonce,
+      web3Utils.toWei(parseFloat(approval._kernel_daily_interest_rate)), // _kernel_daily_interest_rate
+      approval._is_creator_lender,
+      approval._timestamps, // _timestamps
+      approval._position_duration_in_seconds, // _position_duration_in_seconds
+      approval._kernel_creator_salt, // _kernel_creator_salt
+      approval._sig_data
     )
     .send({ from: metamask.address })
     .then(hash => callback(null, hash))
