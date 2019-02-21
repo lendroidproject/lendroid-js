@@ -516,7 +516,10 @@ export const cancelOrder = async (payload, callback) => {
     .cancel_kernel(
       addresses,
       values,
-      [data.offerExpiry, data.offerExpiry + data.loanDuration],
+      [
+        parseInt(data.offerExpiry, 10),
+        parseInt(data.offerExpiry, 10) + parseInt(data.loanDuration, 10)
+      ],
       data.creatorSalt,
       web3Utils.toWei(data.interestRatePerDay),
       data.loanDuration,
