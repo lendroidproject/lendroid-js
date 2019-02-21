@@ -445,15 +445,15 @@ export class Lendroid {
 
   public onCancelOrder(data, callback) {
     const { web3Utils, contracts, metamask } = this
-    const loanOfferRegistryContractInstance =
-      contracts.contracts.LoanOfferRegistry
+    const protocolContractInstance =
+      contracts.contracts.Protocol
     const { currentWETHExchangeRate } = this.exchangeRates
     cancelOrder(
       {
         web3Utils,
         data,
         currentWETHExchangeRate,
-        loanOfferRegistryContractInstance,
+        protocolContractInstance,
         metamask
       },
       (err, result) => {

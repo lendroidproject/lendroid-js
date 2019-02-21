@@ -65,12 +65,7 @@ export const fetchBallanceByToken = (payload, callback) => {
 }
 
 export const fetchAllowanceByToken = (payload, callback) => {
-  const {
-    address,
-    contractInstance,
-    protocolContract,
-    web3Utils
-  } = payload
+  const { address, contractInstance, protocolContract, web3Utils } = payload
 
   if (!contractInstance.methods.allowance) {
     return callback({ message: 'No allowance() in Contract Instance' })
@@ -292,10 +287,7 @@ export const allowance = (payload, callback) => {
     !tokenContractInstance.methods.decreaseApproval
   ) {
     tokenContractInstance.methods
-      .approve(
-        protocolContract._address,
-        web3Utils.toWei(newAllowance)
-      )
+      .approve(protocolContract._address, web3Utils.toWei(newAllowance))
       .send({ from: address })
       .then(res => callback(null, res.transactionHash))
       .catch(err => callback(err))
@@ -444,13 +436,7 @@ export const liquidatePosition = (payload, callback) => {
 }
 
 export const cancelOrder = async (payload, callback) => {
-  const {
-    data,
-    currentWETHExchangeRate,
-    loanOfferRegistryContractInstance,
-    metamask,
-    web3Utils
-  } = payload
+  const { data, protocolContractInstance, metamask, web3Utils } = payload
 
   // 1. an array of addresses[6] in this order: lender, borrower, relayer, wrangler, collateralToken, loanToken
   const addresses = [
@@ -465,34 +451,76 @@ export const cancelOrder = async (payload, callback) => {
   // 2. an array of uints[9] in this order: loanAmountOffered, interestRatePerDay, loanDuration, offerExpiryTimestamp, relayerFeeLST, monitoringFeeLST, rolloverFeeLST, closureFeeLST, creatorSalt
   const values = [
     data.loanAmountOffered,
-    data.interestRatePerDay,
-    data.loanDuration,
-    // data.offerExpiryTimestamp,
-    data.offerExpiry,
+    // data.interestRatePerDay,
+    // data.loanDuration,
+    // data.offerExpiry,
     data.relayerFeeLST,
     data.monitoringFeeLST,
     data.rolloverFeeLST,
-    data.closureFeeLST,
-    data.creatorSalt
+    data.closureFeeLST
+    // data.creatorSalt
   ]
 
-  const orderHash = await loanOfferRegistryContractInstance.methods
-    .computeOfferHash(addresses, values)
+  // [
+  //   this.lender, this.borrower, this.relayer, this.wrangler, this.BorrowToken.address, this.LendToken.address
+  // ],
+  // [
+  //   this.position_borrow_currency_fill_value, this.kernel_lending_currency_maximum_value,
+  //   this.kernel_relayer_fee, this.kernel_monitoring_fee, this.kernel_rollover_fee, this.kernel_closure_fee,
+  //   this.position_lending_currency_fill_value
+  // ],
+  // _nonce,
+  // this.kernel_daily_interest_rate,
+  // _is_creator_lender,
+  // [
+  //   this.kernel_expires_at, _wrangler_approval_expiry_timestamp
+  // ],
+  // this.kernel_position_duration_in_seconds,
+  // this.kernel_creator_salt,
+  // [
+  //   [
+  //     `${_kernel_creator_signature.slice(128, 130)}` === '00' ? web3._extend.utils.toBigNumber(27) : web3._extend.utils.toBigNumber(28),
+  //     web3._extend.utils.toBigNumber(`0x${_kernel_creator_signature.slice(0, 64)}`),
+  //     web3._extend.utils.toBigNumber(`0x${_kernel_creator_signature.slice(64, 128)}`)
+  //   ],
+  //   [
+  //     `${_wrangler_signature.slice(128, 130)}` === '00' ? web3._extend.utils.toBigNumber(27) : web3._extend.utils.toBigNumber(28),
+  //     web3._extend.utils.toBigNumber(`0x${_wrangler_signature.slice(0, 64)}`),
+  //     web3._extend.utils.toBigNumber(`0x${_wrangler_signature.slice(64, 128)}`)
+  //   ],
+  // ],
+
+  const orderHash = await protocolContractInstance.methods
+    .kernel_hash(
+      addresses,
+      values,
+      data.offerExpiry,
+      data.creatorSalt,
+      web3Utils.toWei(data.interestRatePerDay),
+      data.loanDuration
+    )
     .call()
-  const filledOrCancelledLoanAmount = await loanOfferRegistryContractInstance.methods
-    .getFilledOrCancelledLoanAmount(orderHash)
+  const vProtocol = orderHash.slice(128, 130) === '00' ? 27 : 28
+  const rProtocol = `0x${orderHash.slice(0, 64)}`
+  const sProtocol = `0x${orderHash.slice(64, 128)}`
+  const filledOrCancelledLoanAmount = await protocolContractInstance.methods
+    .filled_or_cancelled_loan_amount(orderHash)
     .call()
   const cancelledCollateralTokenAmount = web3Utils.substractBN(
     data.loanAmountOffered,
     filledOrCancelledLoanAmount
   )
-  loanOfferRegistryContractInstance.methods
-    .cancel(
+  protocolContractInstance.methods
+    .cancel_kernel(
       addresses,
       values,
-      data.vCreator,
-      data.rCreator,
-      data.sCreator,
+      [data.offerExpiry, data.offerExpiry + data.loanDuration],
+      data.loanDuration,
+      data.creatorSalt,
+      [
+        [data.vCreator, data.rCreator, data.sCreator],
+        [vProtocol, rProtocol, sProtocol]
+      ],
       web3Utils.toWei(cancelledCollateralTokenAmount)
     )
     .send({ from: metamask.address })
