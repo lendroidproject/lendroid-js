@@ -481,10 +481,10 @@ export const cancelOrder = async (payload, callback) => {
     .kernel_hash(
       addresses,
       values,
-      data.offerExpiry,
+      parseInt(data.offerExpiry, 10),
       data.creatorSalt,
-      web3Utils.toWei(data.interestRatePerDay),
-      data.loanDuration
+      parseFloat(data.interestRatePerDay),
+      parseInt(data.loanDuration, 10)
     )
     .call()
   const filledOrCancelledLoanAmount = await protocolContractInstance.methods
@@ -494,15 +494,33 @@ export const cancelOrder = async (payload, callback) => {
     data.loanAmountOffered,
     filledOrCancelledLoanAmount
   )
+  console.log([
+    addresses,
+    values,
+    parseInt(data.offerExpiry, 10),
+    data.creatorSalt,
+    parseFloat(data.interestRatePerDay),
+    parseInt(data.loanDuration, 10),
+    [
+      data.vCreator,
+      data.rCreator,
+      data.sCreator
+    ],
+    web3Utils.toWei(cancelledCollateralTokenAmount)
+  ])
   protocolContractInstance.methods
     .cancel_kernel(
       addresses,
       values,
       parseInt(data.offerExpiry, 10),
       data.creatorSalt,
-      web3Utils.toWei(data.interestRatePerDay),
-      data.loanDuration,
-      [data.vCreator, data.rCreator, data.sCreator],
+      parseFloat(data.interestRatePerDay),
+      parseInt(data.loanDuration, 10),
+      [
+        data.vCreator,
+        data.rCreator,
+        data.sCreator
+      ],
       web3Utils.toWei(cancelledCollateralTokenAmount)
     )
     .send({ from: metamask.address })

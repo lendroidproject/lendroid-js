@@ -263,7 +263,7 @@ export class Lendroid {
       (postData.relayerFeeLST = web3Utils.toWei(postData.relayerFeeLST)),
       (postData.monitoringFeeLST = web3Utils.toWei(postData.monitoringFeeLST)),
       (postData.rolloverFeeLST = web3Utils.toWei(postData.rolloverFeeLST)),
-      (postData.closureFeeLST = web3Utils.toWei(postData.closureFeeLST)),
+      (postData.closureFeeLST = web3Utils.toWei(postData.closureFeeLST))
       // postData.creatorSalt
     ]
 
@@ -278,9 +278,9 @@ export class Lendroid {
           postData.ecSignatureCreator = result
           result = result.substr(2)
 
-          postData.rCreator = `0x${result.slice(0, 64)}`
-          postData.sCreator = `0x${result.slice(64, 128)}`
-          postData.vCreator = web3Utils.toDecimal(`0x${result.slice(128, 130)}`)
+          postData.rCreator = web3Utils.toBN(`0x${result.slice(0, 64)}`).toString()
+          postData.sCreator = web3Utils.toBN(`0x${result.slice(64, 128)}`).toString()
+          postData.vCreator = web3Utils.toBN(`${result.slice(128, 130)}` === '00' ? 27 : 28).toString()
 
           createOrder(this.apiEndpoint, postData, (err, res) => {
             if (err) {
@@ -298,10 +298,10 @@ export class Lendroid {
       .kernel_hash(
         addresses,
         values,
-        postData.offerExpiry,
+        parseInt(postData.offerExpiry, 10),
         postData.creatorSalt,
-        web3Utils.toWei(postData.interestRatePerDay),
-        postData.loanDuration
+        parseFloat(postData.interestRatePerDay),
+        parseInt(postData.loanDuration, 10)
       )
       .call()
     onSign(orderHash)
@@ -396,8 +396,7 @@ export class Lendroid {
 
   public onFillLoan(approval, callback) {
     const { contracts, metamask, web3Utils } = this
-    const protocolContractInstance =
-      contracts.contracts.Protocol
+    const protocolContractInstance = contracts.contracts.Protocol
     fillLoan(
       { approval, protocolContractInstance, metamask, web3Utils },
       callback
@@ -445,8 +444,7 @@ export class Lendroid {
 
   public onCancelOrder(data, callback) {
     const { web3Utils, contracts, metamask } = this
-    const protocolContractInstance =
-      contracts.contracts.Protocol
+    const protocolContractInstance = contracts.contracts.Protocol
     const { currentWETHExchangeRate } = this.exchangeRates
     cancelOrder(
       {
