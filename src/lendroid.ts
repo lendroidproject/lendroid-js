@@ -278,9 +278,9 @@ export class Lendroid {
           postData.ecSignatureCreator = result
           result = result.substr(2)
 
-          postData.rCreator = web3Utils.toBN(`0x${result.slice(0, 64)}`).toString()
-          postData.sCreator = web3Utils.toBN(`0x${result.slice(64, 128)}`).toString()
-          postData.vCreator = web3Utils.toBN(`${result.slice(128, 130)}` === '00' ? 27 : 28).toString()
+          postData.rCreator = `0x${result.slice(0, 64)}`
+          postData.sCreator = `0x${result.slice(64, 128)}`
+          postData.vCreator = `${result.slice(128, 130)}` === '00' ? '27' : '28'
 
           createOrder(this.apiEndpoint, postData, (err, res) => {
             if (err) {

@@ -501,11 +501,7 @@ export const cancelOrder = async (payload, callback) => {
     data.creatorSalt,
     parseFloat(data.interestRatePerDay),
     parseInt(data.loanDuration, 10),
-    [
-      data.vCreator,
-      data.rCreator,
-      data.sCreator
-    ],
+    data.ecSignatureCreator,
     web3Utils.toWei(cancelledCollateralTokenAmount)
   ])
   protocolContractInstance.methods
@@ -516,11 +512,7 @@ export const cancelOrder = async (payload, callback) => {
       data.creatorSalt,
       parseFloat(data.interestRatePerDay),
       parseInt(data.loanDuration, 10),
-      [
-        data.vCreator,
-        data.rCreator,
-        data.sCreator
-      ],
+      data.ecSignatureCreator,
       web3Utils.toWei(cancelledCollateralTokenAmount)
     )
     .send({ from: metamask.address })
