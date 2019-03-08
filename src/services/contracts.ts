@@ -317,57 +317,27 @@ export const allowance = (payload, callback) => {
 export const fillLoan = (payload, callback) => {
   const { approval, protocolContractInstance, metamask, web3Utils } = payload
 
-  /*
-    {
-      "type": "address[6]",
-      "name": "_addresses"
-    },
-    {
-      "type": "uint256[7]",
-      "name": "_values"
-    },
-    {
-      "type": "uint256",
-      "name": "_nonce"
-    },
-    {
-      "type": "uint256",
-      "name": "_kernel_daily_interest_rate"
-    },
-    {
-      "type": "bool",
-      "name": "_is_creator_lender"
-    },
-    {
-      "type": "uint256[2]",
-      "name": "_timestamps"
-    },
-    {
-      "type": "uint256",
-      "name": "_position_duration_in_seconds",
-      "unit": "sec"
-    },
-    {
-      "type": "bytes32",
-      "name": "_kernel_creator_salt"
-    },
-    {
-      "type": "uint256[3][2]",
-      "name": "_sig_data"
-    }
-  */
-
   protocolContractInstance.methods
     .fill_kernel(
       approval._addresses,
-      approval._values,
+        // approval._values,
+        [
+        web3Utils.toBN(approval._values[0]).toString(),
+        web3Utils.toBN(approval._values[1]).toString(),
+        web3Utils.toBN(approval._values[2]).toString(),
+        web3Utils.toBN(approval._values[3]).toString(),
+        web3Utils.toBN(approval._values[4]).toString(),
+        web3Utils.toBN(approval._values[5]).toString(),
+        web3Utils.toBN(approval._values[6]).toString(),
+      ],
       approval._nonce,
-      web3Utils.toWei(parseFloat(approval._kernel_daily_interest_rate)), // _kernel_daily_interest_rate
+      approval._kernel_daily_interest_rate, // _kernel_daily_interest_rate
       approval._is_creator_lender,
       approval._timestamps, // _timestamps
       approval._position_duration_in_seconds, // _position_duration_in_seconds
       approval._kernel_creator_salt, // _kernel_creator_salt
-      approval._sig_data
+      approval._sig_data_kernel_creator,
+      approval._sig_data_wrangler
     )
     .send({ from: metamask.address })
     .then(hash => callback(null, hash))
