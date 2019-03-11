@@ -3,7 +3,7 @@ import * as ABIs from './ContractABIs'
 export const CONTRACT_ADDRESSES = {
   Protocol: {
     1: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    42: '0x7396f68Da592acF67260BB68E7da415887ae9A6c',
+    42: '0xDFf4e9eAeC879A3e0E4b525FF147a2eB3BFd11a5',
     def: ABIs.ProtocolABI
   },
   WETH: {
