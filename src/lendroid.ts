@@ -199,15 +199,14 @@ export class Lendroid {
   public fetchLoanPositions(specificAddress = null) {
     const { web3Utils, metamask, contracts } = this
     const { address } = metamask
-    const { Loan, LoanRegistry } = contracts.contracts
+    const { Protocol } = contracts.contracts
     this.loading.positions = true
 
     fetchLoanPositions(
       {
         web3Utils,
         address,
-        Loan,
-        LoanRegistry,
+        Protocol,
         specificAddress,
         oldPostions: this.contracts.positions
       },
@@ -300,7 +299,7 @@ export class Lendroid {
         values,
         parseInt(postData.offerExpiry, 10),
         postData.creatorSalt,
-        parseFloat(postData.interestRatePerDay),
+        parseInt(postData.interestRatePerDay, 10),
         parseInt(postData.loanDuration, 10)
       )
       .call()
