@@ -202,7 +202,7 @@ export const fetchLoanPositions = async (payload, callback) => {
         statusLabel = 'Unknown'
     }
 
-    position.loanNumber = hash
+    position.loanNumber = index + 1
     position.amount = lend_currency_filled_value
     position.totalInterest = Math.max(
       web3Utils.substract(lend_currency_owed_value, lend_currency_filled_value),
@@ -225,6 +225,31 @@ export const fetchLoanPositions = async (payload, callback) => {
       loanStatus: status,
       kernel_creator,
       collateralToken: hash
+    }
+
+    position.detail = {
+      index,
+      kernel_creator,
+      lender,
+      borrower,
+      relayer,
+      wrangler,
+      created_at,
+      updated_at,
+      expires_at,
+      borrow_currency_address,
+      lend_currency_address,
+      borrow_currency_value,
+      borrow_currency_current_value,
+      lend_currency_filled_value,
+      lend_currency_owed_value,
+      status,
+      nonce,
+      relayer_fee,
+      monitoring_fee,
+      rollover_fee,
+      closure_fee,
+      hash
     }
   })
 
