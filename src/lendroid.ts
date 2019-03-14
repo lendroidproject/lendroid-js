@@ -272,7 +272,8 @@ export class Lendroid {
 
     const onSign = hash => {
       web3Utils.eth
-        .sign(hash, address)
+        .personal.sign(hash, address)
+        // .sign(hash, address)
         .then(result => {
           postData.ecSignatureCreator = result
           result = result.substr(2)
