@@ -20,27 +20,7 @@ export const CONTRACT_ADDRESSES = {
     42: '0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
     def: ABIs.DAIABI
   },
-  LoanOfferRegistry: {
-    42: '0xef7001fe7f77cef83d931ebb651f8bb72d0d602e',
-    def: ABIs.LoanOfferRegisteryABI
-  },
-  LoanRegistry: {
-    42: '0x4b946fdf267f542a22f25c7a58b7fef2de90843b',
-    def: ABIs.LoanRegistryABI
-  },
-  Loan: {
-    42: '0xa758f4da5bccbf8fca61dd3fdb8d601648160522',
-    def: ABIs.LoanABI
-  },
-  WranglerLoanRegistry: {
-    42: '0x974ce7bc3ab45714a9bbd3bd6e7cf50b10c7e30c',
-    def: ABIs.WranglerLoanRegistryABI
-  },
-  TokenTransferProxy: {
-    42: '0xf1dbcef9820a758eead322f525e38c9289dc09d0',
-    def: ABIs.TokenTransferProxyABI
-  },
 }
 
 export const CONTRACT_TOKENS = Object.keys(CONTRACT_ADDRESSES)
-export const BALLANCE_TOKENS = CONTRACT_TOKENS.filter(token => token.length < 5 && token !== 'Loan')
+export const BALLANCE_TOKENS = CONTRACT_TOKENS.filter(token => token.length < 5)

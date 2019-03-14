@@ -8,10 +8,9 @@ import {
   fetchContractByToken,
   fetchBallanceByToken,
   fetchAllowanceByToken,
-  fetchLoanPositions,
+  fetchPositions,
   fillLoan,
   closePosition,
-  cleanContract,
   topUpPosition,
   liquidatePosition,
   fetchOrders,
@@ -73,7 +72,7 @@ export class Lendroid {
     this.fetchETHBallance = this.fetchETHBallance.bind(this)
     this.fetchBallanceByToken = this.fetchBallanceByToken.bind(this)
     this.fetchAllowanceByToken = this.fetchAllowanceByToken.bind(this)
-    this.fetchLoanPositions = this.fetchLoanPositions.bind(this)
+    this.onFetchPositions = this.onFetchPositions.bind(this)
     this.onCreateOrder = this.onCreateOrder.bind(this)
     this.onFillOrderServer = this.onFillOrderServer.bind(this)
     this.onDeleteOrder = this.onDeleteOrder.bind(this)
@@ -84,7 +83,6 @@ export class Lendroid {
     this.onClosePosition = this.onClosePosition.bind(this)
     this.onTopUpPosition = this.onTopUpPosition.bind(this)
     this.onLiquidatePosition = this.onLiquidatePosition.bind(this)
-    this.onCleanContract = this.onCleanContract.bind(this)
     this.onCancelOrder = this.onCancelOrder.bind(this)
 
     setInterval(async () => {
@@ -196,13 +194,13 @@ export class Lendroid {
     setTimeout(this.fetchAllowanceByToken, 5000, token)
   }
 
-  public fetchLoanPositions(specificAddress = null) {
+  public onFetchPositions(specificAddress = null) {
     const { web3Utils, metamask, contracts } = this
     const { address } = metamask
     const { Protocol } = contracts.contracts
     this.loading.positions = true
 
-    fetchLoanPositions(
+    fetchPositions(
       {
         web3Utils,
         address,
@@ -222,10 +220,8 @@ export class Lendroid {
   }
 
   public fetchContracts() {
-    this.fetchContractByToken('TokenTransferProxy', () => {
-      Constants.CONTRACT_TOKENS.forEach(token => {
-        this.fetchContractByToken(token, null)
-      })
+    Constants.CONTRACT_TOKENS.forEach(token => {
+      this.fetchContractByToken(token, null)
     })
   }
 
@@ -271,8 +267,8 @@ export class Lendroid {
       : null
 
     const onSign = hash => {
-      web3Utils.eth
-        .personal.sign(hash, address)
+      web3Utils.eth.personal
+        .sign(hash, address)
         // .sign(hash, address)
         .then(result => {
           postData.ecSignatureCreator = result
@@ -413,17 +409,6 @@ export class Lendroid {
     })
   }
 
-  public onCleanContract(data, callback) {
-    const { contracts, metamask } = this
-    const wranglerLoanRegistry = contracts.contracts.WranglerLoanRegistry
-    cleanContract({ metamask, data, wranglerLoanRegistry }, (err, result) => {
-      if (err) {
-        Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-      }
-      callback(err, result)
-    })
-  }
-
   public onTopUpPosition(data, topUpCollateralAmount, callback) {
     topUpPosition({ data, topUpCollateralAmount }, (err, result) => {
       if (err) {
@@ -478,7 +463,7 @@ export class Lendroid {
   }
 
   public debounce(func, wait, immediate) {
-    let timeout = -1
+    let timeout: any = -1
     //tslint:disable
     return function() {
       const context = this
@@ -527,12 +512,9 @@ export class Lendroid {
         this.fetchAllowanceByToken(token)
       }
 
-      if (token === 'LoanRegistry' || token === 'Loan') {
-        if (
-          this.contracts.contracts.Loan &&
-          this.contracts.contracts.LoanRegistry
-        ) {
-          this.fetchLoanPositions()
+      if (token === 'Protocol') {
+        if (this.contracts.contracts.Protocol) {
+          this.onFetchPositions()
         }
       }
     })

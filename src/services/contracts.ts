@@ -84,14 +84,14 @@ const fillZero = (len = 40) => {
   return `0x${new Array(len).fill(0).join('')}`
 }
 
-export const fetchLoanPositions = async (payload, callback) => {
+export const fetchPositions = async (payload, callback) => {
   const { address, Protocol, specificAddress, oldPostions, web3Utils } = payload
   const lendCount = await Protocol.methods.lend_positions_count(address).call()
   const borrowCount = await Protocol.methods
     .borrow_positions_count(address)
     .call()
 
-  let positions: any[] = []
+  const positions: any[] = []
   const positionExists = {}
   for (let i = 1; i <= lendCount; i++) {
     const positionHash = await Protocol.methods
@@ -280,166 +280,6 @@ export const fetchLoanPositions = async (payload, callback) => {
     },
     counts: [lendCount, borrowCount]
   })
-
-  // Protocol.methods
-  //   .getLoanCounts(address)
-  //   .call()
-  //   .then(async res => {
-  //     const counts = res
-  //     counts[0] = Number(counts[0])
-  //     counts[1] = Number(counts[1])
-  //     let positions: any[] = []
-
-  //     const lentPositionExists = {}
-  //     for (let i = 0; i < counts[0]; i++) {
-  //       const response = await LoanRegistry.methods.lentLoans(address, i).call()
-  //       if (!lentPositionExists[response]) {
-  //         lentPositionExists[response] = true
-  //         positions.push({
-  //           type: 'lent',
-  //           address: response
-  //         })
-  //       }
-  //     }
-
-  //     const borrowedPositionExists = {}
-  //     for (let i = 0; i < counts[1]; i++) {
-  //       const response = await LoanRegistry.methods
-  //         .borrowedLoans(address, i)
-  //         .call()
-  //       if (!borrowedPositionExists[response]) {
-  //         borrowedPositionExists[response] = true
-  //         positions.push({
-  //           type: 'borrowed',
-  //           address: response
-  //         })
-  //       }
-  //     }
-
-  //     if (specificAddress) {
-  //       positions = positions.filter(
-  //         position => position.address === specificAddress
-  //       )
-  //     }
-  //     for (const position of positions) {
-  //       const loanContract = web3Utils.createContract(loanABI, position.address)
-
-  //       // a. `AMOUNT` is`Loan.loanAmountBorrowed()`
-  //       // b. `TOTAL INTEREST` is`Loan.loanAmountOwed() - Loan.loanAmountBorrowed()`
-  //       // c. `TERM` is`Loan.expiresAtTimestamp - currentTimestamp`
-  //       // d. `LOAN HEALTH` is calculated as follows:
-  //       //   i. `var currentCollateralAmount = Loan.loanAmountBorrowed() / eth_To_DAI_Rate`
-  //       //   ii.display the result of`Loan.collateralAmount() / currentCollateralAmount * 100`
-  //       let loanAmountBorrowed = await loanContract.methods
-  //         .loanAmountBorrowed()
-  //         .call()
-  //       loanAmountBorrowed = web3Utils.fromWei(loanAmountBorrowed)
-  //       const loanStatus = await loanContract.methods.status().call()
-  //       let loanAmountOwed = await loanContract.methods.loanAmountOwed().call()
-  //       loanAmountOwed = web3Utils.fromWei(loanAmountOwed)
-  //       let collateralAmount = await loanContract.methods
-  //         .collateralAmount()
-  //         .call()
-  //       collateralAmount = web3Utils.fromWei(collateralAmount)
-  //       let expiresAtTimestamp = await loanContract.methods
-  //         .expiresAtTimestamp()
-  //         .call()
-  //       expiresAtTimestamp = expiresAtTimestamp * 1000
-  //       let createdAtTimestamp = await loanContract.methods
-  //         .createdAtTimestamp()
-  //         .call()
-  //       createdAtTimestamp = createdAtTimestamp * 1000
-  //       const borrower = await loanContract.methods.borrower().call()
-  //       const lender = await loanContract.methods.lender().call()
-  //       const wrangler = await loanContract.methods.wrangler().call()
-  //       const owner = await loanContract.methods.owner().call()
-  //       const collateralToken = await loanContract.methods
-  //         .collateralToken()
-  //         .call()
-
-  //       position.loanNumber = position.address
-  //       position.amount = loanAmountBorrowed
-  //       position.totalInterest = web3Utils.substract(
-  //         loanAmountOwed,
-  //         loanAmountBorrowed
-  //       )
-  //       position.totalInterest =
-  //         position.totalInterest < 0 ? 0 : position.totalInterest
-  //       position.term =
-  //         (parseInt(expiresAtTimestamp.toString(), 10) - Date.now()) / 1000
-
-  //       let status = 'Unknown'
-  //       switch (Number(loanStatus)) {
-  //         case Constants.LOAN_STATUS_ACTIVE:
-  //           status = 'Active'
-  //           break
-  //         case Constants.LOAN_STATUS_CLOSED:
-  //           status = 'Closed'
-  //           break
-  //         case Constants.LOAN_STATUS_LIQUIDATED:
-  //           status = 'Liquidated'
-  //           break
-  //         case Constants.LOAN_STATUS_LIQUIDATING:
-  //           status = 'Liquidating'
-  //           break
-  //         case Constants.LOAN_STATUS_DEACTIVATED:
-  //           status = 'Deactivated'
-  //           break
-  //         default:
-  //           status = 'Unknown'
-  //       }
-
-  //       position.status = status
-
-  //       position.origin = {
-  //         loanAmountBorrowed,
-  //         loanAmountOwed,
-  //         collateralAmount,
-  //         expiresAtTimestamp,
-  //         createdAtTimestamp,
-  //         loanContract,
-  //         borrower,
-  //         lender,
-  //         wrangler,
-  //         userAddress: address,
-  //         loanStatus: Number(loanStatus),
-  //         owner,
-  //         collateralToken
-  //       }
-  //     }
-
-  //     if (specificAddress) {
-  //       let oldPos = oldPostions.lent.concat(oldPostions.borrowed)
-  //       oldPos = oldPos.filter(position => position.address === specificAddress)
-  //       positions = positions.concat(oldPos)
-  //     }
-
-  //     const activePositions = positions.filter(
-  //       position =>
-  //         position.origin.loanStatus !== Constants.LOAN_STATUS_DEACTIVATED
-  //     )
-
-  //     callback(null, {
-  //       positions: {
-  //         lent: activePositions
-  //           .filter(position => position.type === 'lent')
-  //           .sort(
-  //             (a, b) =>
-  //               b.origin.createdAtTimestamp - a.origin.createdAtTimestamp
-  //           )
-  //           .slice(0, 10),
-  //         borrowed: activePositions
-  //           .filter(position => position.type === 'borrowed')
-  //           .sort(
-  //             (a, b) =>
-  //               b.origin.createdAtTimestamp - a.origin.createdAtTimestamp
-  //           )
-  //           .slice(0, 10)
-  //       },
-  //       counts
-  //     })
-  //   })
-  //   .catch(err => callback(err))
 }
 
 export const wrapETH = (payload, callback) => {
@@ -545,18 +385,6 @@ export const closePosition = (payload, callback) => {
     .catch(err => callback(err))
 }
 
-export const cleanContract = (payload, callback) => {
-  const { wranglerLoanRegistry, data } = payload
-
-  wranglerLoanRegistry.methods
-    .releaseContract(data.address)
-    .send({ from: data.origin.userAddress })
-    .then(hash => {
-      setTimeout(callback, 5000, null, hash)
-    })
-    .catch(err => callback(err))
-}
-
 export const topUpPosition = (payload, callback) => {
   const { data, topUpCollateralAmount } = payload
 
@@ -606,35 +434,6 @@ export const cancelOrder = async (payload, callback) => {
     data.closureFeeLST
     // data.creatorSalt
   ]
-
-  // [
-  //   this.lender, this.borrower, this.relayer, this.wrangler, this.BorrowToken.address, this.LendToken.address
-  // ],
-  // [
-  //   this.position_borrow_currency_fill_value, this.kernel_lending_currency_maximum_value,
-  //   this.kernel_relayer_fee, this.kernel_monitoring_fee, this.kernel_rollover_fee, this.kernel_closure_fee,
-  //   this.position_lending_currency_fill_value
-  // ],
-  // _nonce,
-  // this.kernel_daily_interest_rate,
-  // _is_creator_lender,
-  // [
-  //   this.kernel_expires_at, _wrangler_approval_expiry_timestamp
-  // ],
-  // this.kernel_position_duration_in_seconds,
-  // this.kernel_creator_salt,
-  // [
-  //   [
-  //     `${_kernel_creator_signature.slice(128, 130)}` === '00' ? web3._extend.utils.toBigNumber(27) : web3._extend.utils.toBigNumber(28),
-  //     web3._extend.utils.toBigNumber(`0x${_kernel_creator_signature.slice(0, 64)}`),
-  //     web3._extend.utils.toBigNumber(`0x${_kernel_creator_signature.slice(64, 128)}`)
-  //   ],
-  //   [
-  //     `${_wrangler_signature.slice(128, 130)}` === '00' ? web3._extend.utils.toBigNumber(27) : web3._extend.utils.toBigNumber(28),
-  //     web3._extend.utils.toBigNumber(`0x${_wrangler_signature.slice(0, 64)}`),
-  //     web3._extend.utils.toBigNumber(`0x${_wrangler_signature.slice(64, 128)}`)
-  //   ],
-  // ],
 
   const orderHash = await protocolContractInstance.methods
     .kernel_hash(
