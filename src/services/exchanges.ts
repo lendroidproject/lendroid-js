@@ -5,7 +5,7 @@ export const getTokenExchangeRate = (token, callback) => {
   axios.get(url)
     .then(res => {
       const result = res.data[0]
-      callback(1 / result.price_eth)
+      callback(1 / result.price_eth, token)
       setTimeout(getTokenExchangeRate, 12 * 1000, token === 'WETH' ? 'DAI' : 'WETH', callback)
     })
 }
