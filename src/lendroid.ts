@@ -190,7 +190,7 @@ export class Lendroid {
     fillOrderServer(this.apiEndpoint, id, value, (err, res) => {
       callback(err, res)
       setTimeout(this.fetchOrders, 300)
-      setTimeout(this.fetchPositions, 5000)
+      setTimeout(this.fetchPositions, 1000)
     })
   }
 
