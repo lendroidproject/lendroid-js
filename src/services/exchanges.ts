@@ -6,6 +6,6 @@ export const getTokenExchangeRate = (token, callback) => {
     .then(res => {
       const result = res.data[0]
       callback(1 / result.price_eth)
-      setTimeout(getTokenExchangeRate, 12 * 1000, token, callback)
+      setTimeout(getTokenExchangeRate, 12 * 1000, token === 'WETH' ? 'DAI' : 'WETH', callback)
     })
 }

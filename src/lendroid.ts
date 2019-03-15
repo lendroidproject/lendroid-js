@@ -60,19 +60,10 @@ export class Lendroid {
       initParams.stateCallback ||
       (() => console.log('State callback is not set'))
     this.metamask = { address: undefined, network: undefined }
-    this.exchangeRates = Constants.DEFAULT_EXCHANGES
-    this.getETD()
-    this.getETW()
-    this.init()
-    Logger.info(LOGGER_CONTEXT.INIT, {
-      apiEndpoint: this.apiEndpoint,
-      metamask: this.metamask
-    })
-    this.fetchOrders = this.fetchOrders.bind(this)
+
     this.fetchETHBallance = this.fetchETHBallance.bind(this)
     this.fetchBallanceByToken = this.fetchBallanceByToken.bind(this)
     this.fetchAllowanceByToken = this.fetchAllowanceByToken.bind(this)
-    this.onFetchPositions = this.onFetchPositions.bind(this)
     this.onCreateOrder = this.onCreateOrder.bind(this)
     this.onFillOrderServer = this.onFillOrderServer.bind(this)
     this.onDeleteOrder = this.onDeleteOrder.bind(this)
@@ -85,6 +76,18 @@ export class Lendroid {
     this.onLiquidatePosition = this.onLiquidatePosition.bind(this)
     this.onCancelOrder = this.onCancelOrder.bind(this)
 
+    this.init()
+    this.getExchanges()
+    this.fetchETHBallance()
+    Constants.BALLANCE_TOKENS.forEach(token => {
+      this.fetchBallanceByToken(token)
+      this.fetchAllowanceByToken(token)
+    })
+    Logger.info(LOGGER_CONTEXT.INIT, {
+      apiEndpoint: this.apiEndpoint,
+      metamask: this.metamask
+    })
+
     setInterval(async () => {
       const accounts = await this.web3.eth.getAccounts()
       const network = await this.web3.eth.net.getId()
@@ -94,138 +97,12 @@ export class Lendroid {
       ) {
         this.reset({ address: accounts[0], network })
       }
-    }, 2000)
+    }, 1000)
 
-    this.debounceUpdate = this.debounce(this.stateCallback, 3500, null)
+    this.debounceUpdate = this.debounce(this.stateCallback, 500, null)
   }
 
-  public reset(metamask) {
-    Logger.info(LOGGER_CONTEXT.RESET, metamask)
-    this.metamask = metamask
-    this.debounceUpdate = this.debounce(this.stateCallback, 1000, null)
-    if (metamask.network) {
-      this.init()
-      this.fetchETHBallance()
-      this.fetchContracts()
-      this.fetchOrders()
-    }
-  }
-
-  public fetchOrders() {
-    const { address } = this.metamask
-    this.loading.orders = true
-    this.debounceUpdate()
-
-    fetchOrders(this.apiEndpoint, (err, orders) => {
-      this.loading.orders = false
-      if (err) {
-        return Logger.error(LOGGER_CONTEXT.API_ERROR, err.message)
-      }
-
-      this.orders.myOrders.lend = orders.result.filter(
-        item => item.lender === address
-      )
-      this.orders.myOrders.borrow = orders.result.filter(
-        item => item.borrower === address
-      )
-      this.orders.orders = orders.result.filter(
-        item => item.lender !== address && item.borrower !== address
-      )
-      setTimeout(() => this.debounceUpdate(), 1000)
-    })
-  }
-
-  public fetchETHBallance() {
-    const { web3Utils, metamask } = this
-    const { address } = metamask
-
-    fetchETHBallance({ web3Utils, address }, (err, res) => {
-      if (err) {
-        return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-      }
-      this.contracts.balances.ETH = res.data
-      this.debounceUpdate()
-    })
-    setTimeout(this.fetchETHBallance, 5000)
-  }
-
-  public fetchBallanceByToken(token) {
-    const { web3Utils, metamask } = this
-    const { address } = metamask
-    if (!this.contracts.contracts[token]) {
-      return
-    }
-
-    fetchBallanceByToken(
-      { web3Utils, contractInstance: this.contracts.contracts[token], address },
-      (err, res) => {
-        if (err) {
-          return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-        }
-        this.contracts.balances[token] = res.data
-        this.debounceUpdate()
-      }
-    )
-    setTimeout(this.fetchBallanceByToken, 5000, token)
-  }
-
-  public fetchAllowanceByToken(token) {
-    const { web3Utils, metamask } = this
-    const { address } = metamask
-    if (!this.contracts.contracts[token]) {
-      return
-    }
-
-    fetchAllowanceByToken(
-      {
-        web3Utils,
-        address,
-        contractInstance: this.contracts.contracts[token],
-        protocolContract: this.contracts.contracts.Protocol
-      },
-      (err, res) => {
-        if (err) {
-          return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-        }
-        this.contracts.allowances[token] = res.data
-        this.debounceUpdate()
-      }
-    )
-    setTimeout(this.fetchAllowanceByToken, 5000, token)
-  }
-
-  public onFetchPositions(specificAddress = null) {
-    const { web3Utils, metamask, contracts } = this
-    const { address } = metamask
-    const { Protocol } = contracts.contracts
-    this.loading.positions = true
-
-    fetchPositions(
-      {
-        web3Utils,
-        address,
-        Protocol,
-        specificAddress,
-        oldPostions: this.contracts.positions
-      },
-      (err, res) => {
-        this.loading.positions = false
-        if (err) {
-          return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-        }
-        this.contracts.positions = res.positions
-        this.debounceUpdate()
-      }
-    )
-  }
-
-  public fetchContracts() {
-    Constants.CONTRACT_TOKENS.forEach(token => {
-      this.fetchContractByToken(token, null)
-    })
-  }
-
-  public async onCreateOrder(postData) {
+  public async onCreateOrder(postData, callback) {
     const { web3Utils, contracts, metamask } = this
     const { address } = metamask
 
@@ -267,9 +144,8 @@ export class Lendroid {
       : null
 
     const onSign = hash => {
-      web3Utils.eth.personal
+      web3Utils.eth
         .sign(hash, address)
-        // .sign(hash, address)
         .then(result => {
           postData.ecSignatureCreator = result
           result = result.substr(2)
@@ -280,12 +156,16 @@ export class Lendroid {
 
           createOrder(this.apiEndpoint, postData, (err, res) => {
             if (err) {
+              callback(err)
               return Logger.error(LOGGER_CONTEXT.API_ERROR, err.message)
+            } else {
+              callback(null, res)
             }
             setTimeout(this.fetchOrders, 2000)
           })
         })
         .catch(err => {
+          callback(err)
           return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
         })
     }
@@ -304,55 +184,69 @@ export class Lendroid {
   }
 
   public onFillOrderServer(id, value, callback) {
-    fillOrderServer(this.apiEndpoint, id, value, callback)
+    fillOrderServer(this.apiEndpoint, id, value, (err, res) => {
+      callback(err, res)
+      setTimeout(this.fetchOrders, 300)
+      setTimeout(this.fetchPositions, 5000)
+    })
   }
 
   public onDeleteOrder(id, callback) {
-    deleteOrder(this.apiEndpoint, id, callback)
+    deleteOrder(this.apiEndpoint, id, (err, res) => {
+      callback(err, res)
+      setTimeout(this.fetchOrders, 300)
+    })
   }
 
-  public onWrapETH(amount, isWrap) {
+  public onWrapETH(amount, isWrap, callback) {
     const { web3Utils, contracts, metamask } = this
     const _WETHContractInstance = contracts.contracts.WETH
     if (!_WETHContractInstance) {
+      callback(null)
       return
     }
+    this.loading.wrapping = true
 
     wrapETH(
       { web3Utils, amount, isWrap, _WETHContractInstance, metamask },
       (err, hash) => {
+        callback(null)
         if (err) {
-          return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-        }
-        this.loading.wrapping = true
-        this.debounceUpdate()
-        const wrapInterval = setInterval(() => {
-          web3Utils.eth
-            .getTransactionReceipt(hash)
-            .then(res => {
-              if (res) {
+          this.loading.wrapping = false
+          Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+        } else {
+          this.debounceUpdate()
+          const wrapInterval = setInterval(() => {
+            web3Utils.eth
+              .getTransactionReceipt(hash)
+              .then(res => {
+                if (res) {
+                  this.loading.wrapping = false
+                  setTimeout(() => this.debounceUpdate(), 1500)
+                  clearInterval(wrapInterval)
+                }
+              })
+              .catch(error => {
                 this.loading.wrapping = false
-                setTimeout(() => this.debounceUpdate(), 6000)
-                clearInterval(wrapInterval)
-              }
-            })
-            .catch(error =>
-              Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
-            )
-        }, 3000)
+                Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
+              })
+          }, 3000)
+        }
       }
     )
   }
 
-  public onAllowance(token, newAllowance) {
+  public onAllowance(token, newAllowance, callback) {
     const { web3Utils, contracts, metamask } = this
     const { address } = metamask
     const tokenContractInstance = contracts.contracts[token]
     const protocolContract = contracts.contracts.Protocol
     const tokenAllowance = contracts.allowances[token]
     if (newAllowance === tokenAllowance) {
+      callback(null)
       return
     }
+    this.loading.allowance = true
 
     allowance(
       {
@@ -364,24 +258,27 @@ export class Lendroid {
         protocolContract
       },
       (err, hash) => {
+        callback(null)
         if (err) {
-          return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-        }
-        this.loading.allowance = true
-        const allowanceInterval = setInterval(() => {
-          web3Utils.eth
-            .getTransactionReceipt(hash)
-            .then(res => {
-              if (res) {
+          this.loading.allowance = false
+          Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+        } else {
+          const allowanceInterval = setInterval(() => {
+            web3Utils.eth
+              .getTransactionReceipt(hash)
+              .then(res => {
+                if (res) {
+                  this.loading.allowance = false
+                  setTimeout(() => this.debounceUpdate(), 1500)
+                  clearInterval(allowanceInterval)
+                }
+              })
+              .catch(error => {
                 this.loading.allowance = false
-                setTimeout(() => this.debounceUpdate(), 6000)
-                clearInterval(allowanceInterval)
-              }
-            })
-            .catch(error =>
-              Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
-            )
-        }, 3000)
+                Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
+              })
+          }, 3000)
+        }
       }
     )
   }
@@ -401,29 +298,32 @@ export class Lendroid {
 
   public onClosePosition(data, callback) {
     const { metamask } = this
-    closePosition({ data, metamask }, (err, result) => {
+    closePosition({ data, metamask }, (err, res) => {
       if (err) {
         Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
       }
-      callback(err, result)
+      callback(err, res)
+      setTimeout(this.fetchPositions, 5000)
     })
   }
 
   public onTopUpPosition(data, topUpCollateralAmount, callback) {
-    topUpPosition({ data, topUpCollateralAmount }, (err, result) => {
+    topUpPosition({ data, topUpCollateralAmount }, (err, res) => {
       if (err) {
         Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
       }
-      callback(err, result)
+      callback(err, res)
+      setTimeout(this.fetchPositions, 5000)
     })
   }
 
   public onLiquidatePosition(data, callback) {
-    liquidatePosition({ data }, (err, result) => {
+    liquidatePosition({ data }, (err, res) => {
       if (err) {
         Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
       }
-      callback(err, result)
+      callback(err, res)
+      setTimeout(this.fetchPositions, 5000)
     })
   }
 
@@ -448,21 +348,184 @@ export class Lendroid {
     )
   }
 
-  public getETW() {
+  public getExchanges() {
     const _ = this
-    getTokenExchangeRate('WETH', rate => {
-      _.exchangeRates.currentWETHExchangeRate = rate
+    getTokenExchangeRate('WETH', (rate, token) => {
+      if (token === 'WETH') {
+        _.exchangeRates.currentWETHExchangeRate = rate
+      } else {
+        _.exchangeRates.currentDAIExchangeRate = rate
+      }
     })
   }
 
-  public getETD() {
-    const _ = this
-    getTokenExchangeRate('DAI', rate => {
-      _.exchangeRates.currentDAIExchangeRate = rate
+  private init() {
+    this.contracts = Constants.DEFAULT_CONTRACTS
+    this.orders = Constants.DEFAULT_ORDERS
+    this.loading = Constants.DEFAULT_LOADINGS
+    this.exchangeRates = Constants.DEFAULT_EXCHANGES
+    this.stateCallback()
+  }
+
+  private reset(metamask) {
+    Logger.info(LOGGER_CONTEXT.RESET, metamask)
+    this.metamask = metamask
+    if (metamask.network) {
+      this.init()
+      this.fetchContracts()
+      this.fetchOrders()
+    }
+  }
+
+  private fetchOrders() {
+    const { address } = this.metamask
+    this.loading.orders = true
+    this.debounceUpdate()
+
+    fetchOrders(this.apiEndpoint, (err, orders) => {
+      this.loading.orders = false
+      if (err) {
+        return Logger.error(LOGGER_CONTEXT.API_ERROR, err.message)
+      }
+
+      this.orders.myOrders.lend = orders.result.filter(
+        item => item.lender === address
+      )
+      this.orders.myOrders.borrow = orders.result.filter(
+        item => item.borrower === address
+      )
+      this.orders.orders = orders.result.filter(
+        item => item.lender !== address && item.borrower !== address
+      )
+      setTimeout(this.debounceUpdate, 1000)
     })
   }
 
-  public debounce(func, wait, immediate) {
+  private fetchPositions(specificAddress = null) {
+    const { web3Utils, metamask, contracts } = this
+    const { address } = metamask
+    const { Protocol } = contracts.contracts
+    this.loading.positions = true
+
+    fetchPositions(
+      {
+        web3Utils,
+        address,
+        Protocol,
+        specificAddress,
+        oldPostions: this.contracts.positions
+      },
+      (err, res) => {
+        this.loading.positions = false
+        if (err) {
+          return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+        }
+        this.contracts.positions = res.positions
+        this.debounceUpdate()
+      }
+    )
+  }
+
+  private fetchContracts() {
+    Constants.CONTRACT_TOKENS.forEach(token => {
+      this.fetchContractByToken(token, null)
+    })
+  }
+
+  private fetchContractByToken(token, callback) {
+    const { web3Utils, metamask } = this
+    const { network } = metamask
+
+    fetchContractByToken(token, { web3Utils, network }, (err, res) => {
+      if (err) {
+        return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+      }
+      this.contracts.contracts[token] = res.data
+
+      if (callback) {
+        return callback()
+      }
+
+      if (token === 'Protocol') {
+        if (this.contracts.contracts.Protocol) {
+          this.fetchPositions()
+        }
+      }
+    })
+  }
+
+  private fetchETHBallance() {
+    const { web3Utils, metamask, contracts } = this
+    const { address } = metamask || { address: null }
+    if (address && contracts && contracts.balances) {
+      fetchETHBallance({ web3Utils, address }, (err, res) => {
+        if (err) {
+          return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+        }
+        contracts.balances.ETH = res.data
+        this.debounceUpdate()
+      })
+      setTimeout(this.fetchETHBallance, 2500)
+    } else {
+      setTimeout(this.fetchETHBallance, 500)
+    }
+  }
+
+  private fetchBallanceByToken(token) {
+    const { web3Utils, metamask, contracts } = this
+    const { address } = metamask || { address: null }
+    if (contracts && contracts.contracts && contracts.contracts[token]) {
+      fetchBallanceByToken(
+        {
+          web3Utils,
+          contractInstance: contracts.contracts[token],
+          address
+        },
+        (err, res) => {
+          if (err) {
+            return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+          }
+          this.contracts.balances[token] = res.data
+          this.debounceUpdate()
+        }
+      )
+      setTimeout(this.fetchBallanceByToken, 2500, token)
+    } else {
+      setTimeout(this.fetchBallanceByToken, 500, token)
+    }
+  }
+
+  private fetchAllowanceByToken(token) {
+    const { web3Utils, metamask, contracts } = this
+    const { address } = metamask || { address: null }
+    if (
+      contracts &&
+      contracts.contracts &&
+      contracts.contracts[token] &&
+      contracts.contracts.Protocol
+    ) {
+      fetchAllowanceByToken(
+        {
+          web3Utils,
+          address,
+          contractInstance: contracts.contracts[token],
+          protocolContract: contracts.contracts.Protocol
+        },
+        (err, res) => {
+          if (err) {
+            return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+          }
+          this.contracts.allowances[token] = res.data
+          this.debounceUpdate()
+        }
+      )
+      setTimeout(this.fetchAllowanceByToken, 2500, token)
+    } else {
+      setTimeout(this.fetchAllowanceByToken, 500, token)
+    }
+  }
+
+  private debounce(func, wait, immediate) {
     let timeout: any = -1
     //tslint:disable
     return function() {
@@ -484,40 +547,6 @@ export class Lendroid {
       }
     }
     //tslint:enable
-  }
-
-  private init() {
-    this.contracts = Constants.DEFAULT_CONTRACTS
-    this.orders = Constants.DEFAULT_ORDERS
-    this.loading = Constants.DEFAULT_LOADINGS
-  }
-
-  private fetchContractByToken(token, callback) {
-    const { web3Utils, metamask } = this
-    const { network } = metamask
-
-    fetchContractByToken(token, { web3Utils, network }, (err, res) => {
-      if (err) {
-        return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-      }
-      const oldContract = this.contracts.contracts[token]
-      this.contracts.contracts[token] = res.data
-
-      if (callback) {
-        return callback()
-      }
-
-      if (Constants.BALLANCE_TOKENS.indexOf(token) !== -1 && !oldContract) {
-        this.fetchBallanceByToken(token)
-        this.fetchAllowanceByToken(token)
-      }
-
-      if (token === 'Protocol') {
-        if (this.contracts.contracts.Protocol) {
-          this.onFetchPositions()
-        }
-      }
-    })
   }
 
   private fillZero(len = 40) {

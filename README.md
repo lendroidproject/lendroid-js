@@ -40,8 +40,6 @@ const methods = {
   onCreateOrder: LendroidJS.onCreateOrder,
   onWrapETH: LendroidJS.onWrapETH,
   onAllowance: LendroidJS.onAllowance,
-  getOffers: LendroidJS.fetchOrders,
-  getPositions: LendroidJS.onFetchPositions,
   onPostLoans: LendroidJS.onPostLoans,
   onFillLoan: LendroidJS.onFillLoan,
   onClosePosition: LendroidJS.onClosePosition,
