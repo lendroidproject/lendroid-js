@@ -64,6 +64,9 @@ export class Lendroid {
     this.fetchETHBallance = this.fetchETHBallance.bind(this)
     this.fetchBallanceByToken = this.fetchBallanceByToken.bind(this)
     this.fetchAllowanceByToken = this.fetchAllowanceByToken.bind(this)
+    this.fetchOrders = this.fetchOrders.bind(this)
+    this.fetchPositions = this.fetchPositions.bind(this)
+
     this.onCreateOrder = this.onCreateOrder.bind(this)
     this.onFillOrderServer = this.onFillOrderServer.bind(this)
     this.onDeleteOrder = this.onDeleteOrder.bind(this)
