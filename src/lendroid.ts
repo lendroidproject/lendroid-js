@@ -102,6 +102,10 @@ export class Lendroid {
       }
     }, 1000)
 
+    setInterval(() => {
+      this.fetchOrders()
+    }, 30 * 1000)
+
     this.debounceUpdate = this.debounce(this.stateCallback, 500, null)
   }
 
@@ -383,7 +387,7 @@ export class Lendroid {
   private fetchOrders() {
     const { address } = this.metamask
     this.loading.orders = true
-    this.debounceUpdate()
+    this.stateCallback()
 
     fetchOrders(this.apiEndpoint, (err, orders) => {
       this.loading.orders = false
