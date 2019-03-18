@@ -310,7 +310,7 @@ export class Lendroid {
         Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
       }
       callback(err, res)
-      setTimeout(this.fetchPositions, 5000)
+      setTimeout(this.fetchPositions, 100)
     })
   }
 
@@ -320,7 +320,7 @@ export class Lendroid {
         Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
       }
       callback(err, res)
-      setTimeout(this.fetchPositions, 5000)
+      setTimeout(this.fetchPositions, 100)
     })
   }
 
@@ -330,7 +330,7 @@ export class Lendroid {
         Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
       }
       callback(err, res)
-      setTimeout(this.fetchPositions, 5000)
+      setTimeout(this.fetchPositions, 100)
     })
   }
 
