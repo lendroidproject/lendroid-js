@@ -357,7 +357,7 @@ export class Lendroid {
 
   public getExchanges() {
     const _ = this
-    getTokenExchangeRate('WETH', (rate, token) => {
+    getTokenExchangeRate('DAI', (rate, token) => {
       if (token === 'WETH') {
         _.exchangeRates.currentWETHExchangeRate = rate
       } else {
