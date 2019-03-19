@@ -21,7 +21,6 @@ import {
   cancelOrder,
   wrapETH,
   allowance,
-  getTokenExchangeRate,
   Logger,
   LOGGER_CONTEXT,
   Web3Utils
@@ -66,6 +65,7 @@ export class Lendroid {
     this.fetchAllowanceByToken = this.fetchAllowanceByToken.bind(this)
     this.fetchOrders = this.fetchOrders.bind(this)
     this.fetchPositions = this.fetchPositions.bind(this)
+    this.fetchDAIExchange = this.fetchDAIExchange.bind(this)
 
     this.onCreateOrder = this.onCreateOrder.bind(this)
     this.onFillOrderServer = this.onFillOrderServer.bind(this)
@@ -80,7 +80,6 @@ export class Lendroid {
     this.onCancelOrder = this.onCancelOrder.bind(this)
 
     this.init()
-    this.getExchanges()
     this.fetchETHBallance()
     Constants.BALLANCE_TOKENS.forEach(token => {
       this.fetchBallanceByToken(token)
@@ -355,17 +354,6 @@ export class Lendroid {
     )
   }
 
-  public getExchanges() {
-    const _ = this
-    getTokenExchangeRate('DAI', (rate, token) => {
-      if (token === 'WETH') {
-        _.exchangeRates.currentWETHExchangeRate = rate
-      } else {
-        _.exchangeRates.currentDAIExchangeRate = rate
-      }
-    })
-  }
-
   private init() {
     this.contracts = Constants.DEFAULT_CONTRACTS
     this.orders = Constants.DEFAULT_ORDERS
@@ -433,6 +421,19 @@ export class Lendroid {
     )
   }
 
+  private async fetchDAIExchange() {
+    const { web3Utils } = this
+    const { DAI2ETH } = this.contracts.contracts || { DAI2ETH: null }
+    if (DAI2ETH) {
+      try {
+        const exchange = await DAI2ETH.methods.read().call()
+        this.exchangeRates.currentDAIExchangeRate = web3Utils.fromWei(exchange)
+      } catch (err) {
+        return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+      }
+    }
+  }
+
   private fetchContracts() {
     Constants.CONTRACT_TOKENS.forEach(token => {
       this.fetchContractByToken(token, null)
@@ -476,6 +477,7 @@ export class Lendroid {
     } else {
       setTimeout(this.fetchETHBallance, 500)
     }
+    this.fetchDAIExchange()
   }
 
   private fetchBallanceByToken(token) {

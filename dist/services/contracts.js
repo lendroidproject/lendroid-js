@@ -57,7 +57,7 @@ exports.fetchContractByToken = function (token, payload, callback) {
     }
     else {
         var contractABI = CONTRACT_ADDRESSES[token].def;
-        var contractInstance = web3Utils.createContract(contractABI, CONTRACT_ADDRESSES[token][network]);
+        var contractInstance = web3Utils.createContract(contractABI.hasNetwork ? contractABI[network] : contractABI, CONTRACT_ADDRESSES[token][network]);
         callback(null, { data: contractInstance });
     }
 };

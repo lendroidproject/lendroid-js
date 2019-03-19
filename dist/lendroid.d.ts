@@ -23,11 +23,11 @@ export declare class Lendroid {
     onTopUpPosition(data: any, topUpCollateralAmount: any, callback: any): void;
     onLiquidatePosition(data: any, callback: any): void;
     onCancelOrder(data: any, callback: any): void;
-    getExchanges(): void;
     private init();
     private reset(metamask);
     private fetchOrders();
     private fetchPositions(specificAddress?);
+    private fetchDAIExchange();
     private fetchContracts();
     private fetchContractByToken(token, callback);
     private fetchETHBallance();

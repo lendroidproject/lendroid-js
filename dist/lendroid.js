@@ -56,6 +56,7 @@ var Lendroid = (function () {
         this.fetchAllowanceByToken = this.fetchAllowanceByToken.bind(this);
         this.fetchOrders = this.fetchOrders.bind(this);
         this.fetchPositions = this.fetchPositions.bind(this);
+        this.fetchDAIExchange = this.fetchDAIExchange.bind(this);
         this.onCreateOrder = this.onCreateOrder.bind(this);
         this.onFillOrderServer = this.onFillOrderServer.bind(this);
         this.onDeleteOrder = this.onDeleteOrder.bind(this);
@@ -68,7 +69,6 @@ var Lendroid = (function () {
         this.onLiquidatePosition = this.onLiquidatePosition.bind(this);
         this.onCancelOrder = this.onCancelOrder.bind(this);
         this.init();
-        this.getExchanges();
         this.fetchETHBallance();
         Constants.BALLANCE_TOKENS.forEach(function (token) {
             _this.fetchBallanceByToken(token);
@@ -320,17 +320,6 @@ var Lendroid = (function () {
             callback(err, result);
         });
     };
-    Lendroid.prototype.getExchanges = function () {
-        var _ = this;
-        services_1.getTokenExchangeRate('DAI', function (rate, token) {
-            if (token === 'WETH') {
-                _.exchangeRates.currentWETHExchangeRate = rate;
-            }
-            else {
-                _.exchangeRates.currentDAIExchangeRate = rate;
-            }
-        });
-    };
     Lendroid.prototype.init = function () {
         this.contracts = Constants.DEFAULT_CONTRACTS;
         this.orders = Constants.DEFAULT_ORDERS;
@@ -385,6 +374,31 @@ var Lendroid = (function () {
             _this.debounceUpdate();
         });
     };
+    Lendroid.prototype.fetchDAIExchange = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var web3Utils, DAI2ETH, exchange, err_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        web3Utils = this.web3Utils;
+                        DAI2ETH = (this.contracts.contracts || { DAI2ETH: null }).DAI2ETH;
+                        if (!DAI2ETH) return [3, 4];
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4, DAI2ETH.methods.read().call()];
+                    case 2:
+                        exchange = _a.sent();
+                        this.exchangeRates.currentDAIExchangeRate = web3Utils.fromWei(exchange);
+                        return [3, 4];
+                    case 3:
+                        err_1 = _a.sent();
+                        return [2, services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err_1.message)];
+                    case 4: return [2];
+                }
+            });
+        });
+    };
     Lendroid.prototype.fetchContracts = function () {
         var _this = this;
         Constants.CONTRACT_TOKENS.forEach(function (token) {
@@ -427,6 +441,7 @@ var Lendroid = (function () {
         else {
             setTimeout(this.fetchETHBallance, 500);
         }
+        this.fetchDAIExchange();
     };
     Lendroid.prototype.fetchBallanceByToken = function (token) {
         var _this = this;

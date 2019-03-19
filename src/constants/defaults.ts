@@ -23,7 +23,7 @@ export const DEFAULT_ORDERS = {
   orders: [],
 }
 export const DEFAULT_EXCHANGES = {
-  currentWETHExchangeRate: 0,
+  currentWETHExchangeRate: 1,
   currentDAIExchangeRate: 0,
 }
 

@@ -29,7 +29,7 @@ export const fetchContractByToken = (token, payload, callback) => {
   } else {
     const contractABI = CONTRACT_ADDRESSES[token].def
     const contractInstance = web3Utils.createContract(
-      contractABI,
+      contractABI.hasNetwork ? contractABI[network] : contractABI,
       CONTRACT_ADDRESSES[token][network]
     )
     callback(null, { data: contractInstance })

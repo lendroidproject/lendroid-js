@@ -25,7 +25,7 @@ exports.DEFAULT_ORDERS = {
     orders: [],
 };
 exports.DEFAULT_EXCHANGES = {
-    currentWETHExchangeRate: 0,
+    currentWETHExchangeRate: 1,
     currentDAIExchangeRate: 0,
 };
 exports.LOAN_STATUS_OPEN = 1;

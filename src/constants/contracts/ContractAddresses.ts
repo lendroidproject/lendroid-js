@@ -20,6 +20,15 @@ export const CONTRACT_ADDRESSES = {
     42: '0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
     def: ABIs.DAIABI
   },
+  DAI2ETH: {
+    1: '0x729D19f657BD0614b4985Cf1D82531c67569197B',
+    42: '0x9FfFE440258B79c5d6604001674A4722FfC0f7Bc',
+    def: {
+      hasNetwork: true,
+      1: ABIs.DAI2ETHABI[1],
+      42: ABIs.DAI2ETHABI[42]
+    }
+  }
 }
 
 export const CONTRACT_TOKENS = Object.keys(CONTRACT_ADDRESSES)

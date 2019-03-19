@@ -4,7 +4,6 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./contracts"));
-__export(require("./exchanges"));
 __export(require("./loans"));
 __export(require("./logger"));
 __export(require("./orders"));
