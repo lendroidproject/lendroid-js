@@ -1,0 +1,38 @@
+import { Web3Utils } from './services';
+export declare class Lendroid {
+    private web3;
+    private apiEndpoint;
+    private apiLoanRequests;
+    private exchangeRates;
+    private contracts;
+    private orders;
+    private loading;
+    private stateCallback;
+    private debounceUpdate;
+    metamask: any;
+    web3Utils: Web3Utils;
+    constructor(initParams?: any);
+    onCreateOrder(postData: any, callback: any): Promise<void>;
+    onFillOrderServer(id: any, value: any, callback: any): void;
+    onDeleteOrder(id: any, callback: any): void;
+    onWrapETH(amount: any, isWrap: any, callback: any): void;
+    onAllowance(token: any, newAllowance: any, callback: any): void;
+    onPostLoans(data: any, callback: any): void;
+    onFillLoan(approval: any, callback: any): void;
+    onClosePosition(data: any, callback: any): void;
+    onTopUpPosition(data: any, topUpCollateralAmount: any, callback: any): void;
+    onLiquidatePosition(data: any, callback: any): void;
+    onCancelOrder(data: any, callback: any): void;
+    getExchanges(): void;
+    private init();
+    private reset(metamask);
+    private fetchOrders();
+    private fetchPositions(specificAddress?);
+    private fetchContracts();
+    private fetchContractByToken(token, callback);
+    private fetchETHBallance();
+    private fetchBallanceByToken(token);
+    private fetchAllowanceByToken(token);
+    private debounce(func, wait, immediate);
+    private fillZero(len?);
+}

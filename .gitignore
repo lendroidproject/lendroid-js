@@ -3,7 +3,7 @@
 idea/
 
 # Compiled files
-dist/
+# dist/
 
 # Logs
 logs
