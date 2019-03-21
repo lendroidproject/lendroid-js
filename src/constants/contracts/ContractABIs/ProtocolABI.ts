@@ -83,7 +83,34 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 6690
+		"gas": 6659
+	},
+	{
+		"name": "is_signer",
+		"outputs": [
+			{
+				"type": "bool",
+				"name": "out"
+			}
+		],
+		"inputs": [
+			{
+				"type": "address",
+				"name": "_prover"
+			},
+			{
+				"type": "bytes32",
+				"name": "_hash"
+			},
+			{
+				"type": "bytes",
+				"name": "_sig"
+			}
+		],
+		"constant": true,
+		"payable": false,
+		"type": "function",
+		"gas": 20424
 	},
 	{
 		"name": "is_token_active",
@@ -102,7 +129,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2009
+		"gas": 2069
 	},
 	{
 		"name": "can_borrow",
@@ -121,7 +148,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 951
+		"gas": 981
 	},
 	{
 		"name": "can_lend",
@@ -140,7 +167,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 981
+		"gas": 1011
 	},
 	{
 		"name": "filled_or_cancelled_loan_amount",
@@ -159,7 +186,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1263
+		"gas": 1293
 	},
 	{
 		"name": "position",
@@ -265,7 +292,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 9499
+		"gas": 9529
 	},
 	{
 		"name": "position_counts",
@@ -288,7 +315,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1258
+		"gas": 1288
 	},
 	{
 		"name": "kernel_hash",
@@ -329,7 +356,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2381
+		"gas": 2411
 	},
 	{
 		"name": "position_hash",
@@ -360,7 +387,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2540
+		"gas": 2570
 	},
 	{
 		"name": "escape_hatch_token",
@@ -379,7 +406,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 3982
+		"gas": 4012
 	},
 	{
 		"name": "set_position_threshold",
@@ -398,7 +425,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 45951
+		"gas": 45981
 	},
 	{
 		"name": "set_wrangler_status",
@@ -421,7 +448,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 46196
+		"gas": 46226
 	},
 	{
 		"name": "set_token_support",
@@ -444,7 +471,35 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 47539
+		"gas": 47599
+	},
+	{
+		"name": "owed_value",
+		"outputs": [
+			{
+				"type": "uint256",
+				"name": "out"
+			}
+		],
+		"inputs": [
+			{
+				"type": "uint256",
+				"name": "_filled_value"
+			},
+			{
+				"type": "uint256",
+				"name": "_kernel_daily_interest_rate"
+			},
+			{
+				"type": "uint256",
+				"name": "_position_duration_in_seconds",
+				"unit": "sec"
+			}
+		],
+		"constant": true,
+		"payable": false,
+		"type": "function",
+		"gas": 2663
 	},
 	{
 		"name": "topup_position",
@@ -467,7 +522,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 847386
+		"gas": 847446
 	},
 	{
 		"name": "liquidate_position",
@@ -486,7 +541,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 1145897
+		"gas": 1145987
 	},
 	{
 		"name": "close_position",
@@ -505,7 +560,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 1147858
+		"gas": 1147948
 	},
 	{
 		"name": "fill_kernel",
@@ -561,7 +616,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 1442303
+		"gas": 1527722
 	},
 	{
 		"name": "cancel_kernel",
@@ -610,7 +665,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 54540
+		"gas": 82153
 	},
 	{
 		"name": "protocol_token_address",
@@ -624,7 +679,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1143
+		"gas": 1203
 	},
 	{
 		"name": "owner",
@@ -638,7 +693,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1173
+		"gas": 1233
 	},
 	{
 		"name": "kernels_filled",
@@ -657,7 +712,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1336
+		"gas": 1396
 	},
 	{
 		"name": "kernels_cancelled",
@@ -676,7 +731,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1366
+		"gas": 1426
 	},
 	{
 		"name": "positions__index",
@@ -695,7 +750,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1468
+		"gas": 1528
 	},
 	{
 		"name": "positions__kernel_creator",
@@ -714,7 +769,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1504
+		"gas": 1564
 	},
 	{
 		"name": "positions__lender",
@@ -733,7 +788,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1534
+		"gas": 1594
 	},
 	{
 		"name": "positions__borrower",
@@ -752,7 +807,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1564
+		"gas": 1624
 	},
 	{
 		"name": "positions__relayer",
@@ -771,7 +826,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1594
+		"gas": 1654
 	},
 	{
 		"name": "positions__wrangler",
@@ -790,7 +845,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1624
+		"gas": 1684
 	},
 	{
 		"name": "positions__created_at",
@@ -810,7 +865,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1654
+		"gas": 1714
 	},
 	{
 		"name": "positions__updated_at",
@@ -830,7 +885,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1684
+		"gas": 1744
 	},
 	{
 		"name": "positions__expires_at",
@@ -850,7 +905,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1714
+		"gas": 1774
 	},
 	{
 		"name": "positions__borrow_currency_address",
@@ -869,7 +924,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1744
+		"gas": 1804
 	},
 	{
 		"name": "positions__lend_currency_address",
@@ -888,7 +943,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1774
+		"gas": 1834
 	},
 	{
 		"name": "positions__borrow_currency_value",
@@ -907,7 +962,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1804
+		"gas": 1864
 	},
 	{
 		"name": "positions__borrow_currency_current_value",
@@ -926,7 +981,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1834
+		"gas": 1894
 	},
 	{
 		"name": "positions__lend_currency_filled_value",
@@ -945,7 +1000,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1864
+		"gas": 1924
 	},
 	{
 		"name": "positions__lend_currency_owed_value",
@@ -964,7 +1019,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1894
+		"gas": 1954
 	},
 	{
 		"name": "positions__status",
@@ -983,7 +1038,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1924
+		"gas": 1984
 	},
 	{
 		"name": "positions__nonce",
@@ -1002,7 +1057,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1954
+		"gas": 2014
 	},
 	{
 		"name": "positions__relayer_fee",
@@ -1021,7 +1076,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1984
+		"gas": 2044
 	},
 	{
 		"name": "positions__monitoring_fee",
@@ -1040,7 +1095,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2014
+		"gas": 2074
 	},
 	{
 		"name": "positions__rollover_fee",
@@ -1059,7 +1114,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2044
+		"gas": 2104
 	},
 	{
 		"name": "positions__closure_fee",
@@ -1078,7 +1133,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2074
+		"gas": 2134
 	},
 	{
 		"name": "positions__hash",
@@ -1097,7 +1152,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2104
+		"gas": 2164
 	},
 	{
 		"name": "last_position_index",
@@ -1111,7 +1166,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1923
+		"gas": 1983
 	},
 	{
 		"name": "position_index",
@@ -1130,7 +1185,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2086
+		"gas": 2146
 	},
 	{
 		"name": "position_threshold",
@@ -1144,7 +1199,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1983
+		"gas": 2043
 	},
 	{
 		"name": "borrow_positions",
@@ -1167,7 +1222,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2306
+		"gas": 2366
 	},
 	{
 		"name": "lend_positions",
@@ -1190,7 +1245,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2336
+		"gas": 2396
 	},
 	{
 		"name": "borrow_positions_count",
@@ -1209,7 +1264,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2245
+		"gas": 2305
 	},
 	{
 		"name": "lend_positions_count",
@@ -1228,7 +1283,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2275
+		"gas": 2335
 	},
 	{
 		"name": "wranglers",
@@ -1247,7 +1302,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2305
+		"gas": 2365
 	},
 	{
 		"name": "wrangler_nonces",
@@ -1270,7 +1325,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2495
+		"gas": 2555
 	},
 	{
 		"name": "supported_tokens",
@@ -1289,38 +1344,10 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2365
+		"gas": 2425
 	},
 	{
-		"name": "SECONDS_PER_DAY",
-		"outputs": [
-			{
-				"type": "uint256",
-				"name": "out"
-			}
-		],
-		"inputs": [],
-		"constant": true,
-		"payable": false,
-		"type": "function",
-		"gas": 2223
-	},
-	{
-		"name": "POSITION_STATUS_OPEN",
-		"outputs": [
-			{
-				"type": "uint256",
-				"name": "out"
-			}
-		],
-		"inputs": [],
-		"constant": true,
-		"payable": false,
-		"type": "function",
-		"gas": 2253
-	},
-	{
-		"name": "POSITION_STATUS_CLOSED",
+		"name": "DECIMALS",
 		"outputs": [
 			{
 				"type": "uint256",
@@ -1334,7 +1361,7 @@ export const ProtocolABI = [
 		"gas": 2283
 	},
 	{
-		"name": "POSITION_STATUS_LIQUIDATED",
+		"name": "SECONDS_PER_DAY",
 		"outputs": [
 			{
 				"type": "uint256",
@@ -1348,7 +1375,7 @@ export const ProtocolABI = [
 		"gas": 2313
 	},
 	{
-		"name": "POSITION_TOPPED_UP",
+		"name": "POSITION_STATUS_OPEN",
 		"outputs": [
 			{
 				"type": "uint256",
@@ -1360,5 +1387,47 @@ export const ProtocolABI = [
 		"payable": false,
 		"type": "function",
 		"gas": 2343
+	},
+	{
+		"name": "POSITION_STATUS_CLOSED",
+		"outputs": [
+			{
+				"type": "uint256",
+				"name": "out"
+			}
+		],
+		"inputs": [],
+		"constant": true,
+		"payable": false,
+		"type": "function",
+		"gas": 2373
+	},
+	{
+		"name": "POSITION_STATUS_LIQUIDATED",
+		"outputs": [
+			{
+				"type": "uint256",
+				"name": "out"
+			}
+		],
+		"inputs": [],
+		"constant": true,
+		"payable": false,
+		"type": "function",
+		"gas": 2403
+	},
+	{
+		"name": "POSITION_TOPPED_UP",
+		"outputs": [
+			{
+				"type": "uint256",
+				"name": "out"
+			}
+		],
+		"inputs": [],
+		"constant": true,
+		"payable": false,
+		"type": "function",
+		"gas": 2433
 	}
 ]

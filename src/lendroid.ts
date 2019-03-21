@@ -182,7 +182,7 @@ export class Lendroid {
         values,
         parseInt(postData.offerExpiry, 10),
         postData.creatorSalt,
-        parseInt(postData.interestRatePerDay, 10),
+        web3Utils.toWei(postData.interestRatePerDay),
         parseInt(postData.loanDuration, 10)
       )
       .call()

@@ -441,7 +441,7 @@ export const cancelOrder = async (payload, callback) => {
       values,
       parseInt(data.offerExpiry, 10),
       data.creatorSalt,
-      parseFloat(data.interestRatePerDay),
+      web3Utils.toWei(data.interestRatePerDay),
       parseInt(data.loanDuration, 10)
     )
     .call()
@@ -452,23 +452,14 @@ export const cancelOrder = async (payload, callback) => {
     data.loanAmountOffered,
     filledOrCancelledLoanAmount
   )
-  console.log([
-    addresses,
-    values,
-    parseInt(data.offerExpiry, 10),
-    data.creatorSalt,
-    parseFloat(data.interestRatePerDay),
-    parseInt(data.loanDuration, 10),
-    data.ecSignatureCreator,
-    web3Utils.toWei(cancelledCollateralTokenAmount)
-  ])
+
   protocolContractInstance.methods
     .cancel_kernel(
       addresses,
       values,
       parseInt(data.offerExpiry, 10),
       data.creatorSalt,
-      parseFloat(data.interestRatePerDay),
+      web3Utils.toWei(data.interestRatePerDay),
       parseInt(data.loanDuration, 10),
       data.ecSignatureCreator,
       web3Utils.toWei(cancelledCollateralTokenAmount)

@@ -160,7 +160,7 @@ var Lendroid = (function () {
                             });
                         };
                         return [4, protocolContractInstance.methods
-                                .kernel_hash(addresses, values, parseInt(postData.offerExpiry, 10), postData.creatorSalt, parseInt(postData.interestRatePerDay, 10), parseInt(postData.loanDuration, 10))
+                                .kernel_hash(addresses, values, parseInt(postData.offerExpiry, 10), postData.creatorSalt, web3Utils.toWei(postData.interestRatePerDay), parseInt(postData.loanDuration, 10))
                                 .call()];
                     case 1:
                         orderHash = _b.sent();

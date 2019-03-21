@@ -392,7 +392,7 @@ exports.cancelOrder = function (payload, callback) { return __awaiter(_this, voi
                     data.closureFeeLST
                 ];
                 return [4, protocolContractInstance.methods
-                        .kernel_hash(addresses, values, parseInt(data.offerExpiry, 10), data.creatorSalt, parseFloat(data.interestRatePerDay), parseInt(data.loanDuration, 10))
+                        .kernel_hash(addresses, values, parseInt(data.offerExpiry, 10), data.creatorSalt, web3Utils.toWei(data.interestRatePerDay), parseInt(data.loanDuration, 10))
                         .call()];
             case 1:
                 orderHash = _a.sent();
@@ -402,18 +402,8 @@ exports.cancelOrder = function (payload, callback) { return __awaiter(_this, voi
             case 2:
                 filledOrCancelledLoanAmount = _a.sent();
                 cancelledCollateralTokenAmount = web3Utils.substractBN(data.loanAmountOffered, filledOrCancelledLoanAmount);
-                console.log([
-                    addresses,
-                    values,
-                    parseInt(data.offerExpiry, 10),
-                    data.creatorSalt,
-                    parseFloat(data.interestRatePerDay),
-                    parseInt(data.loanDuration, 10),
-                    data.ecSignatureCreator,
-                    web3Utils.toWei(cancelledCollateralTokenAmount)
-                ]);
                 protocolContractInstance.methods
-                    .cancel_kernel(addresses, values, parseInt(data.offerExpiry, 10), data.creatorSalt, parseFloat(data.interestRatePerDay), parseInt(data.loanDuration, 10), data.ecSignatureCreator, web3Utils.toWei(cancelledCollateralTokenAmount))
+                    .cancel_kernel(addresses, values, parseInt(data.offerExpiry, 10), data.creatorSalt, web3Utils.toWei(data.interestRatePerDay), parseInt(data.loanDuration, 10), data.ecSignatureCreator, web3Utils.toWei(cancelledCollateralTokenAmount))
                     .send({ from: metamask.address })
                     .then(function (result) { return callback(null, result); })
                     .catch(function (err) { return callback(err); });
