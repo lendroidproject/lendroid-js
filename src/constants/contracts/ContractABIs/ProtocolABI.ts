@@ -128,7 +128,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 981
+		"gas": 921
 	},
 	{
 		"name": "can_lend",
@@ -147,7 +147,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1011
+		"gas": 951
 	},
 	{
 		"name": "filled_or_cancelled_loan_amount",
@@ -166,7 +166,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1293
+		"gas": 1233
 	},
 	{
 		"name": "position",
@@ -272,7 +272,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 9529
+		"gas": 9469
 	},
 	{
 		"name": "position_counts",
@@ -295,7 +295,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 1288
+		"gas": 1228
 	},
 	{
 		"name": "kernel_hash",
@@ -336,7 +336,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2411
+		"gas": 2351
 	},
 	{
 		"name": "position_hash",
@@ -367,7 +367,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2570
+		"gas": 2510
 	},
 	{
 		"name": "owed_value",
@@ -395,7 +395,7 @@ export const ProtocolABI = [
 		"constant": true,
 		"payable": false,
 		"type": "function",
-		"gas": 2498
+		"gas": 2438
 	},
 	{
 		"name": "escape_hatch_token",
@@ -414,7 +414,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 4042
+		"gas": 3982
 	},
 	{
 		"name": "set_position_threshold",
@@ -433,7 +433,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 46011
+		"gas": 45951
 	},
 	{
 		"name": "set_wrangler_status",
@@ -456,7 +456,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 46256
+		"gas": 46196
 	},
 	{
 		"name": "set_token_support",
@@ -479,7 +479,51 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 47083
+		"gas": 47023
+	},
+	{
+		"name": "open_position",
+		"outputs": [],
+		"inputs": [
+			{
+				"type": "address",
+				"name": "_kernel_creator"
+			},
+			{
+				"type": "address[6]",
+				"name": "_addresses"
+			},
+			{
+				"type": "uint256[7]",
+				"name": "_values"
+			},
+			{
+				"type": "uint256",
+				"name": "_nonce"
+			},
+			{
+				"type": "uint256",
+				"name": "_kernel_daily_interest_rate"
+			},
+			{
+				"type": "uint256",
+				"name": "_position_duration_in_seconds",
+				"unit": "sec"
+			},
+			{
+				"type": "uint256",
+				"name": "_approval_expires",
+				"unit": "sec"
+			},
+			{
+				"type": "bytes",
+				"name": "_sig_data"
+			}
+		],
+		"constant": false,
+		"payable": false,
+		"type": "function",
+		"gas": 1227545
 	},
 	{
 		"name": "topup_position",
@@ -502,7 +546,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 849244
+		"gas": 849964
 	},
 	{
 		"name": "liquidate_position",
@@ -521,7 +565,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 1147875
+		"gas": 1148595
 	},
 	{
 		"name": "close_position",
@@ -540,7 +584,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 1149920
+		"gas": 1150640
 	},
 	{
 		"name": "fill_kernel",
@@ -596,7 +640,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 1636088
+		"gas": 1636610
 	},
 	{
 		"name": "cancel_kernel",
@@ -645,7 +689,7 @@ export const ProtocolABI = [
 		"constant": false,
 		"payable": false,
 		"type": "function",
-		"gas": 82235
+		"gas": 82115
 	},
 	{
 		"name": "protocol_token_address",
