@@ -16,7 +16,6 @@ export declare const CONTRACT_ADDRESSES: {
             payable?: undefined;
             gas?: undefined;
         } | {
-            "name": string;
             "outputs": never[];
             "inputs": {
                 "type": string;
@@ -25,6 +24,7 @@ export declare const CONTRACT_ADDRESSES: {
             "constant": boolean;
             "payable": boolean;
             "type": string;
+            name?: undefined;
             anonymous?: undefined;
             gas?: undefined;
         } | {

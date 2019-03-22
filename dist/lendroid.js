@@ -138,7 +138,7 @@ var Lendroid = (function () {
                             ? contracts.contracts.Protocol
                             : null;
                         onSign = function (hash) {
-                            web3Utils.eth
+                            web3Utils.eth.personal
                                 .sign(hash, address)
                                 .then(function (result) {
                                 postData.ecSignatureCreator = result;
@@ -163,7 +163,7 @@ var Lendroid = (function () {
                             });
                         };
                         return [4, protocolContractInstance.methods
-                                .kernel_hash(addresses, values, parseInt(postData.offerExpiry, 10), postData.creatorSalt, parseInt(postData.interestRatePerDay, 10), parseInt(postData.loanDuration, 10))
+                                .kernel_hash(addresses, values, parseInt(postData.offerExpiry, 10), postData.creatorSalt, web3Utils.toWei(postData.interestRatePerDay), parseInt(postData.loanDuration, 10))
                                 .call()];
                     case 1:
                         orderHash = _b.sent();
@@ -297,7 +297,7 @@ var Lendroid = (function () {
                         return [4, this.fetchAllowanceByAddress(borrower)];
                     case 1:
                         borrowerAllowance = _b.sent();
-                        if (borrowerAllowance > loanAmountOwed) {
+                        if (parseFloat(borrowerAllowance.toString()) >= parseFloat(loanAmountOwed)) {
                             services_1.closePosition({ data: data, metamask: metamask }, function (err, res) {
                                 if (err) {
                                     services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);

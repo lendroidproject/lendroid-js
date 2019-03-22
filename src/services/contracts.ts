@@ -441,8 +441,8 @@ export const cancelOrder = async (payload, callback) => {
       values,
       parseInt(data.offerExpiry, 10),
       data.creatorSalt,
-      // web3Utils.toWei(data.interestRatePerDay),
-      parseInt(data.interestRatePerDay, 10),
+      web3Utils.toWei(data.interestRatePerDay),
+      // parseInt(data.interestRatePerDay, 10),
       parseInt(data.loanDuration, 10)
     )
     .call()
@@ -460,8 +460,8 @@ export const cancelOrder = async (payload, callback) => {
       values,
       parseInt(data.offerExpiry, 10),
       data.creatorSalt,
-      // web3Utils.toWei(data.interestRatePerDay),
-      parseInt(data.interestRatePerDay, 10),
+      web3Utils.toWei(data.interestRatePerDay),
+      // parseInt(data.interestRatePerDay, 10),
       parseInt(data.loanDuration, 10),
       data.ecSignatureCreator,
       web3Utils.toWei(cancelledCollateralTokenAmount)

@@ -154,7 +154,7 @@ export class Lendroid {
       : null
 
     const onSign = hash => {
-      web3Utils.eth
+      web3Utils.eth.personal
         .sign(hash, address)
         .then(result => {
           postData.ecSignatureCreator = result
@@ -186,8 +186,8 @@ export class Lendroid {
         values,
         parseInt(postData.offerExpiry, 10),
         postData.creatorSalt,
-        // web3Utils.toWei(postData.interestRatePerDay),
-        parseInt(postData.interestRatePerDay, 10),
+        web3Utils.toWei(postData.interestRatePerDay),
+        // parseInt(postData.interestRatePerDay, 10),
         parseInt(postData.loanDuration, 10)
       )
       .call()
@@ -330,7 +330,9 @@ export class Lendroid {
 
     const { borrower, loanAmountOwed } = data.origin
     const borrowerAllowance = await this.fetchAllowanceByAddress(borrower)
-    if (borrowerAllowance > loanAmountOwed) {
+    if (
+      parseFloat(borrowerAllowance.toString()) >= parseFloat(loanAmountOwed)
+    ) {
       closePosition({ data, metamask }, (err, res) => {
         if (err) {
           Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)

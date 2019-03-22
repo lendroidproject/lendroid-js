@@ -4,7 +4,7 @@ var ABIs = require("./ContractABIs");
 exports.CONTRACT_ADDRESSES = {
     Protocol: {
         1: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-        42: '0xF03488aa13cd32f81C4df17b2Bc8967E24882d45',
+        42: '0xd8DABd05FE213883aCA7F651f47A61f5ab2323f8',
         def: ABIs.ProtocolABI
     },
     WETH: {

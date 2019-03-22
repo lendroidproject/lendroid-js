@@ -12,7 +12,6 @@ export declare const ProtocolABI: ({
     payable?: undefined;
     gas?: undefined;
 } | {
-    "name": string;
     "outputs": never[];
     "inputs": {
         "type": string;
@@ -21,6 +20,7 @@ export declare const ProtocolABI: ({
     "constant": boolean;
     "payable": boolean;
     "type": string;
+    name?: undefined;
     anonymous?: undefined;
     gas?: undefined;
 } | {
