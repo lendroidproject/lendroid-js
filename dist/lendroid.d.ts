@@ -19,7 +19,7 @@ export declare class Lendroid {
     onAllowance(token: any, newAllowance: any, callback: any): void;
     onPostLoans(data: any, callback: any): void;
     onFillLoan(approval: any, callback: any): void;
-    onClosePosition(data: any, callback: any): void;
+    onClosePosition(data: any, callback: any): Promise<void>;
     onTopUpPosition(data: any, topUpCollateralAmount: any, callback: any): void;
     onLiquidatePosition(data: any, callback: any): void;
     onCancelOrder(data: any, callback: any): void;
@@ -33,6 +33,7 @@ export declare class Lendroid {
     private fetchETHBallance();
     private fetchBallanceByToken(token);
     private fetchAllowanceByToken(token);
+    private fetchAllowanceByAddress(address, token?);
     private debounce(func, wait, immediate);
     private fillZero(len?);
 }

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.API_ENDPOINT = 'http://localhost:8080';
-exports.API_LOAN_REQUESTS = 'https://lendroidwrangler.com/';
+exports.API_LOAN_REQUESTS = 'https://lendroidwrangler.com';
 exports.DEFAULT_CONTRACTS = {
     contracts: {},
     balances: {},

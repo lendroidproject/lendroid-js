@@ -1,5 +1,5 @@
 export const API_ENDPOINT = 'http://localhost:8080'
-export const API_LOAN_REQUESTS = 'https://lendroidwrangler.com/'
+export const API_LOAN_REQUESTS = 'https://lendroidwrangler.com'
 export const DEFAULT_CONTRACTS = {
   contracts: {},
   balances: {},

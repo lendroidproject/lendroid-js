@@ -63,6 +63,7 @@ export class Lendroid {
     this.fetchETHBallance = this.fetchETHBallance.bind(this)
     this.fetchBallanceByToken = this.fetchBallanceByToken.bind(this)
     this.fetchAllowanceByToken = this.fetchAllowanceByToken.bind(this)
+    this.fetchAllowanceByAddress = this.fetchAllowanceByAddress.bind(this)
     this.fetchOrders = this.fetchOrders.bind(this)
     this.fetchPositions = this.fetchPositions.bind(this)
     this.fetchDAIExchange = this.fetchDAIExchange.bind(this)
@@ -182,7 +183,8 @@ export class Lendroid {
         values,
         parseInt(postData.offerExpiry, 10),
         postData.creatorSalt,
-        web3Utils.toWei(postData.interestRatePerDay),
+        // web3Utils.toWei(postData.interestRatePerDay),
+        parseInt(postData.interestRatePerDay, 10),
         parseInt(postData.loanDuration, 10)
       )
       .call()
@@ -302,15 +304,24 @@ export class Lendroid {
     )
   }
 
-  public onClosePosition(data, callback) {
+  public async onClosePosition(data, callback) {
     const { metamask } = this
-    closePosition({ data, metamask }, (err, res) => {
-      if (err) {
-        Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-      }
-      callback(err, res)
-      setTimeout(this.fetchPositions, 100)
-    })
+
+    const { borrower, loanAmountOwed } = data.origin
+    const borrowerAllowance = await this.fetchAllowanceByAddress(borrower)
+    if (borrowerAllowance > loanAmountOwed) {
+      closePosition({ data, metamask }, (err, res) => {
+        if (err) {
+          Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+        }
+        callback(err, res)
+        setTimeout(this.fetchPositions, 100)
+      })
+    } else {
+      callback({
+        message: `Borrower\'s DAI allowance should at least ${loanAmountOwed}`
+      })
+    }
   }
 
   public onTopUpPosition(data, topUpCollateralAmount, callback) {
@@ -532,6 +543,36 @@ export class Lendroid {
     } else {
       setTimeout(this.fetchAllowanceByToken, 500, token)
     }
+  }
+
+  private fetchAllowanceByAddress(address, token = 'DAI') {
+    return new Promise((resolve, reject) => {
+      const { web3Utils, contracts } = this
+      if (
+        contracts &&
+        contracts.contracts &&
+        contracts.contracts[token] &&
+        contracts.contracts.Protocol
+      ) {
+        fetchAllowanceByToken(
+          {
+            web3Utils,
+            address,
+            contractInstance: contracts.contracts[token],
+            protocolContract: contracts.contracts.Protocol
+          },
+          (err, res) => {
+            if (err) {
+              reject(err)
+            } else {
+              resolve(res.data)
+            }
+          }
+        )
+      } else {
+        reject({ message: 'Contracts not ready, try again later.' })
+      }
+    })
   }
 
   private debounce(func, wait, immediate) {
