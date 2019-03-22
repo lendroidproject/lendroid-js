@@ -31,8 +31,8 @@ export declare class Lendroid {
     private fetchContracts();
     private fetchContractByToken(token, callback);
     private fetchETHBallance();
-    private fetchBallanceByToken(token);
-    private fetchAllowanceByToken(token);
+    private fetchBallanceByToken(token, callback?, once?);
+    private fetchAllowanceByToken(token, callback?, once?);
     private fetchAllowanceByAddress(address, token?);
     private debounce(func, wait, immediate);
     private fillZero(len?);

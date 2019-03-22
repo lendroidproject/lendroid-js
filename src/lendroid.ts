@@ -218,9 +218,9 @@ export class Lendroid {
     wrapETH(
       { web3Utils, amount, isWrap, _WETHContractInstance, metamask },
       (err, hash) => {
-        callback(null)
         if (err) {
           this.loading.wrapping = false
+          callback(null)
           Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
         } else {
           this.debounceUpdate()
@@ -229,13 +229,22 @@ export class Lendroid {
               .getTransactionReceipt(hash)
               .then(res => {
                 if (res) {
-                  this.loading.wrapping = false
-                  setTimeout(() => this.debounceUpdate(), 1500)
                   clearInterval(wrapInterval)
+                  setTimeout(() => {
+                    this.fetchBallanceByToken(
+                      'WETH',
+                      (e: any) => {
+                        this.loading.wrapping = false
+                        callback(e)
+                      },
+                      true
+                    )
+                  }, 1000)
                 }
               })
               .catch(error => {
                 this.loading.wrapping = false
+                callback(null)
                 Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
               })
           }, 3000)
@@ -266,9 +275,9 @@ export class Lendroid {
         protocolContract
       },
       (err, hash) => {
-        callback(null)
         if (err) {
           this.loading.allowance = false
+          callback(null)
           Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
         } else {
           const allowanceInterval = setInterval(() => {
@@ -276,13 +285,22 @@ export class Lendroid {
               .getTransactionReceipt(hash)
               .then(res => {
                 if (res) {
-                  this.loading.allowance = false
-                  setTimeout(() => this.debounceUpdate(), 1500)
                   clearInterval(allowanceInterval)
+                  setTimeout(() => {
+                    this.fetchAllowanceByToken(
+                      token,
+                      (e: any) => {
+                        this.loading.allowance = false
+                        callback(e)
+                      },
+                      true
+                    )
+                  }, 1000)
                 }
               })
               .catch(error => {
                 this.loading.allowance = false
+                callback(null)
                 Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
               })
           }, 3000)
@@ -491,7 +509,11 @@ export class Lendroid {
     this.fetchDAIExchange()
   }
 
-  private fetchBallanceByToken(token) {
+  private fetchBallanceByToken(
+    token,
+    callback: any = () => null,
+    once = false
+  ) {
     const { web3Utils, metamask, contracts } = this
     const { address } = metamask || { address: null }
     if (contracts && contracts.contracts && contracts.contracts[token]) {
@@ -503,19 +525,29 @@ export class Lendroid {
         },
         (err, res) => {
           if (err) {
+            callback(null)
             return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
           }
           this.contracts.balances[token] = res.data
           this.debounceUpdate()
+          callback(null)
         }
       )
-      setTimeout(this.fetchBallanceByToken, 2500, token)
+      if (!once) {
+        setTimeout(this.fetchBallanceByToken, 2500, token)
+      }
     } else {
-      setTimeout(this.fetchBallanceByToken, 500, token)
+      if (!once) {
+        setTimeout(this.fetchBallanceByToken, 500, token)
+      }
     }
   }
 
-  private fetchAllowanceByToken(token) {
+  private fetchAllowanceByToken(
+    token,
+    callback: any = () => null,
+    once = false
+  ) {
     const { web3Utils, metamask, contracts } = this
     const { address } = metamask || { address: null }
     if (
@@ -533,15 +565,21 @@ export class Lendroid {
         },
         (err, res) => {
           if (err) {
+            callback(null)
             return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
           }
           this.contracts.allowances[token] = res.data
           this.debounceUpdate()
+          callback(null)
         }
       )
-      setTimeout(this.fetchAllowanceByToken, 2500, token)
+      if (!once) {
+        setTimeout(this.fetchAllowanceByToken, 2500, token)
+      }
     } else {
-      setTimeout(this.fetchAllowanceByToken, 500, token)
+      if (!once) {
+        setTimeout(this.fetchAllowanceByToken, 500, token)
+      }
     }
   }
 

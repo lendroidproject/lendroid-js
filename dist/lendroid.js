@@ -196,9 +196,9 @@ var Lendroid = (function () {
         }
         this.loading.wrapping = true;
         services_1.wrapETH({ web3Utils: web3Utils, amount: amount, isWrap: isWrap, _WETHContractInstance: _WETHContractInstance, metamask: metamask }, function (err, hash) {
-            callback(null);
             if (err) {
                 _this.loading.wrapping = false;
+                callback(null);
                 services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
             }
             else {
@@ -208,13 +208,18 @@ var Lendroid = (function () {
                         .getTransactionReceipt(hash)
                         .then(function (res) {
                         if (res) {
-                            _this.loading.wrapping = false;
-                            setTimeout(function () { return _this.debounceUpdate(); }, 1500);
                             clearInterval(wrapInterval_1);
+                            setTimeout(function () {
+                                _this.fetchBallanceByToken('WETH', function (e) {
+                                    _this.loading.wrapping = false;
+                                    callback(e);
+                                }, true);
+                            }, 1000);
                         }
                     })
                         .catch(function (error) {
                         _this.loading.wrapping = false;
+                        callback(null);
                         services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
                     });
                 }, 3000);
@@ -241,9 +246,9 @@ var Lendroid = (function () {
             newAllowance: newAllowance,
             protocolContract: protocolContract
         }, function (err, hash) {
-            callback(null);
             if (err) {
                 _this.loading.allowance = false;
+                callback(null);
                 services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
             }
             else {
@@ -252,13 +257,18 @@ var Lendroid = (function () {
                         .getTransactionReceipt(hash)
                         .then(function (res) {
                         if (res) {
-                            _this.loading.allowance = false;
-                            setTimeout(function () { return _this.debounceUpdate(); }, 1500);
                             clearInterval(allowanceInterval_1);
+                            setTimeout(function () {
+                                _this.fetchAllowanceByToken(token, function (e) {
+                                    _this.loading.allowance = false;
+                                    callback(e);
+                                }, true);
+                            }, 1000);
                         }
                     })
                         .catch(function (error) {
                         _this.loading.allowance = false;
+                        callback(null);
                         services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
                     });
                 }, 3000);
@@ -464,8 +474,10 @@ var Lendroid = (function () {
         }
         this.fetchDAIExchange();
     };
-    Lendroid.prototype.fetchBallanceByToken = function (token) {
+    Lendroid.prototype.fetchBallanceByToken = function (token, callback, once) {
         var _this = this;
+        if (callback === void 0) { callback = function () { return null; }; }
+        if (once === void 0) { once = false; }
         var _a = this, web3Utils = _a.web3Utils, metamask = _a.metamask, contracts = _a.contracts;
         var address = (metamask || { address: null }).address;
         if (contracts && contracts.contracts && contracts.contracts[token]) {
@@ -475,19 +487,27 @@ var Lendroid = (function () {
                 address: address
             }, function (err, res) {
                 if (err) {
+                    callback(null);
                     return services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
                 }
                 _this.contracts.balances[token] = res.data;
                 _this.debounceUpdate();
+                callback(null);
             });
-            setTimeout(this.fetchBallanceByToken, 2500, token);
+            if (!once) {
+                setTimeout(this.fetchBallanceByToken, 2500, token);
+            }
         }
         else {
-            setTimeout(this.fetchBallanceByToken, 500, token);
+            if (!once) {
+                setTimeout(this.fetchBallanceByToken, 500, token);
+            }
         }
     };
-    Lendroid.prototype.fetchAllowanceByToken = function (token) {
+    Lendroid.prototype.fetchAllowanceByToken = function (token, callback, once) {
         var _this = this;
+        if (callback === void 0) { callback = function () { return null; }; }
+        if (once === void 0) { once = false; }
         var _a = this, web3Utils = _a.web3Utils, metamask = _a.metamask, contracts = _a.contracts;
         var address = (metamask || { address: null }).address;
         if (contracts &&
@@ -501,15 +521,21 @@ var Lendroid = (function () {
                 protocolContract: contracts.contracts.Protocol
             }, function (err, res) {
                 if (err) {
+                    callback(null);
                     return services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
                 }
                 _this.contracts.allowances[token] = res.data;
                 _this.debounceUpdate();
+                callback(null);
             });
-            setTimeout(this.fetchAllowanceByToken, 2500, token);
+            if (!once) {
+                setTimeout(this.fetchAllowanceByToken, 2500, token);
+            }
         }
         else {
-            setTimeout(this.fetchAllowanceByToken, 500, token);
+            if (!once) {
+                setTimeout(this.fetchAllowanceByToken, 500, token);
+            }
         }
     };
     Lendroid.prototype.fetchAllowanceByAddress = function (address, token) {
