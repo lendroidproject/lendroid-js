@@ -6,6 +6,7 @@ export declare class Lendroid {
     private exchangeRates;
     private contracts;
     private orders;
+    private lastFetchTime;
     private loading;
     private stateCallback;
     private debounceUpdate;

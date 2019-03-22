@@ -97,7 +97,9 @@ var Lendroid = (function () {
                 }
             });
         }); }, 1000);
+        this.lastFetchTime = new Date();
         setInterval(function () {
+            _this.lastFetchTime = new Date();
             _this.fetchOrders();
         }, 30 * 1000);
         this.debounceUpdate = this.debounce(this.stateCallback, 500, null);

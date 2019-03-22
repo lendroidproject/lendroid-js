@@ -41,6 +41,7 @@ export class Lendroid {
   private exchangeRates: any
   private contracts: any
   private orders: any
+  private lastFetchTime: Date
   private loading: any
   private stateCallback: () => void
   private debounceUpdate: () => void
@@ -102,7 +103,9 @@ export class Lendroid {
       }
     }, 1000)
 
+    this.lastFetchTime = new Date()
     setInterval(() => {
+      this.lastFetchTime = new Date()
       this.fetchOrders()
     }, 30 * 1000)
 
