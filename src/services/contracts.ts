@@ -369,7 +369,7 @@ export const fillLoan = (payload, callback) => {
       approval._sig_data_wrangler
     )
     .send({ from: metamask.address })
-    .then(hash => callback(null, hash))
+    .then(hash => callback(null, hash.transactionHash))
     .catch(err => callback(err))
 }
 
@@ -380,7 +380,7 @@ export const closePosition = (payload, callback) => {
     .close_position(data.origin.collateralToken)
     .send({ from: data.origin.borrower })
     .then(hash => {
-      setTimeout(callback, 5000, null, hash)
+      setTimeout(callback, 5000, null, hash.transactionHash)
     })
     .catch(err => callback(err))
 }
@@ -392,7 +392,7 @@ export const topUpPosition = (payload, callback) => {
     .topup_position(data.collateralToken, topUpCollateralAmount)
     .send({ from: data.userAddress })
     .then(hash => {
-      setTimeout(callback, 5000, null, hash)
+      setTimeout(callback, 5000, null, hash.transactionHash)
     })
     .catch(err => callback(err))
 }
@@ -404,7 +404,7 @@ export const liquidatePosition = (payload, callback) => {
     .liquidate_position(data.origin.collateralToken)
     .send({ from: data.origin.userAddress })
     .then(hash => {
-      setTimeout(callback, 5000, null, hash)
+      setTimeout(callback, 5000, null, hash.transactionHash)
     })
     .catch(err => callback(err))
 }

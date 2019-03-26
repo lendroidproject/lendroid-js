@@ -281,29 +281,71 @@ var Lendroid = (function () {
         services_1.postLoans(this.apiLoanRequests, data, callback);
     };
     Lendroid.prototype.onFillLoan = function (approval, callback) {
+        var _this = this;
         var _a = this, contracts = _a.contracts, metamask = _a.metamask, web3Utils = _a.web3Utils;
         var protocolContractInstance = contracts.contracts.Protocol;
-        services_1.fillLoan({ approval: approval, protocolContractInstance: protocolContractInstance, metamask: metamask, web3Utils: web3Utils }, callback);
+        services_1.fillLoan({ approval: approval, protocolContractInstance: protocolContractInstance, metamask: metamask, web3Utils: web3Utils }, function (err, hash) {
+            if (err) {
+                services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
+                callback(err, hash);
+            }
+            else {
+                _this.debounceUpdate();
+                var txInterval_1 = setInterval(function () {
+                    web3Utils.eth
+                        .getTransactionReceipt(hash)
+                        .then(function (res) {
+                        if (res && parseInt(res.status, 16)) {
+                            clearInterval(txInterval_1);
+                            callback(err, hash);
+                        }
+                    })
+                        .catch(function (error) {
+                        _this.loading.wrapping = false;
+                        callback(null);
+                        services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
+                    });
+                }, 1500);
+            }
+        });
     };
     Lendroid.prototype.onClosePosition = function (data, callback) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var metamask, _a, borrower, loanAmountOwed, borrowerAllowance;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var _a, metamask, web3Utils, _b, borrower, loanAmountOwed, borrowerAllowance;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
-                        metamask = this.metamask;
-                        _a = data.origin, borrower = _a.borrower, loanAmountOwed = _a.loanAmountOwed;
+                        _a = this, metamask = _a.metamask, web3Utils = _a.web3Utils;
+                        _b = data.origin, borrower = _b.borrower, loanAmountOwed = _b.loanAmountOwed;
                         return [4, this.fetchAllowanceByAddress(borrower)];
                     case 1:
-                        borrowerAllowance = _b.sent();
+                        borrowerAllowance = _c.sent();
                         if (parseFloat(borrowerAllowance.toString()) >= parseFloat(loanAmountOwed)) {
-                            services_1.closePosition({ data: data, metamask: metamask }, function (err, res) {
+                            services_1.closePosition({ data: data, metamask: metamask }, function (err, hash) {
                                 if (err) {
                                     services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
+                                    callback(err, hash);
                                 }
-                                callback(err, res);
-                                setTimeout(_this.fetchPositions, 100);
+                                else {
+                                    _this.debounceUpdate();
+                                    var txInterval_2 = setInterval(function () {
+                                        web3Utils.eth
+                                            .getTransactionReceipt(hash)
+                                            .then(function (res) {
+                                            if (res && parseInt(res.status, 16)) {
+                                                clearInterval(txInterval_2);
+                                                callback(err, hash);
+                                                setTimeout(_this.fetchPositions, 100);
+                                            }
+                                        })
+                                            .catch(function (error) {
+                                            _this.loading.wrapping = false;
+                                            callback(null);
+                                            services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
+                                        });
+                                    }, 1500);
+                                }
                             });
                         }
                         else {
@@ -318,32 +360,70 @@ var Lendroid = (function () {
     };
     Lendroid.prototype.onTopUpPosition = function (data, topUpCollateralAmount, callback) {
         var _this = this;
-        services_1.topUpPosition({ data: data, topUpCollateralAmount: topUpCollateralAmount }, function (err, res) {
+        var web3Utils = this.web3Utils;
+        services_1.topUpPosition({ data: data, topUpCollateralAmount: topUpCollateralAmount }, function (err, hash) {
             if (err) {
                 services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
+                callback(err, hash);
             }
-            callback(err, res);
-            setTimeout(_this.fetchPositions, 100);
+            else {
+                _this.debounceUpdate();
+                var txInterval_3 = setInterval(function () {
+                    web3Utils.eth
+                        .getTransactionReceipt(hash)
+                        .then(function (res) {
+                        if (res && parseInt(res.status, 16)) {
+                            clearInterval(txInterval_3);
+                            callback(err, hash);
+                            setTimeout(_this.fetchPositions, 100);
+                        }
+                    })
+                        .catch(function (error) {
+                        _this.loading.wrapping = false;
+                        callback(null);
+                        services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
+                    });
+                }, 1500);
+            }
         });
     };
     Lendroid.prototype.onLiquidatePosition = function (data, callback) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var _a, lender, loanAmountOwed, lenderAllowance;
+            var web3Utils, _a, lender, loanAmountOwed, lenderAllowance;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        web3Utils = this.web3Utils;
                         _a = data.origin, lender = _a.lender, loanAmountOwed = _a.loanAmountOwed;
                         return [4, this.fetchAllowanceByAddress(lender)];
                     case 1:
                         lenderAllowance = _b.sent();
                         if (parseFloat(lenderAllowance.toString()) >= parseFloat(loanAmountOwed)) {
-                            services_1.liquidatePosition({ data: data }, function (err, res) {
+                            services_1.liquidatePosition({ data: data }, function (err, hash) {
                                 if (err) {
                                     services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
+                                    callback(err, hash);
                                 }
-                                callback(err, res);
-                                setTimeout(_this.fetchPositions, 100);
+                                else {
+                                    _this.debounceUpdate();
+                                    var txInterval_4 = setInterval(function () {
+                                        web3Utils.eth
+                                            .getTransactionReceipt(hash)
+                                            .then(function (res) {
+                                            if (res && parseInt(res.status, 16)) {
+                                                clearInterval(txInterval_4);
+                                                callback(err, hash);
+                                                setTimeout(_this.fetchPositions, 100);
+                                            }
+                                        })
+                                            .catch(function (error) {
+                                            _this.loading.wrapping = false;
+                                            callback(null);
+                                            services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
+                                        });
+                                    }, 1500);
+                                }
                             });
                         }
                         else {

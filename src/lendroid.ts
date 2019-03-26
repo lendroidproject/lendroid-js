@@ -321,24 +321,63 @@ export class Lendroid {
     const protocolContractInstance = contracts.contracts.Protocol
     fillLoan(
       { approval, protocolContractInstance, metamask, web3Utils },
-      callback
+      (err, hash) => {
+        if (err) {
+          Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+          callback(err, hash)
+        } else {
+          this.debounceUpdate()
+          const txInterval = setInterval(() => {
+            web3Utils.eth
+              .getTransactionReceipt(hash)
+              .then(res => {
+                if (res && parseInt(res.status, 16)) {
+                  clearInterval(txInterval)
+                  callback(err, hash)
+                }
+              })
+              .catch(error => {
+                this.loading.wrapping = false
+                callback(null)
+                Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
+              })
+          }, 1500)
+        }
+      }
     )
   }
 
   public async onClosePosition(data, callback) {
-    const { metamask } = this
+    const { metamask, web3Utils } = this
 
     const { borrower, loanAmountOwed } = data.origin
     const borrowerAllowance = await this.fetchAllowanceByAddress(borrower)
     if (
       parseFloat(borrowerAllowance.toString()) >= parseFloat(loanAmountOwed)
     ) {
-      closePosition({ data, metamask }, (err, res) => {
+      closePosition({ data, metamask }, (err, hash) => {
         if (err) {
           Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+          callback(err, hash)
+        } else {
+          this.debounceUpdate()
+          const txInterval = setInterval(() => {
+            web3Utils.eth
+              .getTransactionReceipt(hash)
+              .then(res => {
+                if (res && parseInt(res.status, 16)) {
+                  clearInterval(txInterval)
+                  callback(err, hash)
+                  setTimeout(this.fetchPositions, 100)
+                }
+              })
+              .catch(error => {
+                this.loading.wrapping = false
+                callback(null)
+                Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
+              })
+          }, 1500)
         }
-        callback(err, res)
-        setTimeout(this.fetchPositions, 100)
       })
     } else {
       callback({
@@ -348,25 +387,63 @@ export class Lendroid {
   }
 
   public onTopUpPosition(data, topUpCollateralAmount, callback) {
-    topUpPosition({ data, topUpCollateralAmount }, (err, res) => {
+    const { web3Utils } = this
+
+    topUpPosition({ data, topUpCollateralAmount }, (err, hash) => {
       if (err) {
         Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+        callback(err, hash)
+      } else {
+        this.debounceUpdate()
+        const txInterval = setInterval(() => {
+          web3Utils.eth
+            .getTransactionReceipt(hash)
+            .then(res => {
+              if (res && parseInt(res.status, 16)) {
+                clearInterval(txInterval)
+                callback(err, hash)
+                setTimeout(this.fetchPositions, 100)
+              }
+            })
+            .catch(error => {
+              this.loading.wrapping = false
+              callback(null)
+              Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
+            })
+        }, 1500)
       }
-      callback(err, res)
-      setTimeout(this.fetchPositions, 100)
     })
   }
 
   public async onLiquidatePosition(data, callback) {
+    const { web3Utils } = this
+
     const { lender, loanAmountOwed } = data.origin
     const lenderAllowance = await this.fetchAllowanceByAddress(lender)
     if (parseFloat(lenderAllowance.toString()) >= parseFloat(loanAmountOwed)) {
-      liquidatePosition({ data }, (err, res) => {
+      liquidatePosition({ data }, (err, hash) => {
         if (err) {
           Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+          callback(err, hash)
+        } else {
+          this.debounceUpdate()
+          const txInterval = setInterval(() => {
+            web3Utils.eth
+              .getTransactionReceipt(hash)
+              .then(res => {
+                if (res && parseInt(res.status, 16)) {
+                  clearInterval(txInterval)
+                  callback(err, hash)
+                  setTimeout(this.fetchPositions, 100)
+                }
+              })
+              .catch(error => {
+                this.loading.wrapping = false
+                callback(null)
+                Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
+              })
+          }, 1500)
         }
-        callback(err, res)
-        setTimeout(this.fetchPositions, 100)
       })
     } else {
       callback({

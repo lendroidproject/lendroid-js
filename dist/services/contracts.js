@@ -337,7 +337,7 @@ exports.fillLoan = function (payload, callback) {
         web3Utils.toBN(approval._values[6]).toString()
     ], approval._nonce, approval._kernel_daily_interest_rate, approval._is_creator_lender, approval._timestamps, approval._position_duration_in_seconds, approval._kernel_creator_salt, approval._sig_data_kernel_creator, approval._sig_data_wrangler)
         .send({ from: metamask.address })
-        .then(function (hash) { return callback(null, hash); })
+        .then(function (hash) { return callback(null, hash.transactionHash); })
         .catch(function (err) { return callback(err); });
 };
 exports.closePosition = function (payload, callback) {
@@ -346,7 +346,7 @@ exports.closePosition = function (payload, callback) {
         .close_position(data.origin.collateralToken)
         .send({ from: data.origin.borrower })
         .then(function (hash) {
-        setTimeout(callback, 5000, null, hash);
+        setTimeout(callback, 5000, null, hash.transactionHash);
     })
         .catch(function (err) { return callback(err); });
 };
@@ -356,7 +356,7 @@ exports.topUpPosition = function (payload, callback) {
         .topup_position(data.collateralToken, topUpCollateralAmount)
         .send({ from: data.userAddress })
         .then(function (hash) {
-        setTimeout(callback, 5000, null, hash);
+        setTimeout(callback, 5000, null, hash.transactionHash);
     })
         .catch(function (err) { return callback(err); });
 };
@@ -366,7 +366,7 @@ exports.liquidatePosition = function (payload, callback) {
         .liquidate_position(data.origin.collateralToken)
         .send({ from: data.origin.userAddress })
         .then(function (hash) {
-        setTimeout(callback, 5000, null, hash);
+        setTimeout(callback, 5000, null, hash.transactionHash);
     })
         .catch(function (err) { return callback(err); });
 };
