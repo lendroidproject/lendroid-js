@@ -357,14 +357,22 @@ export class Lendroid {
     })
   }
 
-  public onLiquidatePosition(data, callback) {
-    liquidatePosition({ data }, (err, res) => {
-      if (err) {
-        Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-      }
-      callback(err, res)
-      setTimeout(this.fetchPositions, 100)
-    })
+  public async onLiquidatePosition(data, callback) {
+    const { lender, loanAmountOwed } = data.origin
+    const lenderAllowance = await this.fetchAllowanceByAddress(lender)
+    if (parseFloat(lenderAllowance.toString()) >= parseFloat(loanAmountOwed)) {
+      liquidatePosition({ data }, (err, res) => {
+        if (err) {
+          Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
+        }
+        callback(err, res)
+        setTimeout(this.fetchPositions, 100)
+      })
+    } else {
+      callback({
+        message: `Lender\'s DAI allowance should at least ${loanAmountOwed}`
+      })
+    }
   }
 
   public onCancelOrder(data, callback) {

@@ -327,13 +327,33 @@ var Lendroid = (function () {
         });
     };
     Lendroid.prototype.onLiquidatePosition = function (data, callback) {
-        var _this = this;
-        services_1.liquidatePosition({ data: data }, function (err, res) {
-            if (err) {
-                services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
-            }
-            callback(err, res);
-            setTimeout(_this.fetchPositions, 100);
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            var _a, lender, loanAmountOwed, lenderAllowance;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = data.origin, lender = _a.lender, loanAmountOwed = _a.loanAmountOwed;
+                        return [4, this.fetchAllowanceByAddress(lender)];
+                    case 1:
+                        lenderAllowance = _b.sent();
+                        if (parseFloat(lenderAllowance.toString()) >= parseFloat(loanAmountOwed)) {
+                            services_1.liquidatePosition({ data: data }, function (err, res) {
+                                if (err) {
+                                    services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
+                                }
+                                callback(err, res);
+                                setTimeout(_this.fetchPositions, 100);
+                            });
+                        }
+                        else {
+                            callback({
+                                message: "Lender's DAI allowance should at least " + loanAmountOwed
+                            });
+                        }
+                        return [2];
+                }
+            });
         });
     };
     Lendroid.prototype.onCancelOrder = function (data, callback) {

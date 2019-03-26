@@ -22,7 +22,7 @@ export declare class Lendroid {
     onFillLoan(approval: any, callback: any): void;
     onClosePosition(data: any, callback: any): Promise<void>;
     onTopUpPosition(data: any, topUpCollateralAmount: any, callback: any): void;
-    onLiquidatePosition(data: any, callback: any): void;
+    onLiquidatePosition(data: any, callback: any): Promise<void>;
     onCancelOrder(data: any, callback: any): void;
     private init();
     private reset(metamask);
