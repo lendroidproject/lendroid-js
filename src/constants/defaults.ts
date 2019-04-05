@@ -1,5 +1,5 @@
 export const API_ENDPOINT = 'http://localhost:8080'
-export const API_LOAN_REQUESTS = 'http://127.0.0.1:5000'
+export const API_LOAN_REQUESTS = 'https://lendroidwrangler.com'
 export const DEFAULT_CONTRACTS = {
   contracts: {},
   balances: {},
@@ -23,12 +23,10 @@ export const DEFAULT_ORDERS = {
   orders: [],
 }
 export const DEFAULT_EXCHANGES = {
-  currentWETHExchangeRate: 0,
+  currentWETHExchangeRate: 1,
   currentDAIExchangeRate: 0,
 }
 
-export const LOAN_STATUS_ACTIVE = 0
-export const LOAN_STATUS_CLOSED = 1
-export const LOAN_STATUS_LIQUIDATING = 2
+export const LOAN_STATUS_OPEN = 1
+export const LOAN_STATUS_CLOSED = 2
 export const LOAN_STATUS_LIQUIDATED = 3
-export const LOAN_STATUS_DEACTIVATED = 4

@@ -1,0 +1,12 @@
+export declare const fetchContractByToken: (token: any, payload: any, callback: any) => any;
+export declare const fetchETHBallance: (payload: any, callback: any) => void;
+export declare const fetchBallanceByToken: (payload: any, callback: any) => any;
+export declare const fetchAllowanceByToken: (payload: any, callback: any) => any;
+export declare const fetchPositions: (payload: any, callback: any) => Promise<void>;
+export declare const wrapETH: (payload: any, callback: any) => void;
+export declare const allowance: (payload: any, callback: any) => void;
+export declare const fillLoan: (payload: any, callback: any) => void;
+export declare const closePosition: (payload: any, callback: any) => void;
+export declare const topUpPosition: (payload: any, callback: any) => void;
+export declare const liquidatePosition: (payload: any, callback: any) => void;
+export declare const cancelOrder: (payload: any, callback: any) => Promise<void>;

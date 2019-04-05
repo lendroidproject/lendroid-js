@@ -3,7 +3,7 @@
 idea/
 
 # Compiled files
-dist/
+# dist/
 
 # Logs
 logs
@@ -25,7 +25,7 @@ node_modules/
 .npm
 
 # Index file for Webpack deployment & testing
-index.ts
+# index.ts
 
 # Yarn (prefer package.json.lock remained)
 yarn.lock

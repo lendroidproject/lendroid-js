@@ -1,9 +1,14 @@
 import * as ABIs from './ContractABIs'
 
 export const CONTRACT_ADDRESSES = {
+  Protocol: {
+    1: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    42: '0x81619C8640B62512eE6c494c0bb26CC38fC95400',
+    def: ABIs.ProtocolABI
+  },
   WETH: {
     1: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    42: '0xd0a1e359811322d97991e03f863a0c30c2cf029c'
+    42: '0xd0A1E359811322d97991E03f863a0C30C2cF029C'
   },
   LST: {
     1: '0x4de2573e27E648607B50e1Cfff921A33E4A34405',
@@ -15,27 +20,16 @@ export const CONTRACT_ADDRESSES = {
     42: '0xC4375B7De8af5a38a93548eb8453a498222C4fF2',
     def: ABIs.DAIABI
   },
-  LoanOfferRegistry: {
-    42: '0xef7001fe7f77cef83d931ebb651f8bb72d0d602e',
-    def: ABIs.LoanOfferRegisteryABI
-  },
-  LoanRegistry: {
-    42: '0x4b946fdf267f542a22f25c7a58b7fef2de90843b',
-    def: ABIs.LoanRegistryABI
-  },
-  Loan: {
-    42: '0xa758f4da5bccbf8fca61dd3fdb8d601648160522',
-    def: ABIs.LoanABI
-  },
-  WranglerLoanRegistry: {
-    42: '0x974ce7bc3ab45714a9bbd3bd6e7cf50b10c7e30c',
-    def: ABIs.WranglerLoanRegistryABI
-  },
-  TokenTransferProxy: {
-    42: '0xf1dbcef9820a758eead322f525e38c9289dc09d0',
-    def: ABIs.TokenTransferProxyABI
-  },
+  DAI2ETH: {
+    1: '0x729D19f657BD0614b4985Cf1D82531c67569197B',
+    42: '0x9FfFE440258B79c5d6604001674A4722FfC0f7Bc',
+    def: {
+      hasNetwork: true,
+      1: ABIs.DAI2ETHABI[1],
+      42: ABIs.DAI2ETHABI[42]
+    }
+  }
 }
 
 export const CONTRACT_TOKENS = Object.keys(CONTRACT_ADDRESSES)
-export const BALLANCE_TOKENS = CONTRACT_TOKENS.filter(token => token.length < 5 && token !== 'Loan')
+export const BALLANCE_TOKENS = CONTRACT_TOKENS.filter(token => token.length < 5)
