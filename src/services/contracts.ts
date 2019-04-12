@@ -2,35 +2,38 @@ import axios from 'axios'
 import * as Constants from '../constants'
 
 export const fetchContractByToken = (token, payload, callback) => {
-  const { network, web3Utils } = payload
-  const { CONTRACT_ADDRESSES } = Constants
+  const { network, web3Utils, contractAddresses } = payload
 
-  if (!CONTRACT_ADDRESSES[token][network]) {
+  if (!contractAddresses[token][network]) {
     return callback({ message: 'Unknown' })
   }
 
-  if (!CONTRACT_ADDRESSES[token].def) {
+  if (!contractAddresses[token].def) {
     const url = `https://${
       network === 1 ? 'api' : 'api-kovan'
-    }.etherscan.io/api?module=contract&action=getabi&address=${
-      CONTRACT_ADDRESSES[token][network]
-    }`
+      }.etherscan.io/api?module=contract&action=getabi&address=${
+      contractAddresses[token][network]
+      }`
     axios
       .get(url)
       .then(res => {
-        const contractABI = JSON.parse(res.data.result)
-        const contractInstance = web3Utils.createContract(
-          contractABI,
-          CONTRACT_ADDRESSES[token][network]
-        )
-        callback(null, { data: contractInstance })
+        if (Number(res.data.status)) {
+          const contractABI = JSON.parse(res.data.result)
+          const contractInstance = web3Utils.createContract(
+            contractABI,
+            contractAddresses[token][network]
+          )
+          callback(null, { data: contractInstance })
+        } else {
+          callback({ message: res.data.result })
+        }
       })
       .catch(err => callback(err))
   } else {
-    const contractABI = CONTRACT_ADDRESSES[token].def
+    const contractABI = contractAddresses[token].def
     const contractInstance = web3Utils.createContract(
       contractABI.hasNetwork ? contractABI[network] : contractABI,
-      CONTRACT_ADDRESSES[token][network]
+      contractAddresses[token][network]
     )
     callback(null, { data: contractInstance })
   }
@@ -61,7 +64,10 @@ export const fetchBallanceByToken = (payload, callback) => {
       const value = web3Utils.fromWei(res)
       callback(null, { data: value })
     })
-    .catch(err => callback(err))
+    .catch(err => {
+      console.log('Fetch balance failed', contractInstance._address)
+      callback(err)
+    })
 }
 
 export const fetchAllowanceByToken = (payload, callback) => {
@@ -77,7 +83,10 @@ export const fetchAllowanceByToken = (payload, callback) => {
       const value = web3Utils.fromWei(res)
       callback(null, { data: value })
     })
-    .catch(err => callback(err))
+    .catch(err => {
+      console.log('Fetch allowance failed', contractInstance._address)
+      callback(err)
+    })
 }
 
 const fillZero = (len = 40) => {
@@ -224,7 +233,8 @@ export const fetchPositions = async (payload, callback) => {
       userAddress: address,
       loanStatus: status,
       kernel_creator,
-      collateralToken: hash
+      collateralToken: hash,
+      loanToken: kernel_creator === lender ? lend_currency_address : borrow_currency_address
     }
 
     position.detail = {

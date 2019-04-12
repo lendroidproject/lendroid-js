@@ -12,7 +12,11 @@ export declare class Lendroid {
     private debounceUpdate;
     metamask: any;
     web3Utils: Web3Utils;
+    contractAddresses: any;
+    contractTokens: any;
+    balanceTokens: any;
     constructor(initParams?: any);
+    getTokenByAddress(address: any): string;
     onCreateOrder(postData: any, callback: any): Promise<void>;
     onFillOrderServer(id: any, value: any, callback: any): void;
     onDeleteOrder(id: any, callback: any): void;
@@ -28,13 +32,13 @@ export declare class Lendroid {
     private reset(metamask);
     private fetchOrders();
     private fetchPositions(specificAddress?);
-    private fetchDAIExchange();
+    private fetchTokenExchange(token);
     private fetchContracts();
     private fetchContractByToken(token, callback);
     private fetchETHBallance();
     private fetchBallanceByToken(token, callback?, once?);
     private fetchAllowanceByToken(token, callback?, once?);
-    private fetchAllowanceByAddress(address, token?);
+    private fetchAllowanceByAddress(address, token);
     private debounce(func, wait, immediate);
     private fillZero(len?);
 }

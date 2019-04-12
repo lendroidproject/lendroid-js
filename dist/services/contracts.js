@@ -39,25 +39,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = require("axios");
 var Constants = require("../constants");
 exports.fetchContractByToken = function (token, payload, callback) {
-    var network = payload.network, web3Utils = payload.web3Utils;
-    var CONTRACT_ADDRESSES = Constants.CONTRACT_ADDRESSES;
-    if (!CONTRACT_ADDRESSES[token][network]) {
+    var network = payload.network, web3Utils = payload.web3Utils, contractAddresses = payload.contractAddresses;
+    if (!contractAddresses[token][network]) {
         return callback({ message: 'Unknown' });
     }
-    if (!CONTRACT_ADDRESSES[token].def) {
-        var url = "https://" + (network === 1 ? 'api' : 'api-kovan') + ".etherscan.io/api?module=contract&action=getabi&address=" + CONTRACT_ADDRESSES[token][network];
+    if (!contractAddresses[token].def) {
+        var url = "https://" + (network === 1 ? 'api' : 'api-kovan') + ".etherscan.io/api?module=contract&action=getabi&address=" + contractAddresses[token][network];
         axios_1.default
             .get(url)
             .then(function (res) {
-            var contractABI = JSON.parse(res.data.result);
-            var contractInstance = web3Utils.createContract(contractABI, CONTRACT_ADDRESSES[token][network]);
-            callback(null, { data: contractInstance });
+            if (Number(res.data.status)) {
+                var contractABI = JSON.parse(res.data.result);
+                var contractInstance = web3Utils.createContract(contractABI, contractAddresses[token][network]);
+                callback(null, { data: contractInstance });
+            }
+            else {
+                callback({ message: res.data.result });
+            }
         })
             .catch(function (err) { return callback(err); });
     }
     else {
-        var contractABI = CONTRACT_ADDRESSES[token].def;
-        var contractInstance = web3Utils.createContract(contractABI.hasNetwork ? contractABI[network] : contractABI, CONTRACT_ADDRESSES[token][network]);
+        var contractABI = contractAddresses[token].def;
+        var contractInstance = web3Utils.createContract(contractABI.hasNetwork ? contractABI[network] : contractABI, contractAddresses[token][network]);
         callback(null, { data: contractInstance });
     }
 };
@@ -83,7 +87,10 @@ exports.fetchBallanceByToken = function (payload, callback) {
         var value = web3Utils.fromWei(res);
         callback(null, { data: value });
     })
-        .catch(function (err) { return callback(err); });
+        .catch(function (err) {
+        console.log('Fetch balance failed', contractInstance._address);
+        callback(err);
+    });
 };
 exports.fetchAllowanceByToken = function (payload, callback) {
     var address = payload.address, contractInstance = payload.contractInstance, protocolContract = payload.protocolContract, web3Utils = payload.web3Utils;
@@ -97,7 +104,10 @@ exports.fetchAllowanceByToken = function (payload, callback) {
         var value = web3Utils.fromWei(res);
         callback(null, { data: value });
     })
-        .catch(function (err) { return callback(err); });
+        .catch(function (err) {
+        console.log('Fetch allowance failed', contractInstance._address);
+        callback(err);
+    });
 };
 var fillZero = function (len) {
     if (len === void 0) { len = 40; }
@@ -234,7 +244,8 @@ exports.fetchPositions = function (payload, callback) { return __awaiter(_this, 
                         userAddress: address,
                         loanStatus: status,
                         kernel_creator: kernel_creator,
-                        collateralToken: hash
+                        collateralToken: hash,
+                        loanToken: kernel_creator === lender ? lend_currency_address : borrow_currency_address
                     };
                     position.detail = {
                         index: index,

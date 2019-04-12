@@ -24,7 +24,6 @@ export const DEFAULT_ORDERS = {
 }
 export const DEFAULT_EXCHANGES = {
   currentWETHExchangeRate: 1,
-  currentDAIExchangeRate: 0,
 }
 
 export const LOAN_STATUS_OPEN = 1
