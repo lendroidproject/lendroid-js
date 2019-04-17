@@ -112,7 +112,7 @@ var Lendroid = (function () {
         var _a = this, contractAddresses = _a.contractAddresses, contractTokens = _a.contractTokens, network = _a.metamask.network;
         var ret = '';
         contractTokens.forEach(function (token) {
-            if (contractAddresses[token] && contractAddresses[token][network]) {
+            if (contractAddresses[token] && (contractAddresses[token][network] || '').toLowerCase() === address.toLowerCase()) {
                 ret = token;
             }
         });
@@ -498,6 +498,10 @@ var Lendroid = (function () {
             if (err) {
                 return services_1.Logger.error(services_1.LOGGER_CONTEXT.API_ERROR, err.message);
             }
+            orders.result.forEach(function (order) {
+                order.loanCurrency = _this.getTokenByAddress(order.loanToken);
+                order.collateralCurrency = _this.getTokenByAddress(order.collateralToken);
+            });
             _this.orders.myOrders.lend = orders.result.filter(function (item) { return item.lender === address; });
             _this.orders.myOrders.borrow = orders.result.filter(function (item) { return item.borrower === address; });
             _this.orders.orders = orders.result.filter(function (item) { return item.lender !== address && item.borrower !== address; });

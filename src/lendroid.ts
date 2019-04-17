@@ -128,7 +128,7 @@ export class Lendroid {
     const { contractAddresses, contractTokens, metamask: { network } } = this
     let ret = ''
     contractTokens.forEach(token => {
-      if (contractAddresses[token] && contractAddresses[token][network]) {
+      if (contractAddresses[token] && (contractAddresses[token][network] || '').toLowerCase() === address.toLowerCase()) {
         ret = token
       }
     })
@@ -530,6 +530,13 @@ export class Lendroid {
       if (err) {
         return Logger.error(LOGGER_CONTEXT.API_ERROR, err.message)
       }
+
+      orders.result.forEach(order => {
+        // collateralToken
+        order.loanCurrency = this.getTokenByAddress(order.loanToken)
+        // loanToken
+        order.collateralCurrency = this.getTokenByAddress(order.collateralToken)
+      })
 
       this.orders.myOrders.lend = orders.result.filter(
         item => item.lender === address
