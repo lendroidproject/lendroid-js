@@ -21,7 +21,7 @@ export declare class Lendroid {
     onFillOrderServer(id: any, value: any, callback: any): void;
     onDeleteOrder(id: any, callback: any): void;
     onWrapETH(amount: any, isWrap: any, callback: any): void;
-    onAllowance(token: any, newAllowance: any, callback: any): void;
+    onAllowance(token: any, callback: any): void;
     onPostLoans(data: any, callback: any): void;
     onFillLoan(approval: any, callback: any): void;
     onClosePosition(data: any, callback: any): Promise<void>;

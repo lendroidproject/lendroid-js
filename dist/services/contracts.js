@@ -308,31 +308,22 @@ exports.wrapETH = function (payload, callback) {
     }
 };
 exports.allowance = function (payload, callback) {
-    var address = payload.address, tokenContractInstance = payload.tokenContractInstance, tokenAllowance = payload.tokenAllowance, newAllowance = payload.newAllowance, protocolContract = payload.protocolContract, web3Utils = payload.web3Utils;
+    var address = payload.address, tokenContractInstance = payload.tokenContractInstance, tokenAllowance = payload.tokenAllowance, protocolContract = payload.protocolContract, web3Utils = payload.web3Utils;
     if (tokenAllowance === 0 ||
         !tokenContractInstance.methods.increaseApproval ||
         !tokenContractInstance.methods.decreaseApproval) {
         tokenContractInstance.methods
-            .approve(protocolContract._address, web3Utils.toWei(newAllowance))
+            .approve(protocolContract._address, web3Utils.toWei('10000000000000000000'))
             .send({ from: address })
             .then(function (res) { return callback(null, res.transactionHash); })
             .catch(function (err) { return callback(err); });
     }
     else {
-        if (newAllowance > tokenAllowance) {
-            tokenContractInstance.methods
-                .increaseApproval(protocolContract._address, web3Utils.toWei(newAllowance - tokenAllowance))
-                .send({ from: address })
-                .then(function (res) { return callback(null, res.transactionHash); })
-                .catch(function (err) { return callback(err); });
-        }
-        else {
-            tokenContractInstance.methods
-                .decreaseApproval(protocolContract._address, web3Utils.toWei(tokenAllowance - newAllowance))
-                .send({ from: address })
-                .then(function (res) { return callback(null, res.transactionHash); })
-                .catch(function (err) { return callback(err); });
-        }
+        tokenContractInstance.methods
+            .increaseApproval(protocolContract._address, web3Utils.toWei('10000000000000000000'))
+            .send({ from: address })
+            .then(function (res) { return callback(null, res.transactionHash); })
+            .catch(function (err) { return callback(err); });
     }
 };
 exports.fillLoan = function (payload, callback) {

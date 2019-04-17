@@ -279,16 +279,12 @@ export class Lendroid {
     )
   }
 
-  public onAllowance(token, newAllowance, callback) {
+  public onAllowance(token, callback) {
     const { web3Utils, contracts, metamask } = this
     const { address } = metamask
     const tokenContractInstance = contracts.contracts[token]
     const protocolContract = contracts.contracts.Protocol
     const tokenAllowance = contracts.allowances[token]
-    if (newAllowance === tokenAllowance) {
-      callback(null)
-      return
-    }
     this.loading.allowance = true
 
     allowance(
@@ -297,7 +293,6 @@ export class Lendroid {
         web3Utils,
         tokenContractInstance,
         tokenAllowance,
-        newAllowance,
         protocolContract
       },
       (err, hash) => {

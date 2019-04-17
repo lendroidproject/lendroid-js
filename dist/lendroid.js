@@ -242,24 +242,19 @@ var Lendroid = (function () {
             }
         });
     };
-    Lendroid.prototype.onAllowance = function (token, newAllowance, callback) {
+    Lendroid.prototype.onAllowance = function (token, callback) {
         var _this = this;
         var _a = this, web3Utils = _a.web3Utils, contracts = _a.contracts, metamask = _a.metamask;
         var address = metamask.address;
         var tokenContractInstance = contracts.contracts[token];
         var protocolContract = contracts.contracts.Protocol;
         var tokenAllowance = contracts.allowances[token];
-        if (newAllowance === tokenAllowance) {
-            callback(null);
-            return;
-        }
         this.loading.allowance = true;
         services_1.allowance({
             address: address,
             web3Utils: web3Utils,
             tokenContractInstance: tokenContractInstance,
             tokenAllowance: tokenAllowance,
-            newAllowance: newAllowance,
             protocolContract: protocolContract
         }, function (err, hash) {
             if (err) {

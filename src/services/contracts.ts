@@ -315,7 +315,6 @@ export const allowance = (payload, callback) => {
     address,
     tokenContractInstance,
     tokenAllowance,
-    newAllowance,
     protocolContract,
     web3Utils
   } = payload
@@ -326,30 +325,21 @@ export const allowance = (payload, callback) => {
     !tokenContractInstance.methods.decreaseApproval
   ) {
     tokenContractInstance.methods
-      .approve(protocolContract._address, web3Utils.toWei(newAllowance))
+      .approve(protocolContract._address,
+        web3Utils.toWei('10000000000000000000')
+      )
       .send({ from: address })
       .then(res => callback(null, res.transactionHash))
       .catch(err => callback(err))
   } else {
-    if (newAllowance > tokenAllowance) {
-      tokenContractInstance.methods
-        .increaseApproval(
-          protocolContract._address,
-          web3Utils.toWei(newAllowance - tokenAllowance)
-        )
-        .send({ from: address })
-        .then(res => callback(null, res.transactionHash))
-        .catch(err => callback(err))
-    } else {
-      tokenContractInstance.methods
-        .decreaseApproval(
-          protocolContract._address,
-          web3Utils.toWei(tokenAllowance - newAllowance)
-        )
-        .send({ from: address })
-        .then(res => callback(null, res.transactionHash))
-        .catch(err => callback(err))
-    }
+    tokenContractInstance.methods
+      .increaseApproval(
+        protocolContract._address,
+        web3Utils.toWei('10000000000000000000')
+      )
+      .send({ from: address })
+      .then(res => callback(null, res.transactionHash))
+      .catch(err => callback(err))
   }
 }
 
