@@ -527,6 +527,12 @@ var Lendroid = (function () {
                 return services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
             }
             _this.contracts.positions = res.positions;
+            _this.contracts.positions.lent.forEach(function (position) {
+                position.loanCurrency = _this.getTokenByAddress(position.origin.loanToken);
+            });
+            _this.contracts.positions.borrowed.forEach(function (position) {
+                position.loanCurrency = _this.getTokenByAddress(position.origin.loanToken);
+            });
             _this.debounceUpdate();
         });
     };

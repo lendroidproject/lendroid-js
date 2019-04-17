@@ -245,7 +245,7 @@ exports.fetchPositions = function (payload, callback) { return __awaiter(_this, 
                         loanStatus: status,
                         kernel_creator: kernel_creator,
                         collateralToken: hash,
-                        loanToken: kernel_creator === lender ? lend_currency_address : borrow_currency_address
+                        loanToken: kernel_creator === lender ? lend_currency_address : lend_currency_address
                     };
                     position.detail = {
                         index: index,

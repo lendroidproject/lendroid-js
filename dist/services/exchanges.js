@@ -5,8 +5,8 @@ exports.getTokenExchangeRate = function (token, callback) {
     var url = "https://min-api.cryptocompare.com/data/price?fsym=" + token + "&tsyms=ETH";
     axios_1.default.get(url)
         .then(function (res) {
-        var result = res.data[0];
-        callback(1 / result.price_eth);
+        var result = res.data.ETH;
+        callback(1 / result);
     })
         .catch(function (err) {
         callback(1);

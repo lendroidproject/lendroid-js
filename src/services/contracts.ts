@@ -234,7 +234,7 @@ export const fetchPositions = async (payload, callback) => {
       loanStatus: status,
       kernel_creator,
       collateralToken: hash,
-      loanToken: kernel_creator === lender ? lend_currency_address : borrow_currency_address
+      loanToken: kernel_creator === lender ? lend_currency_address : lend_currency_address
     }
 
     position.detail = {

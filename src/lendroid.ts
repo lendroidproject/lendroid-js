@@ -571,6 +571,14 @@ export class Lendroid {
           return Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
         }
         this.contracts.positions = res.positions
+
+        this.contracts.positions.lent.forEach(position => {
+          position.loanCurrency = this.getTokenByAddress(position.origin.loanToken)
+        })
+        this.contracts.positions.borrowed.forEach(position => {
+          position.loanCurrency = this.getTokenByAddress(position.origin.loanToken)
+        })
+
         this.debounceUpdate()
       }
     )
