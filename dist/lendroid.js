@@ -249,6 +249,10 @@ var Lendroid = (function () {
         var tokenContractInstance = contracts.contracts[token];
         var protocolContract = contracts.contracts.Protocol;
         var tokenAllowance = contracts.allowances[token];
+        if (!tokenContractInstance) {
+            callback(null);
+            return;
+        }
         this.loading.allowance = true;
         services_1.allowance({
             address: address,

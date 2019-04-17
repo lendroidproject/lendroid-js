@@ -285,6 +285,12 @@ export class Lendroid {
     const tokenContractInstance = contracts.contracts[token]
     const protocolContract = contracts.contracts.Protocol
     const tokenAllowance = contracts.allowances[token]
+
+    if (!tokenContractInstance) {
+      callback(null)
+      return
+    }
+
     this.loading.allowance = true
 
     allowance(
