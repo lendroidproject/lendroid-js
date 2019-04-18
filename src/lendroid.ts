@@ -574,9 +574,11 @@ export class Lendroid {
 
         this.contracts.positions.lent.forEach(position => {
           position.loanCurrency = this.getTokenByAddress(position.origin.loanToken)
+          position.collateralCurrency = this.getTokenByAddress(position.detail.borrow_currency_address)
         })
         this.contracts.positions.borrowed.forEach(position => {
           position.loanCurrency = this.getTokenByAddress(position.origin.loanToken)
+          position.collateralCurrency = this.getTokenByAddress(position.detail.borrow_currency_address)
         })
 
         this.debounceUpdate()

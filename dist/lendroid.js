@@ -529,9 +529,11 @@ var Lendroid = (function () {
             _this.contracts.positions = res.positions;
             _this.contracts.positions.lent.forEach(function (position) {
                 position.loanCurrency = _this.getTokenByAddress(position.origin.loanToken);
+                position.collateralCurrency = _this.getTokenByAddress(position.detail.borrow_currency_address);
             });
             _this.contracts.positions.borrowed.forEach(function (position) {
                 position.loanCurrency = _this.getTokenByAddress(position.origin.loanToken);
+                position.collateralCurrency = _this.getTokenByAddress(position.detail.borrow_currency_address);
             });
             _this.debounceUpdate();
         });
