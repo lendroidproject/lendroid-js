@@ -1,4 +1,6 @@
-export const API_ENDPOINT = 'http://localhost:8080'
+// export const API_ENDPOINT = 'http://localhost:19080'
+export const API_ENDPOINT = 'https://winged-yeti-201009.appspot.com'
+// export const API_LOAN_REQUESTS = 'http://127.0.0.1:5000'
 export const API_LOAN_REQUESTS = 'https://lendroidwrangler.com'
 export const DEFAULT_CONTRACTS = {
   contracts: {},

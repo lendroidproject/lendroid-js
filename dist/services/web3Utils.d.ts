@@ -9,4 +9,7 @@ export declare class Web3Utils {
     substract(value1: any, value2: any): number;
     substractBN(value1: any, value2: any): number;
     createContract(abi: any, address: any): any;
+    toChecksumAddress(value: any): any;
+    hexToBytes(value: any): any;
+    toHex(value: any): any;
 }

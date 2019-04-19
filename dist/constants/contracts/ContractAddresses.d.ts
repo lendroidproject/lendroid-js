@@ -11,10 +11,10 @@ export declare const CONTRACT_ADDRESSES: {
             }[];
             "anonymous": boolean;
             "type": string;
-            outputs?: undefined;
-            constant?: undefined;
-            payable?: undefined;
-            gas?: undefined;
+            "outputs"?: undefined;
+            "constant"?: undefined;
+            "payable"?: undefined;
+            "gas"?: undefined;
         } | {
             "outputs": never[];
             "inputs": {
@@ -24,15 +24,15 @@ export declare const CONTRACT_ADDRESSES: {
             "constant": boolean;
             "payable": boolean;
             "type": string;
-            name?: undefined;
-            anonymous?: undefined;
-            gas?: undefined;
+            "name"?: undefined;
+            "anonymous"?: undefined;
+            "gas"?: undefined;
         } | {
             "name": string;
             "outputs": ({
                 "type": string;
                 "name": string;
-                unit?: undefined;
+                "unit"?: undefined;
             } | {
                 "type": string;
                 "name": string;
@@ -46,7 +46,7 @@ export declare const CONTRACT_ADDRESSES: {
             "payable": boolean;
             "type": string;
             "gas": number;
-            anonymous?: undefined;
+            "anonymous"?: undefined;
         } | {
             "name": string;
             "outputs": {
@@ -56,7 +56,7 @@ export declare const CONTRACT_ADDRESSES: {
             "inputs": ({
                 "type": string;
                 "name": string;
-                unit?: undefined;
+                "unit"?: undefined;
             } | {
                 "type": string;
                 "name": string;
@@ -66,7 +66,7 @@ export declare const CONTRACT_ADDRESSES: {
             "payable": boolean;
             "type": string;
             "gas": number;
-            anonymous?: undefined;
+            "anonymous"?: undefined;
         })[];
     };
     WETH: {
@@ -90,16 +90,16 @@ export declare const CONTRACT_ADDRESSES: {
             "payable": boolean;
             "stateMutability": string;
             "type": string;
-            anonymous?: undefined;
+            "anonymous"?: undefined;
         } | {
             "inputs": never[];
             "payable": boolean;
             "stateMutability": string;
             "type": string;
-            constant?: undefined;
-            name?: undefined;
-            outputs?: undefined;
-            anonymous?: undefined;
+            "constant"?: undefined;
+            "name"?: undefined;
+            "outputs"?: undefined;
+            "anonymous"?: undefined;
         } | {
             "anonymous": boolean;
             "inputs": {
@@ -109,10 +109,10 @@ export declare const CONTRACT_ADDRESSES: {
             }[];
             "name": string;
             "type": string;
-            constant?: undefined;
-            outputs?: undefined;
-            payable?: undefined;
-            stateMutability?: undefined;
+            "constant"?: undefined;
+            "outputs"?: undefined;
+            "payable"?: undefined;
+            "stateMutability"?: undefined;
         })[];
     };
 };

@@ -1,4 +1,4 @@
-export declare const API_ENDPOINT = "http://localhost:8080";
+export declare const API_ENDPOINT = "https://winged-yeti-201009.appspot.com";
 export declare const API_LOAN_REQUESTS = "https://lendroidwrangler.com";
 export declare const DEFAULT_CONTRACTS: {
     contracts: {};

@@ -14,8 +14,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -328,16 +328,76 @@ exports.allowance = function (payload, callback) {
 };
 exports.fillLoan = function (payload, callback) {
     var approval = payload.approval, protocolContractInstance = payload.protocolContractInstance, metamask = payload.metamask, web3Utils = payload.web3Utils;
+    console.log(approval);
+    console.log([
+        [
+            web3Utils.toChecksumAddress(approval._addresses[0]),
+            web3Utils.toChecksumAddress(approval._addresses[1]),
+            web3Utils.toChecksumAddress(approval._addresses[2]),
+            web3Utils.toChecksumAddress(approval._addresses[3]),
+            web3Utils.toChecksumAddress(approval._addresses[4]),
+            web3Utils.toChecksumAddress(approval._addresses[5])
+        ],
+        [
+            web3Utils.toWei(web3Utils.fromWei(approval._values[0]), 'ether'),
+            web3Utils.toWei(web3Utils.fromWei(approval._values[1]), 'ether'),
+            web3Utils.toWei(web3Utils.fromWei(approval._values[2]), 'ether'),
+            web3Utils.toWei(web3Utils.fromWei(approval._values[3]), 'ether'),
+            web3Utils.toWei(web3Utils.fromWei(approval._values[4]), 'ether'),
+            web3Utils.toWei(web3Utils.fromWei(approval._values[5]), 'ether'),
+            web3Utils.toWei(web3Utils.fromWei(approval._values[6]), 'ether')
+        ],
+        web3Utils.toBN(approval._nonce),
+        web3Utils.toWei(web3Utils.fromWei(approval._kernel_daily_interest_rate), 'ether'),
+        approval._is_creator_lender,
+        [web3Utils.toBN(approval._timestamps[0]), web3Utils.toBN(approval._timestamps[1])],
+        web3Utils.toBN(approval._position_duration_in_seconds),
+        web3Utils.toHex(approval._kernel_creator_salt),
+        web3Utils.toHex(approval._sig_data_kernel_creator),
+        web3Utils.toHex(approval._sig_data_wrangler)
+    ]);
     protocolContractInstance.methods
-        .fill_kernel(approval._addresses, [
-        web3Utils.toBN(approval._values[0]).toString(),
-        web3Utils.toBN(approval._values[1]).toString(),
-        web3Utils.toBN(approval._values[2]).toString(),
-        web3Utils.toBN(approval._values[3]).toString(),
-        web3Utils.toBN(approval._values[4]).toString(),
-        web3Utils.toBN(approval._values[5]).toString(),
-        web3Utils.toBN(approval._values[6]).toString()
-    ], approval._nonce, approval._kernel_daily_interest_rate, approval._is_creator_lender, approval._timestamps, approval._position_duration_in_seconds, approval._kernel_creator_salt, approval._sig_data_kernel_creator, approval._sig_data_wrangler)
+        .fill_kernel([
+        web3Utils.toChecksumAddress(approval._addresses[0]),
+        web3Utils.toChecksumAddress(approval._addresses[1]),
+        web3Utils.toChecksumAddress(approval._addresses[2]),
+        web3Utils.toChecksumAddress(approval._addresses[3]),
+        web3Utils.toChecksumAddress(approval._addresses[4]),
+        web3Utils.toChecksumAddress(approval._addresses[5])
+    ], [
+        web3Utils.toWei(web3Utils.fromWei(approval._values[0]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[1]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[2]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[3]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[4]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[5]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[6]), 'ether')
+    ], web3Utils.toBN(approval._nonce), web3Utils.toWei(web3Utils.fromWei(approval._kernel_daily_interest_rate), 'ether'), approval._is_creator_lender, [web3Utils.toBN(approval._timestamps[0]), web3Utils.toBN(approval._timestamps[1])], web3Utils.toBN(approval._position_duration_in_seconds), web3Utils.toHex(approval._kernel_creator_salt), web3Utils.toHex(approval._sig_data_kernel_creator), web3Utils.toHex(approval._sig_data_wrangler))
+        .estimateGas({ from: metamask.address })
+        .then(function (gasAmount) {
+        console.log("gasAmount : " + gasAmount);
+    })
+        .catch(function (err) {
+        console.log("err");
+        console.log(err);
+    });
+    protocolContractInstance.methods
+        .fill_kernel([
+        web3Utils.toChecksumAddress(approval._addresses[0]),
+        web3Utils.toChecksumAddress(approval._addresses[1]),
+        web3Utils.toChecksumAddress(approval._addresses[2]),
+        web3Utils.toChecksumAddress(approval._addresses[3]),
+        web3Utils.toChecksumAddress(approval._addresses[4]),
+        web3Utils.toChecksumAddress(approval._addresses[5])
+    ], [
+        web3Utils.toWei(web3Utils.fromWei(approval._values[0]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[1]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[2]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[3]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[4]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[5]), 'ether'),
+        web3Utils.toWei(web3Utils.fromWei(approval._values[6]), 'ether')
+    ], web3Utils.toBN(approval._nonce), web3Utils.toWei(web3Utils.fromWei(approval._kernel_daily_interest_rate), 'ether'), approval._is_creator_lender, [web3Utils.toBN(approval._timestamps[0]), web3Utils.toBN(approval._timestamps[1])], web3Utils.toBN(approval._position_duration_in_seconds), web3Utils.toHex(approval._kernel_creator_salt), web3Utils.toHex(approval._sig_data_kernel_creator), web3Utils.toHex(approval._sig_data_wrangler))
         .send({ from: metamask.address })
         .then(function (hash) { return callback(null, hash.transactionHash); })
         .catch(function (err) { return callback(err); });

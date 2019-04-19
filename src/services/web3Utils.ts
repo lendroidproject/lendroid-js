@@ -53,4 +53,16 @@ export class Web3Utils {
   public createContract(abi, address) {
     return new this.eth.Contract(abi, address)
   }
+
+  public toChecksumAddress(value) {
+    return this.web3.utils.toChecksumAddress(value)
+  }
+
+  public hexToBytes(value) {
+    return this.web3.utils.hexToBytes(value)
+  }
+
+  public toHex(value) {
+    return this.web3.utils.toHex(value)
+  }
 }
