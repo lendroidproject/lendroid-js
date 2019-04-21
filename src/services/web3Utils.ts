@@ -14,6 +14,7 @@ export class Web3Utils {
     this.substractBN = this.substractBN.bind(this)
 
     this.createContract = this.createContract.bind(this)
+    this.sendSignedTransaction = this.sendSignedTransaction.bind(this)
   }
 
   public toWei(value) {
@@ -54,15 +55,8 @@ export class Web3Utils {
     return new this.eth.Contract(abi, address)
   }
 
-  public toChecksumAddress(value) {
-    return this.web3.utils.toChecksumAddress(value)
+  public sendSignedTransaction(signedTransactionData) {
+    return this.eth.sendSignedTransaction(signedTransactionData)
   }
 
-  public hexToBytes(value) {
-    return this.web3.utils.hexToBytes(value)
-  }
-
-  public toHex(value) {
-    return this.web3.utils.toHex(value)
-  }
 }

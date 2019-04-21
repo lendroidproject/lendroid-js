@@ -11,6 +11,7 @@ var Web3Utils = (function () {
         this.substract = this.substract.bind(this);
         this.substractBN = this.substractBN.bind(this);
         this.createContract = this.createContract.bind(this);
+        this.sendSignedTransaction = this.sendSignedTransaction.bind(this);
     }
     Web3Utils.prototype.toWei = function (value) {
         return this.web3.utils.toWei(value.toString(), 'ether');
@@ -37,14 +38,8 @@ var Web3Utils = (function () {
     Web3Utils.prototype.createContract = function (abi, address) {
         return new this.eth.Contract(abi, address);
     };
-    Web3Utils.prototype.toChecksumAddress = function (value) {
-        return this.web3.utils.toChecksumAddress(value);
-    };
-    Web3Utils.prototype.hexToBytes = function (value) {
-        return this.web3.utils.hexToBytes(value);
-    };
-    Web3Utils.prototype.toHex = function (value) {
-        return this.web3.utils.toHex(value);
+    Web3Utils.prototype.sendSignedTransaction = function (signedTransactionData) {
+        return this.eth.sendSignedTransaction(signedTransactionData);
     };
     return Web3Utils;
 }());

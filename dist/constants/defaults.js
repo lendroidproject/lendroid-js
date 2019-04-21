@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.API_ENDPOINT = 'https://winged-yeti-201009.appspot.com';
-exports.API_LOAN_REQUESTS = 'https://lendroidwrangler.com';
+exports.API_ENDPOINT = 'http://localhost:19080';
+exports.API_LOAN_REQUESTS = 'http://127.0.0.1:5000';
 exports.DEFAULT_CONTRACTS = {
     contracts: {},
     balances: {},
