@@ -38,7 +38,6 @@ import {
 export class Lendroid {
   private web3: any
   private apiEndpoint: string
-  private apiLoanRequests: string
   private exchangeRates: any
   private contracts: any
   private orders: any
@@ -48,6 +47,7 @@ export class Lendroid {
   private debounceUpdate: () => void
   public metamask: any
   public relayer: any
+  public wranglers: any
   public web3Utils: Web3Utils
 
   public contractAddresses: any
@@ -60,13 +60,12 @@ export class Lendroid {
     )
     this.web3Utils = new Web3Utils(this.web3)
     this.apiEndpoint = initParams.apiEndpoint || Constants.API_ENDPOINT
-    this.apiLoanRequests =
-      initParams.apiLoanRequests || Constants.API_LOAN_REQUESTS
     this.stateCallback =
       initParams.stateCallback ||
       (() => console.log('State callback is not set'))
     this.metamask = { address: undefined, network: undefined }
     this.relayer = initParams.relayer || ''
+    this.wranglers = initParams.wranglers || Constants.DEFAULT_WRANGLERS
 
     //tslint:disable
     this.contractAddresses = Object.assign({}, Constants.CONTRACT_ADDRESSES, initParams.CONTRACT_ADDRESSES)
@@ -138,8 +137,10 @@ export class Lendroid {
   }
 
   public async onCreateOrder(postData, callback) {
-    const { web3Utils, contracts, metamask } = this
+    const { web3Utils, contracts, metamask, relayer } = this
     const { address } = metamask
+
+    postData.relayer = relayer
 
     // 1. an array of addresses[6] in this order: lender, borrower, relayer, wrangler, collateralToken, loanToken
     const addresses = [
@@ -149,8 +150,8 @@ export class Lendroid {
       (postData.borrower = postData.borrower.length
         ? postData.borrower
         : this.fillZero()),
-      this.relayer.length
-        ? this.relayer
+      relayer.length
+        ? relayer
         : this.fillZero(),
       postData.wrangler,
       postData.collateralToken,
@@ -339,7 +340,13 @@ export class Lendroid {
   }
 
   public onPostLoans(data, callback) {
-    postLoans(this.apiLoanRequests, data, callback)
+    const wrangler = this.wranglers.find(w => w.address.toLowerCase() === data.wrangler.toLowerCase())
+
+    if (wrangler) {
+      postLoans(wrangler.apiLoanRequests, data, callback)
+    } else {
+      callback({ response: { data: { message: 'No Matching Wrangler!' } } })
+    }
   }
 
   public onFillLoan(approval, callback) {

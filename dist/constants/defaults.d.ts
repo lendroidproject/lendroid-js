@@ -1,5 +1,10 @@
 export declare const API_ENDPOINT = "http://localhost:19080";
 export declare const API_LOAN_REQUESTS = "http://127.0.0.1:5000";
+export declare const DEFAULT_WRANGLERS: {
+    label: string;
+    address: string;
+    apiLoanRequests: string;
+}[];
 export declare const DEFAULT_CONTRACTS: {
     contracts: {};
     balances: {};

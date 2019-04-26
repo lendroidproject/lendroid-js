@@ -2,7 +2,6 @@ import { Web3Utils } from './services';
 export declare class Lendroid {
     private web3;
     private apiEndpoint;
-    private apiLoanRequests;
     private exchangeRates;
     private contracts;
     private orders;
@@ -12,6 +11,7 @@ export declare class Lendroid {
     private debounceUpdate;
     metamask: any;
     relayer: any;
+    wranglers: any;
     web3Utils: Web3Utils;
     contractAddresses: any;
     contractTokens: any;

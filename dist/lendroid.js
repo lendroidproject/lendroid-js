@@ -45,13 +45,12 @@ var Lendroid = (function () {
         this.web3 = new Web3(initParams.provider || window.web3.currentProvider);
         this.web3Utils = new services_1.Web3Utils(this.web3);
         this.apiEndpoint = initParams.apiEndpoint || Constants.API_ENDPOINT;
-        this.apiLoanRequests =
-            initParams.apiLoanRequests || Constants.API_LOAN_REQUESTS;
         this.stateCallback =
             initParams.stateCallback ||
                 (function () { return console.log('State callback is not set'); });
         this.metamask = { address: undefined, network: undefined };
         this.relayer = initParams.relayer || '';
+        this.wranglers = initParams.wranglers || Constants.DEFAULT_WRANGLERS;
         this.contractAddresses = Object.assign({}, Constants.CONTRACT_ADDRESSES, initParams.CONTRACT_ADDRESSES);
         this.contractTokens = Object.keys(this.contractAddresses);
         this.balanceTokens = Constants.BALLANCE_TOKENS.slice().concat(Object.keys(initParams.CONTRACT_ADDRESSES));
@@ -122,12 +121,13 @@ var Lendroid = (function () {
     Lendroid.prototype.onCreateOrder = function (postData, callback) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var _a, web3Utils, contracts, metamask, address, addresses, values, protocolContractInstance, onSign, orderHash;
+            var _a, web3Utils, contracts, metamask, relayer, address, addresses, values, protocolContractInstance, onSign, orderHash;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _a = this, web3Utils = _a.web3Utils, contracts = _a.contracts, metamask = _a.metamask;
+                        _a = this, web3Utils = _a.web3Utils, contracts = _a.contracts, metamask = _a.metamask, relayer = _a.relayer;
                         address = metamask.address;
+                        postData.relayer = relayer;
                         addresses = [
                             (postData.lender = postData.lender.length
                                 ? postData.lender
@@ -135,8 +135,8 @@ var Lendroid = (function () {
                             (postData.borrower = postData.borrower.length
                                 ? postData.borrower
                                 : this.fillZero()),
-                            this.relayer.length
-                                ? this.relayer
+                            relayer.length
+                                ? relayer
                                 : this.fillZero(),
                             postData.wrangler,
                             postData.collateralToken,
@@ -292,7 +292,13 @@ var Lendroid = (function () {
         });
     };
     Lendroid.prototype.onPostLoans = function (data, callback) {
-        services_1.postLoans(this.apiLoanRequests, data, callback);
+        var wrangler = this.wranglers.find(function (w) { return w.address.toLowerCase() === data.wrangler.toLowerCase(); });
+        if (wrangler) {
+            services_1.postLoans(wrangler.apiLoanRequests, data, callback);
+        }
+        else {
+            callback({ response: { data: { message: 'No Matching Wrangler!' } } });
+        }
     };
     Lendroid.prototype.onFillLoan = function (approval, callback) {
         var _this = this;
