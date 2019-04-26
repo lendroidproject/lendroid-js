@@ -47,6 +47,7 @@ export class Lendroid {
   private stateCallback: () => void
   private debounceUpdate: () => void
   public metamask: any
+  public relayer: any
   public web3Utils: Web3Utils
 
   public contractAddresses: any
@@ -65,6 +66,7 @@ export class Lendroid {
       initParams.stateCallback ||
       (() => console.log('State callback is not set'))
     this.metamask = { address: undefined, network: undefined }
+    this.relayer = initParams.relayer || ''
 
     //tslint:disable
     this.contractAddresses = Object.assign({}, Constants.CONTRACT_ADDRESSES, initParams.CONTRACT_ADDRESSES)
@@ -147,9 +149,9 @@ export class Lendroid {
       (postData.borrower = postData.borrower.length
         ? postData.borrower
         : this.fillZero()),
-      (postData.relayer = postData.relayer.length
-        ? postData.relayer
-        : this.fillZero()),
+      this.relayer.length
+        ? this.relayer
+        : this.fillZero(),
       postData.wrangler,
       postData.collateralToken,
       postData.loanToken

@@ -11,6 +11,7 @@ export declare class Lendroid {
     private stateCallback;
     private debounceUpdate;
     metamask: any;
+    relayer: any;
     web3Utils: Web3Utils;
     contractAddresses: any;
     contractTokens: any;

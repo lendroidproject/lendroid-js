@@ -51,6 +51,7 @@ var Lendroid = (function () {
             initParams.stateCallback ||
                 (function () { return console.log('State callback is not set'); });
         this.metamask = { address: undefined, network: undefined };
+        this.relayer = initParams.relayer || '';
         this.contractAddresses = Object.assign({}, Constants.CONTRACT_ADDRESSES, initParams.CONTRACT_ADDRESSES);
         this.contractTokens = Object.keys(this.contractAddresses);
         this.balanceTokens = Constants.BALLANCE_TOKENS.slice().concat(Object.keys(initParams.CONTRACT_ADDRESSES));
@@ -134,9 +135,9 @@ var Lendroid = (function () {
                             (postData.borrower = postData.borrower.length
                                 ? postData.borrower
                                 : this.fillZero()),
-                            (postData.relayer = postData.relayer.length
-                                ? postData.relayer
-                                : this.fillZero()),
+                            this.relayer.length
+                                ? this.relayer
+                                : this.fillZero(),
                             postData.wrangler,
                             postData.collateralToken,
                             postData.loanToken
