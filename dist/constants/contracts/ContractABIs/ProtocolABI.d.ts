@@ -7,10 +7,10 @@ export declare const ProtocolABI: ({
     }[];
     "anonymous": boolean;
     "type": string;
-    outputs?: undefined;
-    constant?: undefined;
-    payable?: undefined;
-    gas?: undefined;
+    "outputs"?: undefined;
+    "constant"?: undefined;
+    "payable"?: undefined;
+    "gas"?: undefined;
 } | {
     "outputs": never[];
     "inputs": {
@@ -20,15 +20,15 @@ export declare const ProtocolABI: ({
     "constant": boolean;
     "payable": boolean;
     "type": string;
-    name?: undefined;
-    anonymous?: undefined;
-    gas?: undefined;
+    "name"?: undefined;
+    "anonymous"?: undefined;
+    "gas"?: undefined;
 } | {
     "name": string;
     "outputs": ({
         "type": string;
         "name": string;
-        unit?: undefined;
+        "unit"?: undefined;
     } | {
         "type": string;
         "name": string;
@@ -42,7 +42,7 @@ export declare const ProtocolABI: ({
     "payable": boolean;
     "type": string;
     "gas": number;
-    anonymous?: undefined;
+    "anonymous"?: undefined;
 } | {
     "name": string;
     "outputs": {
@@ -52,7 +52,7 @@ export declare const ProtocolABI: ({
     "inputs": ({
         "type": string;
         "name": string;
-        unit?: undefined;
+        "unit"?: undefined;
     } | {
         "type": string;
         "name": string;
@@ -62,5 +62,5 @@ export declare const ProtocolABI: ({
     "payable": boolean;
     "type": string;
     "gas": number;
-    anonymous?: undefined;
+    "anonymous"?: undefined;
 })[];

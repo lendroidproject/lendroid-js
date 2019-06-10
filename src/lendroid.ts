@@ -140,7 +140,9 @@ export class Lendroid {
     const { web3Utils, contracts, metamask, relayer } = this
     const { address } = metamask
 
-    postData.relayer = relayer
+    postData.relayer = relayer.length
+      ? relayer
+      : this.fillZero()
 
     // 1. an array of addresses[6] in this order: lender, borrower, relayer, wrangler, collateralToken, loanToken
     const addresses = [
@@ -150,9 +152,7 @@ export class Lendroid {
       (postData.borrower = postData.borrower.length
         ? postData.borrower
         : this.fillZero()),
-      relayer.length
-        ? relayer
-        : this.fillZero(),
+      postData.relayer,
       postData.wrangler,
       postData.collateralToken,
       postData.loanToken

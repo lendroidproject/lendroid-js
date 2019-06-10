@@ -14,8 +14,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -120,14 +120,16 @@ var Lendroid = (function () {
     };
     Lendroid.prototype.onCreateOrder = function (postData, callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
             var _a, web3Utils, contracts, metamask, relayer, address, addresses, values, protocolContractInstance, onSign, orderHash;
+            var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _a = this, web3Utils = _a.web3Utils, contracts = _a.contracts, metamask = _a.metamask, relayer = _a.relayer;
                         address = metamask.address;
-                        postData.relayer = relayer;
+                        postData.relayer = relayer.length
+                            ? relayer
+                            : this.fillZero();
                         addresses = [
                             (postData.lender = postData.lender.length
                                 ? postData.lender
@@ -135,9 +137,7 @@ var Lendroid = (function () {
                             (postData.borrower = postData.borrower.length
                                 ? postData.borrower
                                 : this.fillZero()),
-                            relayer.length
-                                ? relayer
-                                : this.fillZero(),
+                            postData.relayer,
                             postData.wrangler,
                             postData.collateralToken,
                             postData.loanToken
@@ -331,8 +331,8 @@ var Lendroid = (function () {
     };
     Lendroid.prototype.onClosePosition = function (data, callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
             var _a, metamask, web3Utils, _b, borrower, loanAmountOwed, loanToken, token, borrowerAllowance;
+            var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -410,8 +410,8 @@ var Lendroid = (function () {
     };
     Lendroid.prototype.onLiquidatePosition = function (data, callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
             var web3Utils, _a, lender, loanAmountOwed, loanToken, token, lenderAllowance;
+            var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
