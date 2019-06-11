@@ -385,7 +385,7 @@ export class Lendroid {
 
     const { borrower, loanAmountOwed, loanToken } = data.origin
     const token = this.getTokenByAddress(loanToken)
-    const borrowerAllowance = await this.fetchAllowanceByAddress(borrower, token)
+    const borrowerAllowance: any = await this.fetchAllowanceByAddress(borrower, token)
     if (
       parseFloat(borrowerAllowance.toString()) >= parseFloat(loanAmountOwed)
     ) {
@@ -454,7 +454,7 @@ export class Lendroid {
 
     const { lender, loanAmountOwed, loanToken } = data.origin
     const token = this.getTokenByAddress(loanToken)
-    const lenderAllowance = await this.fetchAllowanceByAddress(lender, token)
+    const lenderAllowance: any = await this.fetchAllowanceByAddress(lender, token)
     if (parseFloat(lenderAllowance.toString()) >= parseFloat(loanAmountOwed)) {
       liquidatePosition({ data }, (err, hash) => {
         if (err) {
@@ -597,7 +597,7 @@ export class Lendroid {
 
   private fetchTokenExchange(token) {
     const _ = this
-    if (['Protocol', 'LST'].indexOf(token) === -1) {
+    if (['Protocol'].indexOf(token) === -1) {
       getTokenExchangeRate(token, rate => {
         _.exchangeRates[token] = rate
       })
