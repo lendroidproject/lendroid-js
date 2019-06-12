@@ -59,4 +59,15 @@ export class Web3Utils {
     return this.eth.sendSignedTransaction(signedTransactionData)
   }
 
+  public async getBlockTimeStamp() {
+    return new Promise((resolve, reject) => {
+      this.eth.getBlock('latest', (err, block) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(block.timestamp)
+        }
+      })
+    })
+  }
 }
