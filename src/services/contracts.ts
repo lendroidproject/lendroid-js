@@ -110,11 +110,14 @@ export const fetchPositions = async (payload, callback) => {
       continue
     }
     const positionData = await Protocol.methods.position(positionHash).call()
+    const health = await axios.get(`http://lendroidwrangler.com/loan_health/${positionData[0]}`)
+
     if (!positionExists[positionHash]) {
       positionExists[positionHash] = true
       positions.push({
         type: 'lent',
         positionData,
+        health: health.data.data,
         address: positionHash
       })
     }
@@ -127,11 +130,14 @@ export const fetchPositions = async (payload, callback) => {
       continue
     }
     const positionData = await Protocol.methods.position(positionHash).call()
+    const health = await axios.get(`http://lendroidwrangler.com/loan_health/${positionData[0]}`)
+
     if (!positionExists[positionHash]) {
       positionExists[positionHash] = true
       positions.push({
         type: 'borrowed',
         positionData,
+        health: health.data.data,
         address: positionHash
       })
     }
@@ -144,7 +150,7 @@ export const fetchPositions = async (payload, callback) => {
   // }
 
   positions.forEach(position => {
-    const { positionData } = position
+    const { positionData, health } = position
 
     const positionInfo = {
       index: parseInt(positionData[0], 10),
@@ -259,7 +265,8 @@ export const fetchPositions = async (payload, callback) => {
       monitoring_fee,
       rollover_fee,
       closure_fee,
-      hash
+      hash,
+      health
     }
   })
 
@@ -347,8 +354,8 @@ export const fillLoan = (payload, callback) => {
   const { approval, protocolContractInstance, metamask, web3Utils } = payload
 
   web3Utils.sendSignedTransaction(approval._signed_transaction)
-  .then(hash => callback(null, hash.transactionHash))
-  .catch(err => callback(err))
+    .then(hash => callback(null, hash.transactionHash))
+    .catch(err => callback(err))
 }
 
 export const closePosition = (payload, callback) => {

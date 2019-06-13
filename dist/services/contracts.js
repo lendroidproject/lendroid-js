@@ -114,7 +114,7 @@ var fillZero = function (len) {
     return "0x" + new Array(len).fill(0).join('');
 };
 exports.fetchPositions = function (payload, callback) { return __awaiter(_this, void 0, void 0, function () {
-    var address, Protocol, specificAddress, oldPostions, web3Utils, lendCount, borrowCount, positions, positionExists, i, positionHash, positionData, i, positionHash, positionData, activePositions;
+    var address, Protocol, specificAddress, oldPostions, web3Utils, lendCount, borrowCount, positions, positionExists, i, positionHash, positionData, health, i, positionHash, positionData, health, activePositions;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -132,61 +132,69 @@ exports.fetchPositions = function (payload, callback) { return __awaiter(_this, 
                 i = 1;
                 _a.label = 3;
             case 3:
-                if (!(i <= lendCount)) return [3, 7];
+                if (!(i <= lendCount)) return [3, 8];
                 return [4, Protocol.methods
                         .lend_positions(address, i)
                         .call()];
             case 4:
                 positionHash = _a.sent();
                 if (positionHash === fillZero(64)) {
-                    return [3, 6];
+                    return [3, 7];
                 }
                 return [4, Protocol.methods.position(positionHash).call()];
             case 5:
                 positionData = _a.sent();
+                return [4, axios_1.default.get("http://lendroidwrangler.com/loan_health/" + positionData[0])];
+            case 6:
+                health = _a.sent();
                 if (!positionExists[positionHash]) {
                     positionExists[positionHash] = true;
                     positions.push({
                         type: 'lent',
                         positionData: positionData,
+                        health: health.data.data,
                         address: positionHash
                     });
                 }
-                _a.label = 6;
-            case 6:
+                _a.label = 7;
+            case 7:
                 i++;
                 return [3, 3];
-            case 7:
-                i = 1;
-                _a.label = 8;
             case 8:
-                if (!(i <= borrowCount)) return [3, 12];
+                i = 1;
+                _a.label = 9;
+            case 9:
+                if (!(i <= borrowCount)) return [3, 14];
                 return [4, Protocol.methods
                         .borrow_positions(address, i)
                         .call()];
-            case 9:
+            case 10:
                 positionHash = _a.sent();
                 if (positionHash === fillZero(64)) {
-                    return [3, 11];
+                    return [3, 13];
                 }
                 return [4, Protocol.methods.position(positionHash).call()];
-            case 10:
+            case 11:
                 positionData = _a.sent();
+                return [4, axios_1.default.get("http://lendroidwrangler.com/loan_health/" + positionData[0])];
+            case 12:
+                health = _a.sent();
                 if (!positionExists[positionHash]) {
                     positionExists[positionHash] = true;
                     positions.push({
                         type: 'borrowed',
                         positionData: positionData,
+                        health: health.data.data,
                         address: positionHash
                     });
                 }
-                _a.label = 11;
-            case 11:
+                _a.label = 13;
+            case 13:
                 i++;
-                return [3, 8];
-            case 12:
+                return [3, 9];
+            case 14:
                 positions.forEach(function (position) {
-                    var positionData = position.positionData;
+                    var positionData = position.positionData, health = position.health;
                     var positionInfo = {
                         index: parseInt(positionData[0], 10),
                         kernel_creator: positionData[1],
@@ -269,7 +277,8 @@ exports.fetchPositions = function (payload, callback) { return __awaiter(_this, 
                         monitoring_fee: monitoring_fee,
                         rollover_fee: rollover_fee,
                         closure_fee: closure_fee,
-                        hash: hash
+                        hash: hash,
+                        health: health
                     };
                 });
                 activePositions = positions.filter(function (position) { return position.origin.loanStatus !== Constants.LOAN_STATUS_CLOSED; });
