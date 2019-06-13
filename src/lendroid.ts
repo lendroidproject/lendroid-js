@@ -561,7 +561,7 @@ export class Lendroid {
   }
 
   private fetchPositions(specificAddress = null) {
-    const { web3Utils, metamask, contracts } = this
+    const { web3Utils, metamask, contracts, wranglers } = this
     const { address } = metamask
     const { Protocol } = contracts.contracts
     this.loading.positions = true
@@ -572,7 +572,8 @@ export class Lendroid {
         address,
         Protocol,
         specificAddress,
-        oldPostions: this.contracts.positions
+        oldPostions: this.contracts.positions,
+        wranglers
       },
       (err, res) => {
         this.loading.positions = false

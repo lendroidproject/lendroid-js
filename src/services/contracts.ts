@@ -94,7 +94,7 @@ const fillZero = (len = 40) => {
 }
 
 export const fetchPositions = async (payload, callback) => {
-  const { address, Protocol, specificAddress, oldPostions, web3Utils } = payload
+  const { address, Protocol, web3Utils, wranglers } = payload
   const lendCount = await Protocol.methods.lend_positions_count(address).call()
   const borrowCount = await Protocol.methods
     .borrow_positions_count(address)
@@ -110,7 +110,8 @@ export const fetchPositions = async (payload, callback) => {
       continue
     }
     const positionData = await Protocol.methods.position(positionHash).call()
-    const health = await axios.get(`http://lendroidwrangler.com/loan_health/${positionData[0]}`)
+    const wrangler = wranglers.find(w => w.address.toLowerCase() === positionData[5].toLowerCase())
+    const health = await axios.get(`${wrangler.apiLoanRequests}/loan_health/${positionData[0]}`)
 
     if (!positionExists[positionHash]) {
       positionExists[positionHash] = true
@@ -130,7 +131,8 @@ export const fetchPositions = async (payload, callback) => {
       continue
     }
     const positionData = await Protocol.methods.position(positionHash).call()
-    const health = await axios.get(`http://lendroidwrangler.com/loan_health/${positionData[0]}`)
+    const wrangler = wranglers.find(w => w.address.toLowerCase() === positionData[5].toLowerCase())
+    const health = await axios.get(`${wrangler.apiLoanRequests}/loan_health/${positionData[0]}`)
 
     if (!positionExists[positionHash]) {
       positionExists[positionHash] = true
@@ -142,12 +144,6 @@ export const fetchPositions = async (payload, callback) => {
       })
     }
   }
-
-  // if (specificAddress) {
-  //   positions = positions.filter(
-  //     position => position.address === specificAddress
-  //   )
-  // }
 
   positions.forEach(position => {
     const { positionData, health } = position
@@ -269,12 +265,6 @@ export const fetchPositions = async (payload, callback) => {
       health
     }
   })
-
-  // if (specificAddress) {
-  //   let oldPos = oldPostions.lent.concat(oldPostions.borrowed)
-  //   oldPos = oldPos.filter(position => position.address === specificAddress)
-  //   positions = positions.concat(oldPos)
-  // }
 
   const activePositions = positions.filter(
     position => position.origin.loanStatus !== Constants.LOAN_STATUS_CLOSED

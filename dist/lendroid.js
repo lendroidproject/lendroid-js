@@ -518,7 +518,7 @@ var Lendroid = (function () {
     Lendroid.prototype.fetchPositions = function (specificAddress) {
         var _this = this;
         if (specificAddress === void 0) { specificAddress = null; }
-        var _a = this, web3Utils = _a.web3Utils, metamask = _a.metamask, contracts = _a.contracts;
+        var _a = this, web3Utils = _a.web3Utils, metamask = _a.metamask, contracts = _a.contracts, wranglers = _a.wranglers;
         var address = metamask.address;
         var Protocol = contracts.contracts.Protocol;
         this.loading.positions = true;
@@ -527,7 +527,8 @@ var Lendroid = (function () {
             address: address,
             Protocol: Protocol,
             specificAddress: specificAddress,
-            oldPostions: this.contracts.positions
+            oldPostions: this.contracts.positions,
+            wranglers: wranglers
         }, function (err, res) {
             _this.loading.positions = false;
             if (err) {
