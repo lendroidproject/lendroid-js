@@ -519,6 +519,11 @@ export class Lendroid {
     this.contractTokens.forEach(token => {
       this.exchangeRates[token] = 0
     })
+    setTimeout(() => {
+      this.contractTokens.forEach(token => {
+        this.fetchTokenExchange(token)
+      })
+    }, 500)
     this.stateCallback()
   }
 
@@ -650,9 +655,6 @@ export class Lendroid {
       setTimeout(this.fetchETHBallance, 2500)
     } else {
       setTimeout(this.fetchETHBallance, 500)
-      contractTokens.forEach(token => {
-        this.fetchTokenExchange(token)
-      })
     }
   }
 

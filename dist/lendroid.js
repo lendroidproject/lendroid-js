@@ -489,6 +489,11 @@ var Lendroid = (function () {
         this.contractTokens.forEach(function (token) {
             _this.exchangeRates[token] = 0;
         });
+        setTimeout(function () {
+            _this.contractTokens.forEach(function (token) {
+                _this.fetchTokenExchange(token);
+            });
+        }, 500);
         this.stateCallback();
     };
     Lendroid.prototype.reset = function (metamask) {
@@ -600,9 +605,6 @@ var Lendroid = (function () {
         }
         else {
             setTimeout(this.fetchETHBallance, 500);
-            contractTokens.forEach(function (token) {
-                _this.fetchTokenExchange(token);
-            });
         }
     };
     Lendroid.prototype.fetchBallanceByToken = function (token, callback, once) {
