@@ -223,16 +223,16 @@ export class Lendroid {
     onSign(orderHash)
   }
 
-  public onFillOrderServer(id, value, callback) {
-    fillOrderServer(this.apiEndpoint, id, value, (err, res) => {
+  public onFillOrderServer({ id, value, txHash }, callback) {
+    fillOrderServer(this.apiEndpoint, { id, value, txHash }, (err, res) => {
       callback(err, res)
       setTimeout(this.fetchOrders, 300)
       setTimeout(this.fetchPositions, 1000)
     })
   }
 
-  public onDeleteOrder(id, callback) {
-    deleteOrder(this.apiEndpoint, id, (err, res) => {
+  public onDeleteOrder({ id, txHash }, callback) {
+    deleteOrder(this.apiEndpoint, { id, txHash }, (err, res) => {
       callback(err, res)
       setTimeout(this.fetchOrders, 300)
     })

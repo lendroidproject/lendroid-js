@@ -360,13 +360,13 @@ exports.allowance = function (payload, callback) {
     }
 };
 exports.fillLoan = function (payload, callback) {
-    var approval = payload.approval, protocolContractInstance = payload.protocolContractInstance, metamask = payload.metamask, web3Utils = payload.web3Utils;
+    var approval = payload.approval, web3Utils = payload.web3Utils;
     web3Utils.sendSignedTransaction(approval._signed_transaction)
         .then(function (hash) { return callback(null, hash.transactionHash); })
         .catch(function (err) { return callback(err); });
 };
 exports.closePosition = function (payload, callback) {
-    var data = payload.data, metamask = payload.metamask;
+    var data = payload.data;
     data.origin.loanContract.methods
         .close_position(data.origin.collateralToken)
         .send({ from: data.origin.borrower })
@@ -430,7 +430,7 @@ exports.cancelOrder = function (payload, callback) { return __awaiter(_this, voi
                 protocolContractInstance.methods
                     .cancel_kernel(addresses, values, parseInt(data.offerExpiry, 10), data.creatorSalt, web3Utils.toWei(data.interestRatePerDay), parseInt(data.loanDuration, 10), data.ecSignatureCreator, web3Utils.toWei(cancelledCollateralTokenAmount))
                     .send({ from: metamask.address })
-                    .then(function (result) { return callback(null, result); })
+                    .then(function (result) { return callback(null, result.transactionHash); })
                     .catch(function (err) { return callback(err); });
                 return [2];
         }

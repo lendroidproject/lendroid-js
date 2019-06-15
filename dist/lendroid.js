@@ -191,17 +191,19 @@ var Lendroid = (function () {
             });
         });
     };
-    Lendroid.prototype.onFillOrderServer = function (id, value, callback) {
+    Lendroid.prototype.onFillOrderServer = function (_a, callback) {
         var _this = this;
-        services_1.fillOrderServer(this.apiEndpoint, id, value, function (err, res) {
+        var id = _a.id, value = _a.value, txHash = _a.txHash;
+        services_1.fillOrderServer(this.apiEndpoint, { id: id, value: value, txHash: txHash }, function (err, res) {
             callback(err, res);
             setTimeout(_this.fetchOrders, 300);
             setTimeout(_this.fetchPositions, 1000);
         });
     };
-    Lendroid.prototype.onDeleteOrder = function (id, callback) {
+    Lendroid.prototype.onDeleteOrder = function (_a, callback) {
         var _this = this;
-        services_1.deleteOrder(this.apiEndpoint, id, function (err, res) {
+        var id = _a.id, txHash = _a.txHash;
+        services_1.deleteOrder(this.apiEndpoint, { id: id, txHash: txHash }, function (err, res) {
             callback(err, res);
             setTimeout(_this.fetchOrders, 300);
         });

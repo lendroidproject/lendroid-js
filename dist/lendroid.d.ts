@@ -19,8 +19,15 @@ export declare class Lendroid {
     constructor(initParams?: any);
     getTokenByAddress(address: any): string;
     onCreateOrder(postData: any, callback: any): Promise<void>;
-    onFillOrderServer(id: any, value: any, callback: any): void;
-    onDeleteOrder(id: any, callback: any): void;
+    onFillOrderServer({id, value, txHash}: {
+        id: any;
+        value: any;
+        txHash: any;
+    }, callback: any): void;
+    onDeleteOrder({id, txHash}: {
+        id: any;
+        txHash: any;
+    }, callback: any): void;
     onWrapETH(amount: any, isWrap: any, callback: any): void;
     onAllowance(token: any, callback: any): void;
     onPostLoans(data: any, callback: any): void;

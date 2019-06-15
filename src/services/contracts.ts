@@ -341,7 +341,7 @@ export const allowance = (payload, callback) => {
 }
 
 export const fillLoan = (payload, callback) => {
-  const { approval, protocolContractInstance, metamask, web3Utils } = payload
+  const { approval, web3Utils } = payload
 
   web3Utils.sendSignedTransaction(approval._signed_transaction)
     .then(hash => callback(null, hash.transactionHash))
@@ -349,7 +349,7 @@ export const fillLoan = (payload, callback) => {
 }
 
 export const closePosition = (payload, callback) => {
-  const { data, metamask } = payload
+  const { data } = payload
 
   data.origin.loanContract.methods
     .close_position(data.origin.collateralToken)
@@ -442,6 +442,6 @@ export const cancelOrder = async (payload, callback) => {
       web3Utils.toWei(cancelledCollateralTokenAmount)
     )
     .send({ from: metamask.address })
-    .then(result => callback(null, result))
+    .then(result => callback(null, result.transactionHash))
     .catch(err => callback(err))
 }
