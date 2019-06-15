@@ -105,6 +105,9 @@ var Lendroid = (function () {
         setInterval(function () {
             _this.lastFetchTime = new Date();
             _this.fetchOrders();
+            _this.contractTokens.forEach(function (token) {
+                _this.fetchTokenExchange(token);
+            });
         }, 30 * 1000);
         this.debounceUpdate = this.debounce(this.stateCallback, 500, null);
     }
@@ -595,10 +598,10 @@ var Lendroid = (function () {
         }
         else {
             setTimeout(this.fetchETHBallance, 500);
+            contractTokens.forEach(function (token) {
+                _this.fetchTokenExchange(token);
+            });
         }
-        contractTokens.forEach(function (token) {
-            _this.fetchTokenExchange(token);
-        });
     };
     Lendroid.prototype.fetchBallanceByToken = function (token, callback, once) {
         var _this = this;

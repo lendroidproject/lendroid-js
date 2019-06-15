@@ -120,6 +120,9 @@ export class Lendroid {
     setInterval(() => {
       this.lastFetchTime = new Date()
       this.fetchOrders()
+      this.contractTokens.forEach(token => {
+        this.fetchTokenExchange(token)
+      })
     }, 30 * 1000)
 
     this.debounceUpdate = this.debounce(this.stateCallback, 500, null)
@@ -647,10 +650,10 @@ export class Lendroid {
       setTimeout(this.fetchETHBallance, 2500)
     } else {
       setTimeout(this.fetchETHBallance, 500)
+      contractTokens.forEach(token => {
+        this.fetchTokenExchange(token)
+      })
     }
-    contractTokens.forEach(token => {
-      this.fetchTokenExchange(token)
-    })
   }
 
   private fetchBallanceByToken(
