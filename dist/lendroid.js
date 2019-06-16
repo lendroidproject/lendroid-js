@@ -193,8 +193,8 @@ var Lendroid = (function () {
     };
     Lendroid.prototype.onFillOrderServer = function (_a, callback) {
         var _this = this;
-        var id = _a.id, value = _a.value, txHash = _a.txHash;
-        services_1.fillOrderServer(this.apiEndpoint, { id: id, value: value, txHash: txHash }, function (err, res) {
+        var id = _a.id, fillerAddress = _a.fillerAddress, value = _a.value, txHash = _a.txHash;
+        services_1.fillOrderServer(this.apiEndpoint, { id: id, fillerAddress: fillerAddress, value: value, txHash: txHash }, function (err, res) {
             callback(err, res);
             setTimeout(_this.fetchOrders, 300);
             setTimeout(_this.fetchPositions, 1000);
@@ -307,12 +307,12 @@ var Lendroid = (function () {
     };
     Lendroid.prototype.onFillLoan = function (approval, callback) {
         var _this = this;
-        var _a = this, contracts = _a.contracts, metamask = _a.metamask, web3Utils = _a.web3Utils;
-        var protocolContractInstance = contracts.contracts.Protocol;
-        services_1.fillLoan({ approval: approval, protocolContractInstance: protocolContractInstance, metamask: metamask, web3Utils: web3Utils }, function (err, hash) {
+        var web3Utils = this.web3Utils;
+        var address = approval._is_creator_lender ? approval._addresses[1] : approval._addresses[0];
+        services_1.fillLoan({ approval: approval, web3Utils: web3Utils }, function (err, hash) {
             if (err) {
                 services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
-                callback(err, hash);
+                callback(err, { hash: hash, address: address });
             }
             else {
                 _this.debounceUpdate();
@@ -322,11 +322,10 @@ var Lendroid = (function () {
                         .then(function (res) {
                         if (res && parseInt(res.status, 16)) {
                             clearInterval(txInterval_1);
-                            callback(err, hash);
+                            callback(err, { hash: hash, address: address });
                         }
                     })
                         .catch(function (error) {
-                        _this.loading.wrapping = false;
                         callback(null);
                         services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
                     });
@@ -366,7 +365,6 @@ var Lendroid = (function () {
                                             }
                                         })
                                             .catch(function (error) {
-                                            _this.loading.wrapping = false;
                                             callback(null);
                                             services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
                                         });
@@ -405,7 +403,6 @@ var Lendroid = (function () {
                         }
                     })
                         .catch(function (error) {
-                        _this.loading.wrapping = false;
                         callback(null);
                         services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
                     });
@@ -445,7 +442,6 @@ var Lendroid = (function () {
                                             }
                                         })
                                             .catch(function (error) {
-                                            _this.loading.wrapping = false;
                                             callback(null);
                                             services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
                                         });

@@ -19,8 +19,9 @@ export declare class Lendroid {
     constructor(initParams?: any);
     getTokenByAddress(address: any): string;
     onCreateOrder(postData: any, callback: any): Promise<void>;
-    onFillOrderServer({id, value, txHash}: {
+    onFillOrderServer({id, fillerAddress, value, txHash}: {
         id: any;
+        fillerAddress: any;
         value: any;
         txHash: any;
     }, callback: any): void;

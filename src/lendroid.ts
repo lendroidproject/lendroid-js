@@ -223,8 +223,8 @@ export class Lendroid {
     onSign(orderHash)
   }
 
-  public onFillOrderServer({ id, value, txHash }, callback) {
-    fillOrderServer(this.apiEndpoint, { id, value, txHash }, (err, res) => {
+  public onFillOrderServer({ id, fillerAddress, value, txHash }, callback) {
+    fillOrderServer(this.apiEndpoint, { id, fillerAddress, value, txHash }, (err, res) => {
       callback(err, res)
       setTimeout(this.fetchOrders, 300)
       setTimeout(this.fetchPositions, 1000)
@@ -353,14 +353,15 @@ export class Lendroid {
   }
 
   public onFillLoan(approval, callback) {
-    const { contracts, metamask, web3Utils } = this
-    const protocolContractInstance = contracts.contracts.Protocol
+    const { web3Utils } = this
+    const address = approval._is_creator_lender ? approval._addresses[1] : approval._addresses[0]
+
     fillLoan(
-      { approval, protocolContractInstance, metamask, web3Utils },
+      { approval, web3Utils },
       (err, hash) => {
         if (err) {
           Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, err.message)
-          callback(err, hash)
+          callback(err, { hash, address })
         } else {
           this.debounceUpdate()
           const txInterval = setInterval(() => {
@@ -369,11 +370,10 @@ export class Lendroid {
               .then(res => {
                 if (res && parseInt(res.status, 16)) {
                   clearInterval(txInterval)
-                  callback(err, hash)
+                  callback(err, { hash, address })
                 }
               })
               .catch(error => {
-                this.loading.wrapping = false
                 callback(null)
                 Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
               })
@@ -409,7 +409,6 @@ export class Lendroid {
                 }
               })
               .catch(error => {
-                this.loading.wrapping = false
                 callback(null)
                 Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
               })
@@ -443,7 +442,6 @@ export class Lendroid {
               }
             })
             .catch(error => {
-              this.loading.wrapping = false
               callback(null)
               Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
             })
@@ -476,7 +474,6 @@ export class Lendroid {
                 }
               })
               .catch(error => {
-                this.loading.wrapping = false
                 callback(null)
                 Logger.error(LOGGER_CONTEXT.CONTRACT_ERROR, error.message)
               })
