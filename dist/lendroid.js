@@ -45,19 +45,23 @@ var Lendroid = (function () {
         this.web3 = new Web3(initParams.provider || window.web3.currentProvider);
         this.web3Utils = new services_1.Web3Utils(this.web3);
         this.apiEndpoint = initParams.apiEndpoint || Constants.API_ENDPOINT;
-        this.apiLoanRequests =
-            initParams.apiLoanRequests || Constants.API_LOAN_REQUESTS;
         this.stateCallback =
             initParams.stateCallback ||
                 (function () { return console.log('State callback is not set'); });
         this.metamask = { address: undefined, network: undefined };
+        this.relayer = initParams.relayer || '';
+        this.wranglers = initParams.wranglers || Constants.DEFAULT_WRANGLERS;
+        this.contractAddresses = Object.assign({}, Constants.CONTRACT_ADDRESSES, initParams.CONTRACT_ADDRESSES);
+        this.contractTokens = Object.keys(this.contractAddresses);
+        this.balanceTokens = Constants.BALLANCE_TOKENS.slice().concat(Object.keys(initParams.CONTRACT_ADDRESSES));
         this.fetchETHBallance = this.fetchETHBallance.bind(this);
         this.fetchBallanceByToken = this.fetchBallanceByToken.bind(this);
         this.fetchAllowanceByToken = this.fetchAllowanceByToken.bind(this);
         this.fetchAllowanceByAddress = this.fetchAllowanceByAddress.bind(this);
         this.fetchOrders = this.fetchOrders.bind(this);
         this.fetchPositions = this.fetchPositions.bind(this);
-        this.fetchDAIExchange = this.fetchDAIExchange.bind(this);
+        this.fetchTokenExchange = this.fetchTokenExchange.bind(this);
+        this.getTokenByAddress = this.getTokenByAddress.bind(this);
         this.onCreateOrder = this.onCreateOrder.bind(this);
         this.onFillOrderServer = this.onFillOrderServer.bind(this);
         this.onDeleteOrder = this.onDeleteOrder.bind(this);
@@ -71,7 +75,7 @@ var Lendroid = (function () {
         this.onCancelOrder = this.onCancelOrder.bind(this);
         this.init();
         this.fetchETHBallance();
-        Constants.BALLANCE_TOKENS.forEach(function (token) {
+        this.balanceTokens.forEach(function (token) {
             _this.fetchBallanceByToken(token);
             _this.fetchAllowanceByToken(token);
         });
@@ -101,18 +105,34 @@ var Lendroid = (function () {
         setInterval(function () {
             _this.lastFetchTime = new Date();
             _this.fetchOrders();
+            _this.contractTokens.forEach(function (token) {
+                _this.fetchTokenExchange(token);
+            });
         }, 30 * 1000);
         this.debounceUpdate = this.debounce(this.stateCallback, 500, null);
     }
+    Lendroid.prototype.getTokenByAddress = function (address) {
+        var _a = this, contractAddresses = _a.contractAddresses, contractTokens = _a.contractTokens, network = _a.metamask.network;
+        var ret = '';
+        contractTokens.forEach(function (token) {
+            if (contractAddresses[token] && (contractAddresses[token][network] || '').toLowerCase() === address.toLowerCase()) {
+                ret = token;
+            }
+        });
+        return ret;
+    };
     Lendroid.prototype.onCreateOrder = function (postData, callback) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var _a, web3Utils, contracts, metamask, address, addresses, values, protocolContractInstance, onSign, orderHash;
+            var _a, web3Utils, contracts, metamask, relayer, address, addresses, values, protocolContractInstance, onSign, orderHash;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _a = this, web3Utils = _a.web3Utils, contracts = _a.contracts, metamask = _a.metamask;
+                        _a = this, web3Utils = _a.web3Utils, contracts = _a.contracts, metamask = _a.metamask, relayer = _a.relayer;
                         address = metamask.address;
+                        postData.relayer = relayer.length
+                            ? relayer
+                            : this.fillZero();
                         addresses = [
                             (postData.lender = postData.lender.length
                                 ? postData.lender
@@ -120,9 +140,7 @@ var Lendroid = (function () {
                             (postData.borrower = postData.borrower.length
                                 ? postData.borrower
                                 : this.fillZero()),
-                            (postData.relayer = postData.relayer.length
-                                ? postData.relayer
-                                : this.fillZero()),
+                            postData.relayer,
                             postData.wrangler,
                             postData.collateralToken,
                             postData.loanToken
@@ -173,17 +191,19 @@ var Lendroid = (function () {
             });
         });
     };
-    Lendroid.prototype.onFillOrderServer = function (id, value, callback) {
+    Lendroid.prototype.onFillOrderServer = function (_a, callback) {
         var _this = this;
-        services_1.fillOrderServer(this.apiEndpoint, id, value, function (err, res) {
+        var id = _a.id, fillerAddress = _a.fillerAddress, value = _a.value, txHash = _a.txHash;
+        services_1.fillOrderServer(this.apiEndpoint, { id: id, fillerAddress: fillerAddress, value: value, txHash: txHash }, function (err, res) {
             callback(err, res);
             setTimeout(_this.fetchOrders, 300);
             setTimeout(_this.fetchPositions, 1000);
         });
     };
-    Lendroid.prototype.onDeleteOrder = function (id, callback) {
+    Lendroid.prototype.onDeleteOrder = function (_a, callback) {
         var _this = this;
-        services_1.deleteOrder(this.apiEndpoint, id, function (err, res) {
+        var id = _a.id, txHash = _a.txHash;
+        services_1.deleteOrder(this.apiEndpoint, { id: id, txHash: txHash }, function (err, res) {
             callback(err, res);
             setTimeout(_this.fetchOrders, 300);
         });
@@ -228,14 +248,14 @@ var Lendroid = (function () {
             }
         });
     };
-    Lendroid.prototype.onAllowance = function (token, newAllowance, callback) {
+    Lendroid.prototype.onAllowance = function (token, callback) {
         var _this = this;
         var _a = this, web3Utils = _a.web3Utils, contracts = _a.contracts, metamask = _a.metamask;
         var address = metamask.address;
         var tokenContractInstance = contracts.contracts[token];
         var protocolContract = contracts.contracts.Protocol;
         var tokenAllowance = contracts.allowances[token];
-        if (newAllowance === tokenAllowance) {
+        if (!tokenContractInstance) {
             callback(null);
             return;
         }
@@ -245,7 +265,6 @@ var Lendroid = (function () {
             web3Utils: web3Utils,
             tokenContractInstance: tokenContractInstance,
             tokenAllowance: tokenAllowance,
-            newAllowance: newAllowance,
             protocolContract: protocolContract
         }, function (err, hash) {
             if (err) {
@@ -278,16 +297,22 @@ var Lendroid = (function () {
         });
     };
     Lendroid.prototype.onPostLoans = function (data, callback) {
-        services_1.postLoans(this.apiLoanRequests, data, callback);
+        var wrangler = this.wranglers.find(function (w) { return w.address.toLowerCase() === data.wrangler.toLowerCase(); });
+        if (wrangler) {
+            services_1.postLoans(wrangler.apiLoanRequests, data, callback);
+        }
+        else {
+            callback({ response: { data: { message: 'No Matching Wrangler!' } } });
+        }
     };
     Lendroid.prototype.onFillLoan = function (approval, callback) {
         var _this = this;
-        var _a = this, contracts = _a.contracts, metamask = _a.metamask, web3Utils = _a.web3Utils;
-        var protocolContractInstance = contracts.contracts.Protocol;
-        services_1.fillLoan({ approval: approval, protocolContractInstance: protocolContractInstance, metamask: metamask, web3Utils: web3Utils }, function (err, hash) {
+        var web3Utils = this.web3Utils;
+        var address = approval._is_creator_lender ? approval._addresses[1] : approval._addresses[0];
+        services_1.fillLoan({ approval: approval, web3Utils: web3Utils }, function (err, hash) {
             if (err) {
                 services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
-                callback(err, hash);
+                callback(err, { hash: hash, address: address });
             }
             else {
                 _this.debounceUpdate();
@@ -297,11 +322,10 @@ var Lendroid = (function () {
                         .then(function (res) {
                         if (res && parseInt(res.status, 16)) {
                             clearInterval(txInterval_1);
-                            callback(err, hash);
+                            callback(err, { hash: hash, address: address });
                         }
                     })
                         .catch(function (error) {
-                        _this.loading.wrapping = false;
                         callback(null);
                         services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
                     });
@@ -312,13 +336,14 @@ var Lendroid = (function () {
     Lendroid.prototype.onClosePosition = function (data, callback) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var _a, metamask, web3Utils, _b, borrower, loanAmountOwed, borrowerAllowance;
+            var _a, metamask, web3Utils, _b, borrower, loanAmountOwed, loanToken, token, borrowerAllowance;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         _a = this, metamask = _a.metamask, web3Utils = _a.web3Utils;
-                        _b = data.origin, borrower = _b.borrower, loanAmountOwed = _b.loanAmountOwed;
-                        return [4, this.fetchAllowanceByAddress(borrower)];
+                        _b = data.origin, borrower = _b.borrower, loanAmountOwed = _b.loanAmountOwed, loanToken = _b.loanToken;
+                        token = this.getTokenByAddress(loanToken);
+                        return [4, this.fetchAllowanceByAddress(borrower, token)];
                     case 1:
                         borrowerAllowance = _c.sent();
                         if (parseFloat(borrowerAllowance.toString()) >= parseFloat(loanAmountOwed)) {
@@ -340,7 +365,6 @@ var Lendroid = (function () {
                                             }
                                         })
                                             .catch(function (error) {
-                                            _this.loading.wrapping = false;
                                             callback(null);
                                             services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
                                         });
@@ -350,7 +374,7 @@ var Lendroid = (function () {
                         }
                         else {
                             callback({
-                                message: "Borrower's DAI allowance should at least " + loanAmountOwed
+                                message: "Borrower's " + token + " allowance should at least " + loanAmountOwed
                             });
                         }
                         return [2];
@@ -379,7 +403,6 @@ var Lendroid = (function () {
                         }
                     })
                         .catch(function (error) {
-                        _this.loading.wrapping = false;
                         callback(null);
                         services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
                     });
@@ -390,13 +413,14 @@ var Lendroid = (function () {
     Lendroid.prototype.onLiquidatePosition = function (data, callback) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var web3Utils, _a, lender, loanAmountOwed, lenderAllowance;
+            var web3Utils, _a, lender, loanAmountOwed, loanToken, token, lenderAllowance;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         web3Utils = this.web3Utils;
-                        _a = data.origin, lender = _a.lender, loanAmountOwed = _a.loanAmountOwed;
-                        return [4, this.fetchAllowanceByAddress(lender)];
+                        _a = data.origin, lender = _a.lender, loanAmountOwed = _a.loanAmountOwed, loanToken = _a.loanToken;
+                        token = this.getTokenByAddress(loanToken);
+                        return [4, this.fetchAllowanceByAddress(lender, token)];
                     case 1:
                         lenderAllowance = _b.sent();
                         if (parseFloat(lenderAllowance.toString()) >= parseFloat(loanAmountOwed)) {
@@ -418,7 +442,6 @@ var Lendroid = (function () {
                                             }
                                         })
                                             .catch(function (error) {
-                                            _this.loading.wrapping = false;
                                             callback(null);
                                             services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, error.message);
                                         });
@@ -428,7 +451,7 @@ var Lendroid = (function () {
                         }
                         else {
                             callback({
-                                message: "Lender's DAI allowance should at least " + loanAmountOwed
+                                message: "Lender's " + token + " allowance should at least " + loanAmountOwed
                             });
                         }
                         return [2];
@@ -454,10 +477,19 @@ var Lendroid = (function () {
         });
     };
     Lendroid.prototype.init = function () {
+        var _this = this;
         this.contracts = Constants.DEFAULT_CONTRACTS;
         this.orders = Constants.DEFAULT_ORDERS;
         this.loading = Constants.DEFAULT_LOADINGS;
         this.exchangeRates = Constants.DEFAULT_EXCHANGES;
+        this.contractTokens.forEach(function (token) {
+            _this.exchangeRates[token] = 0;
+        });
+        setTimeout(function () {
+            _this.contractTokens.forEach(function (token) {
+                _this.fetchTokenExchange(token);
+            });
+        }, 500);
         this.stateCallback();
     };
     Lendroid.prototype.reset = function (metamask) {
@@ -479,6 +511,10 @@ var Lendroid = (function () {
             if (err) {
                 return services_1.Logger.error(services_1.LOGGER_CONTEXT.API_ERROR, err.message);
             }
+            orders.result.forEach(function (order) {
+                order.loanCurrency = _this.getTokenByAddress(order.loanToken);
+                order.collateralCurrency = _this.getTokenByAddress(order.collateralToken);
+            });
             _this.orders.myOrders.lend = orders.result.filter(function (item) { return item.lender === address; });
             _this.orders.myOrders.borrow = orders.result.filter(function (item) { return item.borrower === address; });
             _this.orders.orders = orders.result.filter(function (item) { return item.lender !== address && item.borrower !== address; });
@@ -488,7 +524,7 @@ var Lendroid = (function () {
     Lendroid.prototype.fetchPositions = function (specificAddress) {
         var _this = this;
         if (specificAddress === void 0) { specificAddress = null; }
-        var _a = this, web3Utils = _a.web3Utils, metamask = _a.metamask, contracts = _a.contracts;
+        var _a = this, web3Utils = _a.web3Utils, metamask = _a.metamask, contracts = _a.contracts, wranglers = _a.wranglers;
         var address = metamask.address;
         var Protocol = contracts.contracts.Protocol;
         this.loading.positions = true;
@@ -497,52 +533,44 @@ var Lendroid = (function () {
             address: address,
             Protocol: Protocol,
             specificAddress: specificAddress,
-            oldPostions: this.contracts.positions
+            oldPostions: this.contracts.positions,
+            wranglers: wranglers
         }, function (err, res) {
             _this.loading.positions = false;
             if (err) {
                 return services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
             }
             _this.contracts.positions = res.positions;
+            _this.contracts.positions.lent.forEach(function (position) {
+                position.loanCurrency = _this.getTokenByAddress(position.origin.loanToken);
+                position.collateralCurrency = _this.getTokenByAddress(position.detail.borrow_currency_address);
+            });
+            _this.contracts.positions.borrowed.forEach(function (position) {
+                position.loanCurrency = _this.getTokenByAddress(position.origin.loanToken);
+                position.collateralCurrency = _this.getTokenByAddress(position.detail.borrow_currency_address);
+            });
             _this.debounceUpdate();
         });
     };
-    Lendroid.prototype.fetchDAIExchange = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var web3Utils, DAI2ETH, exchange, err_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        web3Utils = this.web3Utils;
-                        DAI2ETH = (this.contracts.contracts || { DAI2ETH: null }).DAI2ETH;
-                        if (!DAI2ETH) return [3, 4];
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4, DAI2ETH.methods.read().call()];
-                    case 2:
-                        exchange = _a.sent();
-                        this.exchangeRates.currentDAIExchangeRate = web3Utils.fromWei(exchange);
-                        return [3, 4];
-                    case 3:
-                        err_1 = _a.sent();
-                        return [2, services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err_1.message)];
-                    case 4: return [2];
-                }
+    Lendroid.prototype.fetchTokenExchange = function (token) {
+        var _ = this;
+        if (['Protocol'].indexOf(token) === -1) {
+            services_1.getTokenExchangeRate(token, function (rate) {
+                _.exchangeRates[token] = rate;
             });
-        });
+        }
     };
     Lendroid.prototype.fetchContracts = function () {
         var _this = this;
-        Constants.CONTRACT_TOKENS.forEach(function (token) {
+        this.contractTokens.forEach(function (token) {
             _this.fetchContractByToken(token, null);
         });
     };
     Lendroid.prototype.fetchContractByToken = function (token, callback) {
         var _this = this;
-        var _a = this, web3Utils = _a.web3Utils, metamask = _a.metamask;
+        var _a = this, web3Utils = _a.web3Utils, metamask = _a.metamask, contractAddresses = _a.contractAddresses;
         var network = metamask.network;
-        services_1.fetchContractByToken(token, { web3Utils: web3Utils, network: network }, function (err, res) {
+        services_1.fetchContractByToken(token, { web3Utils: web3Utils, network: network, contractAddresses: contractAddresses }, function (err, res) {
             if (err) {
                 return services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
             }
@@ -559,7 +587,7 @@ var Lendroid = (function () {
     };
     Lendroid.prototype.fetchETHBallance = function () {
         var _this = this;
-        var _a = this, web3Utils = _a.web3Utils, metamask = _a.metamask, contracts = _a.contracts;
+        var _a = this, web3Utils = _a.web3Utils, metamask = _a.metamask, contracts = _a.contracts, contractTokens = _a.contractTokens;
         var address = (metamask || { address: null }).address;
         if (address && contracts && contracts.balances) {
             services_1.fetchETHBallance({ web3Utils: web3Utils, address: address }, function (err, res) {
@@ -574,7 +602,6 @@ var Lendroid = (function () {
         else {
             setTimeout(this.fetchETHBallance, 500);
         }
-        this.fetchDAIExchange();
     };
     Lendroid.prototype.fetchBallanceByToken = function (token, callback, once) {
         var _this = this;
@@ -590,7 +617,7 @@ var Lendroid = (function () {
             }, function (err, res) {
                 if (err) {
                     callback(null);
-                    return services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
+                    return;
                 }
                 _this.contracts.balances[token] = res.data;
                 _this.debounceUpdate();
@@ -624,7 +651,7 @@ var Lendroid = (function () {
             }, function (err, res) {
                 if (err) {
                     callback(null);
-                    return services_1.Logger.error(services_1.LOGGER_CONTEXT.CONTRACT_ERROR, err.message);
+                    return;
                 }
                 _this.contracts.allowances[token] = res.data;
                 _this.debounceUpdate();
@@ -642,7 +669,6 @@ var Lendroid = (function () {
     };
     Lendroid.prototype.fetchAllowanceByAddress = function (address, token) {
         var _this = this;
-        if (token === void 0) { token = 'DAI'; }
         return new Promise(function (resolve, reject) {
             var _a = _this, web3Utils = _a.web3Utils, contracts = _a.contracts;
             if (contracts &&

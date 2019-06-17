@@ -4,7 +4,5 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./ProtocolABI"));
-__export(require("./DAIABI"));
 __export(require("./LSTABI"));
-__export(require("./DAI2ETHABI"));
 //# sourceMappingURL=index.js.map

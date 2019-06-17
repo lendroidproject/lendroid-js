@@ -9,4 +9,6 @@ export declare class Web3Utils {
     substract(value1: any, value2: any): number;
     substractBN(value1: any, value2: any): number;
     createContract(abi: any, address: any): any;
+    sendSignedTransaction(signedTransactionData: any): any;
+    getBlockTimeStamp(): Promise<{}>;
 }

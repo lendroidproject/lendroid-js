@@ -14,6 +14,7 @@ export class Web3Utils {
     this.substractBN = this.substractBN.bind(this)
 
     this.createContract = this.createContract.bind(this)
+    this.sendSignedTransaction = this.sendSignedTransaction.bind(this)
   }
 
   public toWei(value) {
@@ -52,5 +53,21 @@ export class Web3Utils {
 
   public createContract(abi, address) {
     return new this.eth.Contract(abi, address)
+  }
+
+  public sendSignedTransaction(signedTransactionData) {
+    return this.eth.sendSignedTransaction(signedTransactionData)
+  }
+
+  public async getBlockTimeStamp() {
+    return new Promise((resolve, reject) => {
+      this.eth.getBlock('latest', (err, block) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(block.timestamp)
+        }
+      })
+    })
   }
 }

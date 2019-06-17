@@ -39,25 +39,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = require("axios");
 var Constants = require("../constants");
 exports.fetchContractByToken = function (token, payload, callback) {
-    var network = payload.network, web3Utils = payload.web3Utils;
-    var CONTRACT_ADDRESSES = Constants.CONTRACT_ADDRESSES;
-    if (!CONTRACT_ADDRESSES[token][network]) {
+    var network = payload.network, web3Utils = payload.web3Utils, contractAddresses = payload.contractAddresses;
+    if (!contractAddresses[token][network]) {
         return callback({ message: 'Unknown' });
     }
-    if (!CONTRACT_ADDRESSES[token].def) {
-        var url = "https://" + (network === 1 ? 'api' : 'api-kovan') + ".etherscan.io/api?module=contract&action=getabi&address=" + CONTRACT_ADDRESSES[token][network];
+    if (!contractAddresses[token].def) {
+        var url = "https://" + (network === 1 ? 'api' : 'api-kovan') + ".etherscan.io/api?module=contract&action=getabi&address=" + contractAddresses[token][network];
         axios_1.default
             .get(url)
             .then(function (res) {
-            var contractABI = JSON.parse(res.data.result);
-            var contractInstance = web3Utils.createContract(contractABI, CONTRACT_ADDRESSES[token][network]);
-            callback(null, { data: contractInstance });
+            if (Number(res.data.status)) {
+                var contractABI = JSON.parse(res.data.result);
+                var contractInstance = web3Utils.createContract(contractABI, contractAddresses[token][network]);
+                callback(null, { data: contractInstance });
+            }
+            else {
+                callback({ message: res.data.result });
+            }
         })
             .catch(function (err) { return callback(err); });
     }
     else {
-        var contractABI = CONTRACT_ADDRESSES[token].def;
-        var contractInstance = web3Utils.createContract(contractABI.hasNetwork ? contractABI[network] : contractABI, CONTRACT_ADDRESSES[token][network]);
+        var contractABI = contractAddresses[token].def;
+        var contractInstance = web3Utils.createContract(contractABI.hasNetwork ? contractABI[network] : contractABI, contractAddresses[token][network]);
         callback(null, { data: contractInstance });
     }
 };
@@ -83,7 +87,10 @@ exports.fetchBallanceByToken = function (payload, callback) {
         var value = web3Utils.fromWei(res);
         callback(null, { data: value });
     })
-        .catch(function (err) { return callback(err); });
+        .catch(function (err) {
+        console.log('Fetch balance failed', contractInstance._address);
+        callback(err);
+    });
 };
 exports.fetchAllowanceByToken = function (payload, callback) {
     var address = payload.address, contractInstance = payload.contractInstance, protocolContract = payload.protocolContract, web3Utils = payload.web3Utils;
@@ -97,18 +104,21 @@ exports.fetchAllowanceByToken = function (payload, callback) {
         var value = web3Utils.fromWei(res);
         callback(null, { data: value });
     })
-        .catch(function (err) { return callback(err); });
+        .catch(function (err) {
+        console.log('Fetch allowance failed', contractInstance._address);
+        callback(err);
+    });
 };
 var fillZero = function (len) {
     if (len === void 0) { len = 40; }
     return "0x" + new Array(len).fill(0).join('');
 };
 exports.fetchPositions = function (payload, callback) { return __awaiter(_this, void 0, void 0, function () {
-    var address, Protocol, specificAddress, oldPostions, web3Utils, lendCount, borrowCount, positions, positionExists, i, positionHash, positionData, i, positionHash, positionData, activePositions;
+    var address, Protocol, web3Utils, wranglers, lendCount, borrowCount, positions, positionExists, _loop_1, i, _loop_2, i, activePositions;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                address = payload.address, Protocol = payload.Protocol, specificAddress = payload.specificAddress, oldPostions = payload.oldPostions, web3Utils = payload.web3Utils;
+                address = payload.address, Protocol = payload.Protocol, web3Utils = payload.web3Utils, wranglers = payload.wranglers;
                 return [4, Protocol.methods.lend_positions_count(address).call()];
             case 1:
                 lendCount = _a.sent();
@@ -119,64 +129,96 @@ exports.fetchPositions = function (payload, callback) { return __awaiter(_this, 
                 borrowCount = _a.sent();
                 positions = [];
                 positionExists = {};
+                _loop_1 = function (i) {
+                    var positionHash, positionData, wrangler, health;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, Protocol.methods
+                                    .lend_positions(address, i)
+                                    .call()];
+                            case 1:
+                                positionHash = _a.sent();
+                                if (positionHash === fillZero(64)) {
+                                    return [2, "continue"];
+                                }
+                                return [4, Protocol.methods.position(positionHash).call()];
+                            case 2:
+                                positionData = _a.sent();
+                                wrangler = wranglers.find(function (w) { return w.address.toLowerCase() === positionData[5].toLowerCase(); });
+                                return [4, axios_1.default.get(wrangler.apiLoanRequests + "/loan_health/" + positionData[0])];
+                            case 3:
+                                health = _a.sent();
+                                if (!positionExists[positionHash]) {
+                                    positionExists[positionHash] = true;
+                                    positions.push({
+                                        type: 'lent',
+                                        positionData: positionData,
+                                        health: health.data.data,
+                                        address: positionHash
+                                    });
+                                }
+                                return [2];
+                        }
+                    });
+                };
                 i = 1;
                 _a.label = 3;
             case 3:
-                if (!(i <= lendCount)) return [3, 7];
-                return [4, Protocol.methods
-                        .lend_positions(address, i)
-                        .call()];
+                if (!(i <= lendCount)) return [3, 6];
+                return [5, _loop_1(i)];
             case 4:
-                positionHash = _a.sent();
-                if (positionHash === fillZero(64)) {
-                    return [3, 6];
-                }
-                return [4, Protocol.methods.position(positionHash).call()];
+                _a.sent();
+                _a.label = 5;
             case 5:
-                positionData = _a.sent();
-                if (!positionExists[positionHash]) {
-                    positionExists[positionHash] = true;
-                    positions.push({
-                        type: 'lent',
-                        positionData: positionData,
-                        address: positionHash
-                    });
-                }
-                _a.label = 6;
-            case 6:
                 i++;
                 return [3, 3];
-            case 7:
-                i = 1;
-                _a.label = 8;
-            case 8:
-                if (!(i <= borrowCount)) return [3, 12];
-                return [4, Protocol.methods
-                        .borrow_positions(address, i)
-                        .call()];
-            case 9:
-                positionHash = _a.sent();
-                if (positionHash === fillZero(64)) {
-                    return [3, 11];
-                }
-                return [4, Protocol.methods.position(positionHash).call()];
-            case 10:
-                positionData = _a.sent();
-                if (!positionExists[positionHash]) {
-                    positionExists[positionHash] = true;
-                    positions.push({
-                        type: 'borrowed',
-                        positionData: positionData,
-                        address: positionHash
+            case 6:
+                _loop_2 = function (i) {
+                    var positionHash, positionData, wrangler, health;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, Protocol.methods
+                                    .borrow_positions(address, i)
+                                    .call()];
+                            case 1:
+                                positionHash = _a.sent();
+                                if (positionHash === fillZero(64)) {
+                                    return [2, "continue"];
+                                }
+                                return [4, Protocol.methods.position(positionHash).call()];
+                            case 2:
+                                positionData = _a.sent();
+                                wrangler = wranglers.find(function (w) { return w.address.toLowerCase() === positionData[5].toLowerCase(); });
+                                return [4, axios_1.default.get(wrangler.apiLoanRequests + "/loan_health/" + positionData[0])];
+                            case 3:
+                                health = _a.sent();
+                                if (!positionExists[positionHash]) {
+                                    positionExists[positionHash] = true;
+                                    positions.push({
+                                        type: 'borrowed',
+                                        positionData: positionData,
+                                        health: health.data.data,
+                                        address: positionHash
+                                    });
+                                }
+                                return [2];
+                        }
                     });
-                }
-                _a.label = 11;
-            case 11:
+                };
+                i = 1;
+                _a.label = 7;
+            case 7:
+                if (!(i <= borrowCount)) return [3, 10];
+                return [5, _loop_2(i)];
+            case 8:
+                _a.sent();
+                _a.label = 9;
+            case 9:
                 i++;
-                return [3, 8];
-            case 12:
+                return [3, 7];
+            case 10:
                 positions.forEach(function (position) {
-                    var positionData = position.positionData;
+                    var positionData = position.positionData, health = position.health;
                     var positionInfo = {
                         index: parseInt(positionData[0], 10),
                         kernel_creator: positionData[1],
@@ -234,7 +276,8 @@ exports.fetchPositions = function (payload, callback) { return __awaiter(_this, 
                         userAddress: address,
                         loanStatus: status,
                         kernel_creator: kernel_creator,
-                        collateralToken: hash
+                        collateralToken: hash,
+                        loanToken: kernel_creator === lender ? lend_currency_address : lend_currency_address
                     };
                     position.detail = {
                         index: index,
@@ -258,7 +301,8 @@ exports.fetchPositions = function (payload, callback) { return __awaiter(_this, 
                         monitoring_fee: monitoring_fee,
                         rollover_fee: rollover_fee,
                         closure_fee: closure_fee,
-                        hash: hash
+                        hash: hash,
+                        health: health
                     };
                 });
                 activePositions = positions.filter(function (position) { return position.origin.loanStatus !== Constants.LOAN_STATUS_CLOSED; });
@@ -297,51 +341,32 @@ exports.wrapETH = function (payload, callback) {
     }
 };
 exports.allowance = function (payload, callback) {
-    var address = payload.address, tokenContractInstance = payload.tokenContractInstance, tokenAllowance = payload.tokenAllowance, newAllowance = payload.newAllowance, protocolContract = payload.protocolContract, web3Utils = payload.web3Utils;
+    var address = payload.address, tokenContractInstance = payload.tokenContractInstance, tokenAllowance = payload.tokenAllowance, protocolContract = payload.protocolContract, web3Utils = payload.web3Utils;
     if (tokenAllowance === 0 ||
         !tokenContractInstance.methods.increaseApproval ||
         !tokenContractInstance.methods.decreaseApproval) {
         tokenContractInstance.methods
-            .approve(protocolContract._address, web3Utils.toWei(newAllowance))
+            .approve(protocolContract._address, web3Utils.toWei('10000000000000000000'))
             .send({ from: address })
             .then(function (res) { return callback(null, res.transactionHash); })
             .catch(function (err) { return callback(err); });
     }
     else {
-        if (newAllowance > tokenAllowance) {
-            tokenContractInstance.methods
-                .increaseApproval(protocolContract._address, web3Utils.toWei(newAllowance - tokenAllowance))
-                .send({ from: address })
-                .then(function (res) { return callback(null, res.transactionHash); })
-                .catch(function (err) { return callback(err); });
-        }
-        else {
-            tokenContractInstance.methods
-                .decreaseApproval(protocolContract._address, web3Utils.toWei(tokenAllowance - newAllowance))
-                .send({ from: address })
-                .then(function (res) { return callback(null, res.transactionHash); })
-                .catch(function (err) { return callback(err); });
-        }
+        tokenContractInstance.methods
+            .increaseApproval(protocolContract._address, web3Utils.toWei('10000000000000000000'))
+            .send({ from: address })
+            .then(function (res) { return callback(null, res.transactionHash); })
+            .catch(function (err) { return callback(err); });
     }
 };
 exports.fillLoan = function (payload, callback) {
-    var approval = payload.approval, protocolContractInstance = payload.protocolContractInstance, metamask = payload.metamask, web3Utils = payload.web3Utils;
-    protocolContractInstance.methods
-        .fill_kernel(approval._addresses, [
-        web3Utils.toBN(approval._values[0]).toString(),
-        web3Utils.toBN(approval._values[1]).toString(),
-        web3Utils.toBN(approval._values[2]).toString(),
-        web3Utils.toBN(approval._values[3]).toString(),
-        web3Utils.toBN(approval._values[4]).toString(),
-        web3Utils.toBN(approval._values[5]).toString(),
-        web3Utils.toBN(approval._values[6]).toString()
-    ], approval._nonce, approval._kernel_daily_interest_rate, approval._is_creator_lender, approval._timestamps, approval._position_duration_in_seconds, approval._kernel_creator_salt, approval._sig_data_kernel_creator, approval._sig_data_wrangler)
-        .send({ from: metamask.address })
+    var approval = payload.approval, web3Utils = payload.web3Utils;
+    web3Utils.sendSignedTransaction(approval._signed_transaction)
         .then(function (hash) { return callback(null, hash.transactionHash); })
         .catch(function (err) { return callback(err); });
 };
 exports.closePosition = function (payload, callback) {
-    var data = payload.data, metamask = payload.metamask;
+    var data = payload.data;
     data.origin.loanContract.methods
         .close_position(data.origin.collateralToken)
         .send({ from: data.origin.borrower })
@@ -405,7 +430,7 @@ exports.cancelOrder = function (payload, callback) { return __awaiter(_this, voi
                 protocolContractInstance.methods
                     .cancel_kernel(addresses, values, parseInt(data.offerExpiry, 10), data.creatorSalt, web3Utils.toWei(data.interestRatePerDay), parseInt(data.loanDuration, 10), data.ecSignatureCreator, web3Utils.toWei(cancelledCollateralTokenAmount))
                     .send({ from: metamask.address })
-                    .then(function (result) { return callback(null, result); })
+                    .then(function (result) { return callback(null, result.transactionHash); })
                     .catch(function (err) { return callback(err); });
                 return [2];
         }

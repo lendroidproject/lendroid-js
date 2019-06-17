@@ -7,10 +7,12 @@ exports.fetchOrders = function (base, callback) {
 exports.createOrder = function (base, data, callback) {
     constants_1.apiPost(base, '/offers', data, callback);
 };
-exports.fillOrderServer = function (base, id, value, callback) {
-    constants_1.apiPost(base, "/offers/fill/" + id + "/" + value, {}, callback);
+exports.fillOrderServer = function (base, _a, callback) {
+    var id = _a.id, fillerAddress = _a.fillerAddress, value = _a.value, txHash = _a.txHash;
+    constants_1.apiPost(base, '/offers/fill', { id: id, fillerAddress: fillerAddress, value: value, txHash: txHash }, callback);
 };
-exports.deleteOrder = function (base, id, callback) {
-    constants_1.apiDelete(base, "/offers/" + id, callback);
+exports.deleteOrder = function (base, _a, callback) {
+    var id = _a.id, txHash = _a.txHash;
+    constants_1.apiPost(base, '/offers/delete', { id: id, txHash: txHash }, callback);
 };
 //# sourceMappingURL=orders.js.map

@@ -1,5 +1,10 @@
-export declare const API_ENDPOINT = "http://localhost:8080";
-export declare const API_LOAN_REQUESTS = "https://lendroidwrangler.com";
+export declare const API_ENDPOINT = "http://localhost:19080";
+export declare const API_LOAN_REQUESTS = "http://127.0.0.1:5000";
+export declare const DEFAULT_WRANGLERS: {
+    label: string;
+    address: string;
+    apiLoanRequests: string;
+}[];
 export declare const DEFAULT_CONTRACTS: {
     contracts: {};
     balances: {};
@@ -24,7 +29,6 @@ export declare const DEFAULT_ORDERS: {
 };
 export declare const DEFAULT_EXCHANGES: {
     currentWETHExchangeRate: number;
-    currentDAIExchangeRate: number;
 };
 export declare const LOAN_STATUS_OPEN = 1;
 export declare const LOAN_STATUS_CLOSED = 2;
