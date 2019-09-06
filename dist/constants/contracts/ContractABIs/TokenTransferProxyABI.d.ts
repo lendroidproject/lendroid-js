@@ -1,4 +1,4 @@
-export declare const LSTABI: ({
+export declare const TokenTransferProxyABI: ({
     "constant": boolean;
     "inputs": {
         "name": string;
@@ -12,15 +12,6 @@ export declare const LSTABI: ({
     "payable": boolean;
     "stateMutability": string;
     "type": string;
-    "anonymous"?: undefined;
-} | {
-    "inputs": never[];
-    "payable": boolean;
-    "stateMutability": string;
-    "type": string;
-    "constant"?: undefined;
-    "name"?: undefined;
-    "outputs"?: undefined;
     "anonymous"?: undefined;
 } | {
     "anonymous": boolean;

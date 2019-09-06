@@ -1,4 +1,4 @@
-export declare const LSTABI: ({
+export declare const WETHABI: ({
     "constant": boolean;
     "inputs": {
         "name": string;
@@ -10,15 +10,13 @@ export declare const LSTABI: ({
         "type": string;
     }[];
     "payable": boolean;
-    "stateMutability": string;
     "type": string;
     "anonymous"?: undefined;
 } | {
-    "inputs": never[];
     "payable": boolean;
-    "stateMutability": string;
     "type": string;
     "constant"?: undefined;
+    "inputs"?: undefined;
     "name"?: undefined;
     "outputs"?: undefined;
     "anonymous"?: undefined;
@@ -34,5 +32,4 @@ export declare const LSTABI: ({
     "constant"?: undefined;
     "outputs"?: undefined;
     "payable"?: undefined;
-    "stateMutability"?: undefined;
 })[];

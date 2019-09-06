@@ -19,13 +19,13 @@ export declare class Lendroid {
     constructor(initParams?: any);
     getTokenByAddress(address: any): string;
     onCreateOrder(postData: any, callback: any): Promise<void>;
-    onFillOrderServer({id, fillerAddress, value, txHash}: {
+    onFillOrderServer({ id, fillerAddress, value, txHash }: {
         id: any;
         fillerAddress: any;
         value: any;
         txHash: any;
     }, callback: any): void;
-    onDeleteOrder({id, txHash}: {
+    onDeleteOrder({ id, txHash }: {
         id: any;
         txHash: any;
     }, callback: any): void;
@@ -37,17 +37,17 @@ export declare class Lendroid {
     onTopUpPosition(data: any, topUpCollateralAmount: any, callback: any): void;
     onLiquidatePosition(data: any, callback: any): Promise<void>;
     onCancelOrder(data: any, callback: any): void;
-    private init();
-    private reset(metamask);
-    private fetchOrders();
-    private fetchPositions(specificAddress?);
-    private fetchTokenExchange(token);
-    private fetchContracts();
-    private fetchContractByToken(token, callback);
-    private fetchETHBallance();
-    private fetchBallanceByToken(token, callback?, once?);
-    private fetchAllowanceByToken(token, callback?, once?);
-    private fetchAllowanceByAddress(address, token);
-    private debounce(func, wait, immediate);
-    private fillZero(len?);
+    private init;
+    private reset;
+    private fetchOrders;
+    private fetchPositions;
+    private fetchTokenExchange;
+    private fetchContracts;
+    private fetchContractByToken;
+    private fetchETHBallance;
+    private fetchBallanceByToken;
+    private fetchAllowanceByToken;
+    private fetchAllowanceByAddress;
+    private debounce;
+    private fillZero;
 }

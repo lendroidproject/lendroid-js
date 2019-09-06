@@ -1,4 +1,4 @@
-export declare const LSTABI: ({
+export declare const WranglerLoanRegistryABI: ({
     "constant": boolean;
     "inputs": {
         "name": string;
@@ -14,7 +14,10 @@ export declare const LSTABI: ({
     "type": string;
     "anonymous"?: undefined;
 } | {
-    "inputs": never[];
+    "inputs": {
+        "name": string;
+        "type": string;
+    }[];
     "payable": boolean;
     "stateMutability": string;
     "type": string;
