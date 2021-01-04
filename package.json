@@ -20,7 +20,7 @@
   "author": "lendroid",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.17.1",
+    "axios": "^0.21.1",
     "moment": "^2.20.1",
     "web3": "1.0.0-beta.31"
   },
